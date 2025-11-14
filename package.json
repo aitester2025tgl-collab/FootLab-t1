@@ -1,0 +1,18 @@
+{
+  "name": "elifoot-smoke",
+  "version": "1.0.0",
+  "description": "Smoke test for Elifoot project using jsdom",
+  "main": "smoke_test.js",
+  "scripts": {
+  "smoke": "node smoke_test.js",
+  "test": "node tests/transfer_integration_test.js",
+  "test:rounds": "node tests/generate_rounds_test.js",
+  "test:promotions": "node tests/promotion_integration_test.js",
+  "test:unit": "npm run test:rounds && npm run test:promotions"
+  },
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "jsdom": "^22.0.0"
+  }
+}
