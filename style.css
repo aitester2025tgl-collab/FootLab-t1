@@ -1,1 +1,1785 @@
-<!-- NOTICE: 'style.css' moved to 'archive/legacy_root_files/style.css' to declutter repository root. Original archived. -->
+/* style.css - ATUALIZAÇÃO PARA CORREÇÃO DO BACKGROUND E ESTILO DA EQUIPA */
+
+/* Reset e base */
+body,
+html {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #f0f0f0;
+  overflow-x: hidden;
+}
+
+/* Layout variables to keep sidebar/tactic widths consistent */
+:root {
+  --hub-menu-width: 200px;
+  --tactic-panel-width: 280px;
+  --hub-bg: #2e2e2e; /* Solid hub background (no gradients) */
+  --hub-panel-bg: #333333; /* Solid panel background for boxes */
+}
+
+/* Compact side-panel width used when team menu is active */
+:root {
+  --side-panel-compact-width: 180px;
+}
+
+/* (Retro theme removed - reverted to base theme.) */
+
+/* Single side-panel width so finance (left bottom) and next-opponent (right bottom) are symmetric */
+:root {
+  --side-panel-width: 340px;
+}
+
+/* ----------------------------------- */
+/* SECÇÃO DE SETUP                     */
+/* ----------------------------------- */
+#screen-setup {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  box-sizing: border-box;
+  /* Keep the exact same visual as the intro: blue gradient and white text */
+  background: linear-gradient(180deg, #081c3a 0%, #123a6d 60%);
+  color: #fff;
+}
+.setup-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 90%;
+  max-width: 700px;
+  padding: 40px 36px;
+  /* make container visually part of the intro: translucent/soft card so blue remains visible */
+  background-color: rgba(255, 255, 255, 0.04);
+  border-radius: 16px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.32);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  box-sizing: border-box;
+}
+#screen-setup h1 {
+  font-size: 2.2em;
+  color: #fff; /* keep white title like the intro */
+  margin-bottom: 12px;
+}
+#coachName {
+  padding: 12px;
+  margin-bottom: 16px;
+  width: 100%;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 8px;
+  font-size: 1.05em;
+  box-sizing: border-box;
+  background: rgba(0, 0, 0, 0.1);
+  color: #fff;
+}
+#coachName::placeholder {
+  color: rgba(255, 255, 255, 0.7);
+}
+#startBtn {
+  background-color: rgba(255, 255, 255, 0.12);
+  color: #fff;
+  padding: 12px 18px;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 1.05rem;
+  transition:
+    background-color 0.18s,
+    transform 0.08s;
+  width: 100%;
+}
+#startBtn:hover {
+  background-color: rgba(255, 255, 255, 0.18);
+  transform: translateY(-2px);
+}
+
+/* Intro screen */
+#intro-screen {
+  width: 100%;
+  height: 100vh;
+  box-sizing: border-box;
+  background: linear-gradient(180deg, #081c3a 0%, #123a6d 60%);
+  color: #fff;
+  /* allow animated fade/slide when transitioning to the setup screen */
+  transition:
+    opacity 600ms ease,
+    transform 600ms ease;
+  will-change: opacity, transform;
+  opacity: 1;
+}
+
+/* screen-setup participates in the same transition sequence (fade/slide) */
+#screen-setup {
+  transition:
+    opacity 600ms ease,
+    transform 600ms ease;
+  will-change: opacity, transform;
+}
+
+/* Team selection grid */
+.team-select-card {
+  min-width: 140px;
+  max-width: 200px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  cursor: pointer;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #fff;
+  color: #222;
+  border: 1px solid #eee;
+}
+.team-select-card .badge {
+  width: 36px;
+  height: 36px;
+  border-radius: 6px;
+  flex-shrink: 0;
+  border: 2px solid rgba(0, 0, 0, 0.06);
+}
+.team-select-card .team-name {
+  font-weight: 700;
+  font-size: 0.95em;
+}
+.team-select-card.selected {
+  outline: 3px solid #1976d2;
+  transform: translateY(-4px);
+}
+
+/* ----------------------------------- */
+/* SECÇÃO DO HUB                       */
+/* ----------------------------------- */
+
+#screen-hub {
+  /* CORREÇÃO CRÍTICA: Definido em JS, mas manter o fallback */
+  background-color: var(--hub-bg, #2e2e2e);
+  color: #ffffff;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  box-sizing: border-box;
+}
+
+#hub-header {
+  background-color: rgba(0, 0, 0, 0.3);
+  padding: 10px 20px;
+  font-size: 1.1em;
+  border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  justify-content: space-between;
+}
+
+#hub-content-wrapper {
+  display: flex;
+  flex-grow: 1;
+  overflow: hidden;
+  gap: 10px;
+  padding: 10px;
+}
+
+/* ensure left/center/right columns stretch the same height so bottom panels align */
+#hub-content-wrapper {
+  align-items: stretch;
+}
+
+#left-column {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between; /* menu on top, finance at bottom */
+  gap: 12px;
+  width: var(--side-panel-width); /* use unified side width for symmetry */
+  min-width: var(--side-panel-width);
+}
+
+/* Right column for tactic panel and next-opponent box */
+#right-column {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between; /* tactics on top, next opponent at bottom */
+  gap: 12px;
+  width: var(--side-panel-width); /* match left column for symmetry */
+  min-width: var(--side-panel-width);
+}
+
+/* ----------------------------------- */
+/* ESTILO DO MENU / PAINEIS LATERAIS   */
+/* ----------------------------------- */
+#hub-menu {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between; /* keep save/load at the bottom */
+  width: 100%; /* fill the left column so left and right columns are symmetric */
+  padding: 18px 12px; /* increased padding for a larger touch/click area */
+  gap: 10px;
+  background: linear-gradient(180deg, var(--hub-panel-bg, #23272b), rgba(0, 0, 0, 0.02));
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.28);
+  color: var(--team-menu-fg, #fff);
+  box-sizing: border-box;
+  min-height: auto;
+}
+
+.hub-menu-main {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 0 16px;
+}
+.hub-menu-footer {
+  padding: 0 12px;
+}
+
+.hub-menu-btn {
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--team-menu-fg, #fff);
+  border: none;
+  margin: 10px 0;
+  padding: 20px 20px; /* larger padding for more prominent menu */
+  width: 100%;
+  box-sizing: border-box;
+  text-align: left;
+  font-size: 1.18em; /* slightly larger to improve readability */
+  font-weight: 800;
+  border-radius: 14px;
+  cursor: pointer;
+  transition:
+    background 0.15s,
+    transform 0.08s;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.18);
+}
+
+.hub-menu-btn:hover {
+  background: rgba(255, 255, 255, 0.12);
+  transform: translateY(-2px);
+}
+
+.hub-menu-btn.active {
+  font-weight: 900;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0.08));
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.26);
+}
+
+/* Compact variant for team menu: make left-side buttons smaller when viewing the team pane */
+#hub-menu.compact-buttons .hub-menu-btn {
+  padding: 10px 12px; /* reduce vertical footprint */
+  margin: 6px 0; /* tighter spacing */
+  font-size: 0.98em; /* slightly smaller text */
+  border-radius: 10px; /* slightly less rounded */
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
+}
+
+#hub-menu.compact-buttons .hub-menu-btn:hover {
+  transform: translateY(-1px);
+}
+
+/* More aggressive compacting: shrink the menu padding and make buttons visually narrower */
+#hub-menu.compact-buttons {
+  padding: 4px 6px; /* minimal outer padding so footer box is visible */
+}
+
+#hub-menu.compact-buttons .hub-menu-main {
+  padding: 0 4px;
+  overflow: visible; /* ensure footer remains visible */
+  gap: 2px; /* tight spacing between buttons */
+}
+
+/* Buttons should be only slightly larger than player names (~0.92em). */
+#hub-menu.compact-buttons .hub-menu-btn {
+  /* Aggressively compact: aim for ~50% of previous visual height */
+  font-size: 0.78em; /* very small to match player name size */
+  padding: 1px 6px; /* minimal vertical padding */
+  margin: 1px 0; /* very tight spacing */
+  border-radius: 3px;
+  box-shadow: none; /* remove heavy shadow to reduce visual weight */
+  width: 100%;
+  height: 26px; /* slightly larger (+~10%) to match requested adjustment */
+  line-height: 1.0;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  font-weight: 600;
+}
+
+#hub-menu.compact-buttons .hub-menu-btn:hover {
+  transform: translateY(-1px);
+}
+
+#hub-menu.compact-buttons .hub-menu-btn.active {
+  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+}
+
+/* Narrow the left column when compact so buttons don't feel oversized */
+#left-column.compact {
+  width: var(--side-panel-compact-width) !important;
+  min-width: var(--side-panel-compact-width) !important;
+}
+
+/* Painel de Finanças Lateral */
+#hub-finance-panel {
+  width: 320px; /* slightly wider to match the larger menu size */
+  padding: 20px;
+  background-color: rgba(0, 0, 0, 0.18);
+  border-left: 1px solid rgba(255, 255, 255, 0.12);
+  display: flex;
+  flex-direction: column;
+  font-size: 0.95em;
+}
+
+.finance-info {
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  padding-top: 15px;
+  margin-top: 15px;
+}
+
+.finance-info div {
+  margin-bottom: 10px;
+  display: flex;
+  justify-content: space-between;
+}
+
+.finance-value {
+  font-weight: bold;
+  color: inherit;
+}
+
+/* ----------------------------------- */
+/* CONTEÚDO PRINCIPAL (hub-main-content) */
+/* ----------------------------------- */
+#hub-main-content {
+  flex-grow: 1;
+  padding: 12px; /* match hub-box padding so center content aligns with side panels */
+  overflow-y: auto;
+  min-height: 0;
+  background-color: transparent; /* boxes provide their own panel background */
+}
+
+/* Ensure main content tables and blocks align visually with side panels */
+#hub-main-content table {
+  width: 100%;
+  border-collapse: collapse;
+  box-sizing: border-box;
+}
+#hub-main-content .hub-box {
+  margin-bottom: 10px;
+}
+
+#hub-main-content h2 {
+  color: #ffeb3b; /* Cor de destaque para títulos */
+}
+
+/* ----------------------------------- */
+/* LISTA DE JOGADORES (TEAM ROSTER)    */
+/* ----------------------------------- */
+.team-roster-grid {
+  display: block;
+  margin-top: 0; /* align with other panels */
+  background-color: rgba(0, 0, 0, 0.06);
+  padding: 10px; /* slightly reduced padding to save vertical space */
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  overflow: visible; /* ensure content fits without inner scroll */
+  font-size: 0.92em; /* slightly smaller text to reduce scrolling */
+}
+
+.team-roster-grid h2 {
+  margin-top: 0; /* ensure roster header doesn't push content down */
+  margin-bottom: 8px;
+  font-size: 1.1em; /* slightly smaller header */
+}
+
+.team-roster-grid .player-name {
+  font-size: 0.92em; /* keep player name readable (match roster base size) */
+  font-weight: 500;
+  /* allow names to wrap to two lines so first + last names are visible */
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: normal;
+  word-break: break-word;
+  line-height: 1.15;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.35); /* subtle shadow for legibility */
+}
+
+/* Team names in classification / league tables use the team color but need a readable outline */
+/* Make classification/team names match match-screen appearance: compact, clear, and readable */
+.team-name-label {
+  display: inline-block;
+  font-size: 0.9em; /* same as match lines */
+  width: 160px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-weight: 500;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  /* subtle shadow like match screen for contrast without heavy stroke */
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.25);
+}
+
+/* Ensure player names stay crisp and don't use strokes that blur at small sizes */
+.player-name {
+  text-shadow: none;
+  -webkit-text-stroke: 0;
+}
+
+.team-roster-grid .player-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 4px 6px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+  font-size: 0.9em;
+}
+.team-roster-grid .player-row:last-child {
+  border-bottom: none;
+}
+
+.player-card {
+  display: contents;
+  padding: 10px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+  transition: background-color 0.2s;
+  margin-bottom: 5px;
+}
+
+.player-card:hover {
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+.player-card:last-child {
+  border-bottom: none;
+}
+
+.player-pos {
+  font-weight: bold;
+  color: #ffeb3b;
+}
+
+.player-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  align-self: center;
+  /* Player names: keep clear and readable — no heavy strokes */
+  font-weight: 500;
+  color: inherit;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+  -webkit-text-stroke: 0; /* disable stroke for player names to avoid blurring */
+}
+
+/* Outlined text helper for legibility on busy colored backgrounds */
+.outlined-text {
+  color: inherit;
+  /* subtle multi-offset shadow to emulate an outline on any background */
+  text-shadow:
+    -1px -1px 0 #000,
+    1px -1px 0 #000,
+    -1px 1px 0 #000,
+    1px 1px 0 #000,
+    0 0 6px rgba(0, 0, 0, 0.55);
+}
+
+/* Badge variant for team badges on match lines */
+.outlined-badge {
+  display: inline-block;
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-weight: 700;
+  -webkit-text-stroke: 0.9px rgba(0, 0, 0, 0.85);
+  text-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.6),
+    -1px -1px 0 rgba(0, 0, 0, 0.85),
+    1px -1px 0 rgba(0, 0, 0, 0.85),
+    -1px 1px 0 rgba(0, 0, 0, 0.85),
+    1px 1px 0 rgba(0, 0, 0, 0.85);
+}
+
+/* Substitutions overlay styles */
+.subs-panel {
+  /* allow a wider panel on large screens while remaining responsive */
+  max-width: 1200px;
+  width: min(1100px, 95vw);
+  box-sizing: border-box;
+  padding: 18px;
+  border-radius: 12px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+/* Modern transfer overlay styling (theme-aware) */
+.transfer-overlay-root {
+  width: 100%;
+  max-width: 1100px; /* align with .subs-panel / halftime panel sizing */
+  box-sizing: border-box;
+  padding: 18px;
+  border-radius: 12px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.02), rgba(0, 0, 0, 0.06));
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.6);
+  color: var(--hub-fg, #fff);
+  font-family: inherit;
+}
+
+.transfer-title {
+  background: linear-gradient(90deg, rgba(255, 235, 59, 0.08), rgba(255, 235, 59, 0.02));
+  color: var(--team-menu-fg, #ffd800);
+  font-weight: 800;
+  padding: 10px 14px;
+  border-radius: 8px;
+  margin-bottom: 12px;
+  text-align: center;
+  font-size: 0.98em;
+  letter-spacing: 0.6px;
+}
+
+/* Inline propose area inside transfer overlay */
+.offer-propose-area {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  justify-content: flex-end;
+}
+.offer-input {
+  width: 140px;
+  padding: 8px 10px;
+  border-radius: 6px;
+  border: 1px solid rgba(0,0,0,0.12);
+  background: rgba(255,255,255,0.02);
+  color: inherit;
+}
+.transfer-msg {
+  font-size: 0.95em;
+  opacity: 0.95;
+}
+
+/* Slightly narrower transfer overlay on wide screens to reduce visual domination */
+@media (min-width: 1200px) {
+  .transfer-overlay-root { max-width: 860px; }
+}
+
+.transfer-card {
+  background: var(--hub-panel-bg, #333333);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  padding: 12px;
+  border-radius: 8px;
+  color: #fff;
+}
+
+.transfer-card .transfer-row {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  padding: 6px 4px;
+  font-family: monospace;
+  font-size: 0.98em;
+}
+.transfer-card .transfer-label {
+  display: inline-block;
+  width: 140px;
+  font-weight: 700;
+  opacity: 0.95;
+  color: rgba(255, 255, 255, 0.9);
+}
+.transfer-card .transfer-value {
+  flex: 1 1 auto;
+}
+.transfer-card .transfer-nationality {
+  min-width: 60px;
+  text-align: right;
+  opacity: 0.85;
+}
+
+.transfer-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 12px;
+  gap: 12px;
+}
+.transfer-nav {
+  display: flex;
+  gap: 8px;
+}
+.transfer-btn {
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: none;
+  background: rgba(255, 255, 255, 0.06);
+  color: inherit;
+  cursor: pointer;
+  font-weight: 700;
+}
+.transfer-btn.small {
+  padding: 6px 10px;
+  font-size: 0.95em;
+}
+.transfer-btn.primary {
+  background: linear-gradient(180deg, #39a86a 0%, #2b7 100%); /* friendlier green */
+  color: #012;
+  box-shadow: 0 4px 12px rgba(43, 139, 87, 0.12);
+}
+
+/* Hide the redundant small 'Propor' toggle button inside the transfer overlay
+   Keep it in the DOM for automated tests that dispatch events, but visually hide it. */
+.transfer-overlay-root .offer-propose-btn {
+  display: none !important;
+}
+
+/* Make the inline propose area visually integrated with a subtle card look */
+.offer-propose-area {
+  background: rgba(0,0,0,0.06);
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid rgba(0,0,0,0.06);
+  align-items: center;
+}
+.offer-input {
+  background: rgba(255,255,255,0.96);
+  color: #111;
+  border: 1px solid rgba(0,0,0,0.08);
+}
+.transfer-msg {
+  color: rgba(255,255,255,0.95);
+  font-weight: 600;
+}
+
+/* Slightly soften the hub menu look and improve contrast/shape */
+#hub-menu {
+  background: linear-gradient(180deg, var(--hub-panel-bg, #2e2e2e), rgba(0,0,0,0.03));
+  padding: 12px 10px;
+  border-radius: 10px;
+  border: 1px solid rgba(0,0,0,0.18);
+}
+.hub-menu-btn {
+  background: rgba(255,255,255,0.04);
+  color: var(--team-menu-fg, #fff);
+  padding: 14px 14px;
+  font-size: 1.02em;
+  border-radius: 12px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.12);
+}
+.hub-menu-btn:hover {
+  background: rgba(255,255,255,0.08);
+}
+
+/* Compact variant adjustments: keep compact but more balanced */
+#hub-menu.compact-buttons .hub-menu-btn {
+  padding: 6px 8px;
+  height: 30px;
+  font-size: 0.86em;
+  border-radius: 8px;
+  box-shadow: none;
+}
+
+
+@media (max-width: 600px) {
+  .transfer-card .transfer-label {
+    width: 110px;
+  }
+  .transfer-overlay-root {
+    padding: 10px;
+  }
+  .transfer-title {
+    font-size: 0.9em;
+    padding: 8px;
+  }
+}
+.subs-columns {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  width: 100%;
+}
+.subs-col {
+  flex: 1;
+  padding: 12px;
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.06);
+}
+.subs-col h3 {
+  margin-top: 0;
+}
+.starters-list,
+.subs-list {
+  list-style: none;
+  padding: 6px;
+  margin: 0;
+  max-height: 56vh;
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+}
+.starters-list li,
+.subs-list li {
+  padding: 8px;
+  margin-bottom: 6px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.03);
+  cursor: pointer;
+}
+.starters-list li.selected-out {
+  outline: 2px solid rgba(255, 235, 59, 0.9);
+  background: rgba(255, 235, 59, 0.06);
+}
+.subs-list li.paired {
+  background: rgba(76, 175, 80, 0.08);
+}
+.subs-confirm-prompt {
+  z-index: 50000;
+}
+
+/* Visually place goalkeepers at the top without changing DOM indices.
+   Parent lists are flex-columns so `order` applied to list items
+   only affects visual presentation, not the underlying data attributes. */
+.subs-list li.is-gk,
+.starters-list li.is-gk {
+  order: -1;
+}
+
+/* Slight visual emphasis for goalkeeper badge */
+.subs-list li.is-gk .player-pos-badge,
+.starters-list li.is-gk .player-pos-badge {
+  background: rgba(0, 122, 204, 0.12);
+  color: #fff;
+  border-radius: 4px;
+  padding: 4px 6px;
+}
+
+/* Ensure list items have readable text regardless of team colors */
+.subs-panel span,
+.subs-panel li {
+  color: var(--subs-fg, #fff);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.45);
+}
+
+/* Ensure substitutes/starters items render as single full-width lanes with fixed columns */
+.subs-list li,
+.starters-list li {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  gap: 12px;
+}
+.player-pos-badge {
+  flex: 0 0 56px;
+  width: 56px;
+  min-width: 56px;
+  text-align: center;
+  font-weight: 800;
+  border-radius: 6px;
+  padding: 6px 8px;
+  box-sizing: border-box;
+  /* Use CSS variables set by overlays/hub to reflect team colors */
+  background: var(--team-menu-bg, rgba(255,255,255,0.06));
+  color: var(--team-menu-fg, #ffd800);
+  box-shadow: inset 0 -1px 0 rgba(0,0,0,0.12);
+}
+.subs-list .player-name,
+.starters-list .player-name,
+.intro-lineup-list .player-name {
+  flex: 0 0 25ch;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.player-skill {
+  flex: 0 0 8ch;
+  text-align: right;
+  opacity: 0.9;
+}
+
+.player-skill-bar {
+  height: 20px;
+  display: block;
+  border-radius: 5px;
+  margin-top: 5px;
+  align-self: center;
+  background-color: #333;
+  position: relative;
+  transition: width 0.3s;
+}
+
+.player-skill-bar::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  border-radius: 5px;
+  transition: width 0.3s;
+}
+
+.player-skill {
+  font-weight: bold;
+  text-align: right;
+  align-self: center;
+}
+
+/* ----------------------------------- */
+/* FOOTER DO HUB (Status Bar)          */
+/* ----------------------------------- */
+#hub-footer-status {
+  background-color: rgba(0, 0, 0, 0.4);
+  padding: 12px 20px;
+  border-top: 2px solid rgba(255, 255, 255, 0.15);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.footer-panel {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+}
+
+.finance-item {
+  font-size: 0.9em;
+  font-weight: 600;
+  padding: 6px 12px;
+  background: rgba(0, 0, 0, 0.65);
+  border-radius: 6px;
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  color: #fff;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+}
+
+/* When finance-item is combined with hub-box, adopt the hub-box styling so footer and floating boxes match
+   This preserves other uses of .finance-item while making hub panels consistent visually. */
+.finance-item.hub-box {
+  background-color: var(--hub-panel-bg, #333333);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  padding: 12px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.22);
+  /* Ensure hub finance panels use the same readable menu text color
+     instead of blindly inheriting (which may become black in some cases). */
+  color: var(--team-menu-fg, #fff);
+  text-shadow: none;
+}
+
+/* Title used in the finance panel (header text) */
+.finance-title {
+  font-weight: 800;
+  font-size: 0.95em;
+  color: var(--team-menu-fg, #fff);
+}
+
+/* Bottom panels (finance and next-opponent) should be visually symmetric */
+#club-finance-box,
+#next-opponent-box {
+  width: 100%; /* fill the column width */
+  height: 140px; /* fixed equal height for symmetry */
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+/* Ensure club finance box fills the left column consistently */
+#club-finance-box {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.finance-value {
+  font-weight: 700;
+  color: inherit;
+}
+
+#footer-action-right-new button {
+  background-color: #4caf50;
+  color: white;
+  padding: 10px 18px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 700;
+  font-size: 1em;
+  transition:
+    background-color 0.2s,
+    transform 0.1s;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+#footer-action-right-new button:hover {
+  background-color: #45a049;
+  transform: translateY(-1px);
+}
+
+/* ----------------------------------- */
+/* ECRÃ DE JOGOS (MATCH SCREEN)        */
+/* ----------------------------------- */
+
+#screen-match {
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  /* reduce top padding to free vertical space */
+  padding-top: 8px;
+  background-color: #1a1a1a;
+  color: #ffffff;
+  height: 100vh;
+  box-sizing: border-box;
+  overflow-y: auto;
+}
+
+#player-team-match {
+  margin-bottom: 8px;
+  /* slightly smaller text to save vertical space */
+  font-size: 1.2em;
+  color: #ffeb3b;
+}
+
+#match-board {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
+  gap: 10px;
+  width: 95%;
+  max-width: 1600px;
+  margin-bottom: 20px;
+  /* Use a min-height tied to the viewport so the board expands to fill available space
+       and attempts to show all divisions without inner scrolling (previous behavior). */
+  height: auto;
+  min-height: calc(100vh - 140px);
+}
+
+/* Center each division box inside its grid cell */
+#match-board {
+  align-items: center; /* vertical alignment of grid items */
+  justify-items: center; /* horizontal alignment of grid items */
+}
+
+.division-board {
+  background-color: rgba(0, 0, 0, 0.28);
+  padding: 8px 10px; /* slightly smaller padding to reduce box size */
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.12); /* thinner border */
+  /* Allow content to flow naturally so all match lines are visible without inner scroll */
+  overflow: visible;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch; /* content still stretches horizontally inside the board */
+  justify-content: center; /* center content vertically when there is spare space */
+  width: 100%;
+  max-width: 720px; /* reduce max width so boxes are a bit smaller on large screens */
+}
+
+.division-title {
+  text-align: center;
+  color: #ffeb3b;
+  margin: 0 0 15px 0;
+  border-bottom: 2px solid rgba(255, 235, 59, 0.3);
+  padding-bottom: 8px;
+  font-size: 1.05em;
+  font-weight: bold;
+  background-color: rgba(0, 0, 0, 0.2);
+  border-radius: 5px;
+  padding: 8px;
+}
+
+/* Estilo para a linha do jogo */
+.match-line-new {
+  display: grid;
+  /* columns: home name | home goals | sep | away goals | away name | last-goal | spectators */
+  grid-template-columns: 1fr 28px 6px 28px 1fr 1.5fr 140px;
+  align-items: center;
+  gap: 0.5ch;
+  padding: 4px 6px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  font-size: 0.92em;
+  margin-bottom: 1px;
+  background-color: rgba(255, 255, 255, 0.02);
+  border-radius: 3px;
+}
+
+/* Allow dynamic match-line height controlled by JS to fit many matches on-screen */
+.match-line-new {
+  min-height: var(--match-line-height, 26px);
+  line-height: 1;
+  padding-top: 4px;
+  padding-bottom: 4px;
+}
+
+.match-line-new:last-child {
+  border-bottom: none;
+}
+
+/* Nome da equipa */
+.match-line-new span.team-name {
+  min-width: 6ch;
+  max-width: 14ch;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  box-sizing: border-box;
+  display: inline-block;
+  text-align: center; /* center team names */
+  justify-self: center;
+}
+
+.match-line-new span.team-name.home,
+.match-line-new span.team-name.away {
+  text-align: center;
+  margin: 0 5px;
+}
+
+/* Golo e Separador (Largura Fixa) */
+.match-line-new span.home-goals,
+.match-line-new span.away-goals {
+  font-weight: bold;
+  font-size: 1em;
+  text-align: center;
+  width: 22px;
+  color: #ffeb3b;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.match-line-new span.separator {
+  width: 6px;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Último Golo (Largura Fixa) */
+.match-line-new span.last-goal {
+  grid-column: 6 / 7;
+  font-style: italic;
+  font-size: 0.95em;
+  text-align: left;
+  min-width: 60px;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: #ccc;
+  padding-left: 8px;
+}
+
+.match-line-new .spectators {
+  grid-column: 7 / 8;
+  text-align: right;
+  color: #bdbdbd;
+  font-size: 0.85em;
+  padding-left: 8px;
+  white-space: nowrap;
+}
+
+/* Barra de Progresso */
+#progress-container {
+  width: 95%;
+  max-width: 1800px;
+  height: 28px;
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: 5px;
+  margin: 10px 0;
+  display: flex;
+  align-items: center;
+  padding: 4px;
+}
+.progress-bar {
+  width: 100%;
+  height: 100%;
+  background-color: #333;
+  border-radius: 3px;
+  overflow: hidden;
+}
+.progress {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, #007bff 0%, #33a1ff 50%, #66c6ff 100%);
+  position: relative;
+  overflow: hidden;
+  /* Smooth, fluid movement for progress bar */
+  transition: width 1.8s cubic-bezier(0.4, 1, 0.4, 1);
+}
+.progress::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 40%;
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.25) 0%, rgba(255, 255, 255, 0) 70%);
+  animation: progressSweep 1.8s linear infinite;
+  pointer-events: none;
+}
+@keyframes progressSweep {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(200%);
+  }
+}
+
+/* Botão de Finalizar */
+#finishSimBtn {
+  background-color: #ffeb3b;
+  color: #333;
+  padding: 8px 16px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 1.05em;
+  margin-top: 6px;
+  display: none;
+  transition: background-color 0.3s;
+}
+
+#finishSimBtn:hover {
+  background-color: #fdd835;
+}
+
+/* ----------------------------------- */
+/* RESPONSIVIDADE                      */
+/* ----------------------------------- */
+
+@media (max-width: 768px) {
+  #hub-content-wrapper {
+    flex-direction: column;
+  }
+
+  #hub-menu {
+    width: 100%;
+    flex-direction: row;
+    overflow-x: auto;
+    padding: 5px 0;
+  }
+
+  .hub-menu-btn {
+    flex-shrink: 0;
+    padding: 10px 15px;
+    font-size: 0.9em;
+  }
+
+  .team-roster-grid {
+    grid-template-columns: 40px 1fr 150px 50px;
+    gap: 8px 10px;
+    font-size: 0.9em;
+  }
+
+  .player-skill-bar {
+    height: 15px;
+  }
+
+  #match-board {
+    grid-template-columns: 1fr;
+    gap: 15px;
+  }
+
+  /* Keep mobile layout compact but allow the board to expand like desktop so all matches are visible */
+  /* (No internal scrollbar: revert to global layout that displays all match lines.) */
+
+  .match-line-new span.team-name {
+    width: 14ch;
+    max-width: 16ch;
+    font-size: 0.9em;
+    flex: 0 0 14ch;
+  }
+
+  .match-line-new span.last-goal {
+    min-width: 80px;
+    font-size: 0.85em;
+  }
+
+  /* Responsive: finance box and floating opponent should adapt to full width on small screens */
+  #club-finance-box {
+    width: 100%;
+  }
+  .floating-opponent {
+    width: 100% !important;
+    right: 0;
+    left: 0;
+    margin: 0 auto;
+  }
+}
+
+@media (max-width: 480px) {
+  .setup-container {
+    width: 95%;
+    padding: 30px 20px;
+  }
+
+  #screen-setup h1 {
+    font-size: 2em;
+  }
+
+  .team-roster-grid {
+    grid-template-columns: 35px 1fr 120px 45px;
+    gap: 5px 8px;
+    font-size: 0.8em;
+  }
+
+  .player-skill-bar {
+    height: 12px;
+  }
+
+  .match-line-new span.team-name {
+    width: 12ch;
+    max-width: 14ch;
+    font-size: 0.85em;
+    flex: 0 0 12ch;
+  }
+
+  /* Next opponent compact rows (Próximo Adversário) */
+  /* next-opponent custom styles reverted to default; layout uses hub-box and existing rules */
+
+  .match-line-new span.last-goal {
+    min-width: 70px;
+    font-size: 0.75em;
+  }
+}
+
+/* ----------------------------------- */
+/* PAINEL DE TÁTICAS - ESTILO RETRO    */
+/* ----------------------------------- */
+
+#hub-tactic-panel {
+  width: 100%; /* match right-column width */
+  padding: 15px;
+  background-color: #2e7d32; /* Verde escuro como no Elifoot */
+  border: 2px solid #000;
+  border-radius: 5px;
+  display: flex;
+  flex-direction: column;
+  font-size: 0.9em;
+  color: #fff;
+  box-sizing: border-box;
+}
+
+/* Generic hub box used for consistent panels (tactics, roster, finance, menu wrapper, floating opponent) */
+.hub-box {
+  background-color: var(--hub-panel-bg, #333333);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  padding: 12px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.22);
+  box-sizing: border-box;
+}
+
+/* reduce visual density for small components (like footer finance) */
+.hub-box.small {
+  padding: 8px;
+  border-radius: 6px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.18);
+}
+
+/* floating opponent box should match column width */
+.floating-opponent {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.tactic-panel-title {
+  font-weight: bold;
+  font-size: 1.1em;
+  margin-bottom: 15px;
+  text-align: center;
+  color: #ffeb3b;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+  padding-bottom: 5px;
+}
+
+.tactic-list {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.tactic-item {
+  background-color: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 10px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.18s ease-in-out;
+  font-family: 'Courier New', monospace;
+  font-size: 1em; /* slightly smaller per request */
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.tactic-item:hover {
+  background-color: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.45);
+}
+
+.tactic-item.active {
+  /* active state visually elevated and distinct */
+  font-weight: 700;
+  transform: translateY(-3px);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
+  border-width: 2px;
+}
+
+.tactic-item.active:hover {
+  transform: translateY(-3px);
+  background-color: rgba(255, 255, 255, 0.06);
+}
+
+/* Add a checkmark to indicate the active tactic clearly */
+.tactic-item.active::after {
+  content: 'Selecionada';
+  display: inline-block;
+  text-align: center;
+  background: rgba(255, 255, 255, 0.08);
+  color: inherit; /* use the same readable color as the item */
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-weight: 700;
+  margin-left: 12px;
+  font-size: 0.95em;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+/* Intro overlay (team splash before match) */
+#intro-overlay {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.65);
+  z-index: 9999;
+}
+
+.intro-card {
+  width: min(680px, 92%);
+  max-width: 820px;
+  background: var(--intro-bg, #111);
+  color: var(--intro-fg, #fff);
+  border-radius: 12px;
+  padding: 20px 26px; /* a bit more compact */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.55);
+  text-align: center;
+}
+
+.intro-badge {
+  width: 120px;
+  height: 120px;
+  border-radius: 999px;
+  border: 4px solid rgba(255, 255, 255, 0.12);
+  background-color: var(--intro-club-bg, #333);
+}
+
+/* specialized intro layout showing lineups */
+.intro-card.intro-lineup {
+  align-items: stretch;
+  text-align: left;
+}
+.intro-card.intro-lineup .lineup-col h3 {
+  margin: 0 0 6px 0;
+  color: #ffeb3b;
+}
+.intro-card.intro-lineup ol {
+  margin: 0;
+  padding-left: 18px;
+}
+.intro-card.intro-lineup li {
+  margin-bottom: 6px;
+}
+
+/* Half-time substitutions overlay */
+#subs-overlay {
+  position: fixed;
+  inset: 0;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  /* Backdrop dimmer separate from panel: JS sets --subs-overlay-bg */
+  background: var(--subs-overlay-bg, rgba(0, 0, 0, 0.66));
+  backdrop-filter: blur(4px);
+  z-index: 20000 !important;
+}
+.subs-panel {
+  /* responsive width, overridden by inline JS when necessary */
+  width: min(1400px, 96%);
+  max-width: 96vw;
+  /* Panel surface (card) contrasts with the backdrop; JS sets --subs-panel-bg.
+     Default to a light surface so interior is readable when JS doesn't run or fails. */
+  background: var(--subs-panel-bg, rgba(255, 255, 255, 0.94));
+  color: var(--subs-fg, #111);
+  border-radius: 10px;
+  padding: 12px;
+  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.55);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  backdrop-filter: blur(6px) saturate(120%);
+  z-index: 21000;
+}
+.subs-columns {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+}
+.subs-columns .starters-col {
+  flex: 2 1 60%;
+}
+.subs-columns .subs-col-right {
+  flex: 1 1 36%;
+}
+.subs-col {
+  flex: 1;
+  max-height: none;
+  overflow: visible;
+  background: transparent;
+  padding: 8px;
+  border-radius: 6px;
+  box-sizing: border-box;
+}
+.subs-col h3 {
+  margin: 0 0 8px 0;
+  font-size: 1em;
+}
+.subs-panel h2 {
+  margin: 0 0 8px 0;
+  font-size: 1.05em;
+  padding: 6px 8px;
+  border-radius: 6px;
+}
+.subs-footer {
+  margin-top: 12px;
+  font-size: 0.9em;
+  opacity: 0.9;
+  text-align: left;
+}
+.subs-list li {
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 6px;
+  display: block;
+}
+.subs-list li.selected {
+  background: rgba(76, 175, 80, 0.16);
+  border: 1px solid rgba(76, 175, 80, 0.32);
+}
+.subs-list li.paired {
+  background: rgba(33, 150, 243, 0.12);
+  border: 1px solid rgba(33, 150, 243, 0.24);
+}
+.starters-list li.paired {
+  opacity: 0.85;
+  border-left: 4px solid rgba(33, 150, 243, 0.24);
+  padding-left: 8px;
+}
+.starters-list li.selected-out {
+  outline: 2px solid #ffeb3b;
+  background: rgba(255, 235, 59, 0.18);
+  border-left: 5px solid #ffeb3b;
+  font-weight: bold;
+  color: #222;
+}
+.subs-list li.invalid-swap {
+  animation: flash-red 0.36s;
+}
+
+@keyframes flash-red {
+  0% {
+    background: rgba(255, 0, 0, 0.2);
+  }
+  100% {
+    background: transparent;
+  }
+}
+.starters-list li {
+  padding: 4px 6px;
+}
+
+.player-box,
+.intro-player-box,
+.player-card {
+  padding: 8px;
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.04);
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  position: relative; /* keep stacking context local and avoid accidental absolute overlap */
+  min-width: 140px;
+  max-width: 220px;
+  width: 100%;
+  min-height: 78px; /* let content determine height while keeping a reasonable minimum */
+}
+.player-box .player-salary,
+.intro-player-box .player-salary,
+.player-card .player-salary {
+  font-weight: 700;
+}
+.player-card .skill-bar,
+.player-box .skill-bar,
+.intro-player-box .skill-bar {
+  height: 6px;
+  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+}
+.player-card .skill-fill,
+.player-box .skill-fill,
+.intro-player-box .skill-fill {
+  height: 100%;
+}
+
+/* Render starters/subs lists as wrapped cards */
+.starters-list,
+.subs-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  list-style: none;
+  padding: 6px;
+  margin: 0;
+}
+.starters-list li,
+.subs-list li {
+  display: block;
+  padding: 8px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.02);
+  min-width: 120px;
+  max-width: 180px;
+  box-sizing: border-box;
+}
+.starters-list li.paired,
+.subs-list li.paired {
+  outline: 2px solid rgba(0, 200, 80, 0.6);
+}
+.starters-list li.disabled,
+.subs-list li.disabled {
+  opacity: 0.45;
+}
+.starters-list li.selected-out {
+  box-shadow: 0 0 0 3px rgba(255, 193, 7, 0.18);
+}
+.subs-list li.invalid-swap {
+  animation: shake 360ms;
+}
+
+@keyframes shake {
+  0% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-4px);
+  }
+  50% {
+    transform: translateX(4px);
+  }
+  75% {
+    transform: translateX(-2px);
+  }
+  100% {
+    transform: translateX(0);
+  }
+}
+
+/* Responsive: tighten card size on narrow screens */
+@media (max-width: 680px) {
+  .player-box,
+  .intro-player-box,
+  .player-card,
+  .starters-list li,
+  .subs-list li {
+    min-width: 100px;
+    max-width: 140px;
+  }
+}
+
+.players-cards {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.player-header-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 6px;
+}
+.player-pos {
+  width: 34px;
+  text-align: center;
+  font-weight: 700;
+}
+.player-name {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 600;
+}
+
+/* Overlay-specific: force subs and intro overlays to use simple vertical lists (one lane for starters, one for subs)
+   This preserves the hub roster card layout while restoring the simpler single-lane match/halftime UI. */
+/* Overlay-specific: render starters and substitutes as vertical full-width lanes
+   so each player occupies a single horizontal row (one lane per player). This
+   keeps two columns (starters / subs) but ensures each player is listed on its
+   own row with a readable background. */
+#intro-overlay .intro-lineup-list,
+.subs-panel .starters-list,
+.subs-panel .subs-list {
+  display: block !important;
+  list-style: none;
+  padding: 4px 0;
+  margin: 0;
+}
+
+#intro-overlay .intro-lineup-list li,
+.subs-panel .starters-list li,
+.subs-panel .subs-list li {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 8px;
+  padding: 7px 10px;
+  margin: 0 0 4px 0;
+  height: auto;
+  min-height: 30px;
+  width: 100%;
+  box-sizing: border-box;
+  border-radius: 6px;
+  background: var(--subs-item-bg, rgba(255, 255, 255, 0.04));
+  font-size: 0.96em;
+  line-height: 1.2;
+}
+
+/* Ensure skill badge doesn't shrink and name takes available space */
+.subs-panel .starters-list li .player-skill,
+.subs-panel .subs-list li .player-skill {
+  flex: 0 0 auto;
+  opacity: 0.95;
+  margin-left: 6px;
+}
+.subs-panel .starters-list li .player-name,
+.subs-panel .subs-list li .player-name {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Ensure player names in overlay rows do not wrap and show ellipsis when space is limited */
+.subs-panel .starters-list li .player-name,
+.subs-panel .subs-list li .player-name,
+#intro-overlay .intro-lineup-list li .player-name {
+  display: inline-block;
+  /* Reserve ~25 characters width for the player name so it has enough space
+     on wide viewports but still truncates with ellipsis when space is limited. */
+  flex: 0 0 25ch; /* fixed basis of 25 characters */
+  max-width: 40vw; /* avoid overly large fixed width on very wide screens */
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Responsiveness: on narrow screens allow the name to shrink/grow with the layout */
+@media (max-width: 680px) {
+  .subs-panel .starters-list li .player-name,
+  .subs-panel .subs-list li .player-name,
+  #intro-overlay .intro-lineup-list li .player-name {
+    flex: 1 1 auto;
+    max-width: none;
+  }
+}
+
+.subs-panel .starters-list {
+  max-height: none;
+  overflow-y: visible;
+}
+.subs-panel .subs-list {
+  max-height: none;
+  overflow-y: visible;
+}
+.team-roster-grid {
+  overflow: hidden;
+}
+
+/* small helpers used by overlays */
+.intro-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  justify-content: center;
+  margin-bottom: 8px;
+}
+.cards-wrap {
+  /* Row-first flow with a maximum of 5 cards per row. After 5 items the
+     list wraps into the next visual lane (row). Responsive breakpoints
+     reduce columns on narrower screens. */
+  display: grid;
+  grid-template-columns: repeat(5, minmax(160px, 1fr));
+  grid-auto-rows: minmax(78px, auto);
+  gap: 8px;
+  align-items: start;
+}
+
+/* Responsive column caps for smaller viewports */
+@media (max-width: 1200px) {
+  .cards-wrap { grid-template-columns: repeat(4, minmax(140px, 1fr)); }
+}
+@media (max-width: 980px) {
+  .cards-wrap { grid-template-columns: repeat(3, minmax(140px, 1fr)); }
+}
+@media (max-width: 680px) {
+  .cards-wrap { grid-template-columns: repeat(2, minmax(120px, 1fr)); }
+}
+@media (max-width: 420px) {
+  .cards-wrap { grid-template-columns: 1fr; }
+}
+.subs-back-button {
+  padding: 10px 22px;
+  font-size: 1.1em;
+  border-radius: 8px;
+  background: #fff;
+  color: #222;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 2px 8px #0002;
+  transition: background 0.2s;
+}
+.confirm-inner {
+  padding: 32px 24px;
+  border-radius: 12px;
+  box-shadow: 0 2px 16px #0008;
+  min-width: 320px;
+  max-width: 90vw;
+  text-align: center;
+}
+
+.intro-card h2 {
+  margin: 0;
+  font-size: 2.2rem;
+  letter-spacing: 1px;
+  text-shadow:
+    0 2px 6px rgba(0, 0, 0, 0.18),
+    0 0 0.5px var(--team-menu-stroke, #000),
+    0 0 1.5px var(--team-menu-stroke, #000),
+    0 0 2.5px var(--team-menu-stroke, #000);
+  -webkit-text-stroke: 1.2px var(--team-menu-stroke, #000);
+}
+
+.intro-card p {
+  opacity: 0.9;
+}
