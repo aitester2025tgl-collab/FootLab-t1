@@ -1,2 +1,1 @@
-// dev-server.js relocated to `dev/dev-server.js`.
-console.log('dev-server archived to dev/dev-server.js');
+// NOTICE: 'dev-server.js' moved to 'dev/dev-server.js' to reduce root clutter. Use files from dev/ instead.
