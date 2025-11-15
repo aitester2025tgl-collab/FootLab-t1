@@ -1,2 +1,6 @@
-// Archived preload.js relocated to dev/
-console.log('preload.js moved to dev/');
+const { contextBridge, ipcRenderer } = require('electron');
+
+contextBridge.exposeInMainWorld('electronAPI', {
+  openDevTools: () => ipcRenderer.send('open-devtools'),
+  getAppInfo: () => ipcRenderer.invoke('get-app-info'),
+});

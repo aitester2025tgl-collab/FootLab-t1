@@ -1,7 +1,3 @@
-// Minimal esbuild harness for bundling legacy project into a single IIFE bundle.
-// Archived from repo root to `dev/build.js`.
-const fs = require('fs');
-const path = require('path');
-
-console.log('This is a relocated build script. Original was at project root.');
-// If you want to run the original build, use the copy in archive/legacy_root_files or restore it to root.
+// build.js relocated to `dev/build.js` to keep the project root tidy.
+// Run the build via `node dev/build.js` or restore the original to the project root if needed.
+console.log('build.js archived to dev/build.js — running build from dev/');

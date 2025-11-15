@@ -1,6 +1,1 @@
-const { contextBridge, ipcRenderer } = require('electron');
-
-contextBridge.exposeInMainWorld('electronAPI', {
-  openDevTools: () => ipcRenderer.send('open-devtools'),
-  getAppInfo: () => ipcRenderer.invoke('get-app-info'),
-});
+// NOTICE: 'preload.js' moved to 'dev/preload.js' to reduce root clutter. Use files from dev/ instead.
