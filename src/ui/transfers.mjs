@@ -16,7 +16,7 @@ export function renderTransfers() {
     }
 
     let html = `<h2>Transferências</h2><div class="hub-box subs-panel" style="padding:8px;display:flex;flex-direction:column;gap:8px;">`;
-    html += `<div style="display:flex;gap:8px;margin-bottom:8px;"><button id="tab-market" style="padding:6px 10px;border-radius:8px;border:none;background:#eee;color:#111;font-weight:700;">Mercado</button><button id="tab-free" style="padding:6px 10px;border-radius:8px;border:none;background:transparent;color:#aaa;font-weight:700;">Jogadores Livres</button></div>`;
+    html += `<div style="display:flex;gap:8px;margin-bottom:8px;"><button id="tab-market" style="padding:6px 10px;border-radius:8px;border:none;background:#eee;color:#111;font-weight:700;">Mercado</button><button id="tab-free" style="padding:6px 10px;border-radius:8px;border:none;background:transparent;color:#aaa;font-weight:700;">Jogadores Livres</button><button id="tab-movements" style="padding:6px 10px;border-radius:8px;border:none;background:transparent;color:#aaa;font-weight:700;">Movimentos</button><button id="tab-my" style="padding:6px 10px;border-radius:8px;border:none;background:transparent;color:#aaa;font-weight:700;">Meus</button></div>`;
     html += `<div id="trans-tab-content" style="display:flex;flex-direction:column;gap:8px;">`;
 
     html += `<div data-tab="market" class="trans-tab" style="display:block;">`;
@@ -80,6 +80,69 @@ export function renderTransfers() {
     }
     html += `</div>`;
 
+    // Movements tab (transfer history)
+    html += `<div data-tab="movements" class="trans-tab" style="display:none;">`;
+    try {
+      const history = Array.isArray(window.TRANSFER_HISTORY) ? window.TRANSFER_HISTORY.slice().reverse() : [];
+      if (history.length === 0) {
+        html += `<div style="opacity:0.85;padding:8px">Nenhum movimento registado.</div>`;
+      } else {
+        history.forEach((h, i) => {
+          const player = h.player || '—';
+          const from = h.from || '—';
+          const to = h.to || '—';
+          const fee = Number(h.fee || 0);
+          const salary = Number(h.salary || 0);
+          const when = h.time ? new Date(Number(h.time)).toLocaleString() : '';
+          html += `<div style="display:flex;align-items:center;justify-content:space-between;padding:6px 8px;background:rgba(0,0,0,0.03);border-radius:6px;margin-bottom:6px;">
+                      <div style="display:flex;flex-direction:column;">
+                        <div style="font-weight:700">${player}</div>
+                        <div style="opacity:0.8;font-size:0.9em">${from} → ${to} · ${when}</div>
+                      </div>
+                      <div style="text-align:right;font-size:0.95em">${fee ? formatMoney(fee) + '<br/>' : ''}${salary ? formatMoney(salary) + '/m' : ''}</div>
+                    </div>`;
+        });
+      }
+    } catch (e) {
+      html += `<div style="opacity:0.85;padding:8px">Erro ao ler histórico de transferências.</div>`;
+    }
+    html += `</div>`;
+
+    // My Players tab (transfers involving the current team)
+    html += `<div data-tab="my" class="trans-tab" style="display:none;">`;
+    try {
+      const history = Array.isArray(window.TRANSFER_HISTORY) ? window.TRANSFER_HISTORY.slice().reverse() : [];
+      const buyer = window.playerClub || {};
+      const buyerName = (buyer.team && buyer.team.name) || buyer.name || '';
+      const mine = history.filter((h) => {
+        try {
+          if (!buyerName) return false;
+          return String(h.from || '').trim() === String(buyerName).trim() || String(h.to || '').trim() === String(buyerName).trim();
+        } catch (_) { return false; }
+      });
+      if (mine.length === 0) html += `<div style="opacity:0.85;padding:8px">Nenhum movimento para a sua equipa.</div>`;
+      else {
+        mine.forEach((h) => {
+          const player = h.player || '—';
+          const from = h.from || '—';
+          const to = h.to || '—';
+          const fee = Number(h.fee || 0);
+          const salary = Number(h.salary || 0);
+          const when = h.time ? new Date(Number(h.time)).toLocaleString() : '';
+          html += `<div style="display:flex;align-items:center;justify-content:space-between;padding:6px 8px;background:rgba(0,0,0,0.03);border-radius:6px;margin-bottom:6px;">
+                      <div style="display:flex;flex-direction:column;">
+                        <div style="font-weight:700">${player}</div>
+                        <div style="opacity:0.8;font-size:0.9em">${from} → ${to} · ${when}</div>
+                      </div>
+                      <div style="text-align:right;font-size:0.95em">${fee ? formatMoney(fee) + '<br/>' : ''}${salary ? formatMoney(salary) + '/m' : ''}</div>
+                    </div>`;
+        });
+      }
+    } catch (e) {
+      html += `<div style="opacity:0.85;padding:8px">Erro ao filtrar movimentos da equipa.</div>`;
+    }
+    html += `</div>`;
+
     html += `</div>`;
     html += `</div>`;
     content.innerHTML = html;
@@ -107,6 +170,10 @@ export function renderTransfers() {
         };
         if (tabMarket) tabMarket.addEventListener('click', () => showTab('market'));
         if (tabFree) tabFree.addEventListener('click', () => showTab('free'));
+        const tabMov = document.getElementById('tab-movements');
+        const tabMy = document.getElementById('tab-my');
+        if (tabMov) tabMov.addEventListener('click', () => showTab('movements'));
+        if (tabMy) tabMy.addEventListener('click', () => showTab('my'));
 
         content.querySelectorAll('.buy-market-btn').forEach((b) => {
           b.addEventListener('click', () => {
@@ -164,27 +231,23 @@ export function showBuyFreePlayerMenu(pl, rawFreeAgents, idxInFiltered) {
     }
     overlay.innerHTML = '';
     const box = document.createElement('div');
-    box.style.maxWidth = '620px';
-    box.style.width = '92%';
-    box.style.background = 'var(--hub-panel-bg, #222)';
-    box.style.color = '#fff';
-    box.style.padding = '14px';
-    box.style.borderRadius = '10px';
+    // Use the standard subs-panel + transfer root classes so sizing and colors match halftime panel
+    box.className = 'subs-panel transfer-overlay-root';
     const skill = pl.skill || 0;
     const minC = Math.max(0, Number(pl.minContract || pl.minMonthly || pl.minSalary || 0));
     const prev = pl.previousClubName || (pl.club && (pl.club.team ? pl.club.team.name : pl.club.name)) || pl.clubName || '—';
     const html = `
-                <h3>Assinar jogador livre</h3>
-                <div style="margin-top:6px;font-weight:700">${pl.name} <span style="font-weight:500;opacity:0.85">(${pl.position || ''})</span></div>
-                <div style="margin-top:6px;color:rgba(255,255,255,0.85)">Skill: ${skill} · Clube anterior: ${prev} · Salário mínimo: ${formatMoney(minC)}</div>
-                <div style="margin-top:12px;display:flex;gap:8px;align-items:center;">
-                    <label style="min-width:120px">Salário mensal</label>
-                    <input id="buyFreeSalaryInput" type="number" min="${minC}" value="${minC || Math.max(500, Number(pl.salary || 500))}" style="width:160px;padding:6px;border-radius:6px;border:1px solid #ccc;" />
-                </div>
-                <div style="margin-top:14px;display:flex;justify-content:flex-end;gap:8px;">
-                    <button id="buyFreeCancelBtn" style="padding:8px 12px;border-radius:8px;border:none;background:#fff;color:#111">Cancelar</button>
-                    <button id="buyFreeConfirmBtn" style="padding:8px 12px;border-radius:8px;border:none;background:#2b7;color:#fff">Assinar (1 ano)</button>
-                </div>`;
+          <h3 class="transfer-title">Assinar jogador livre</h3>
+          <div style="margin-top:8px;font-weight:700;color:var(--hub-fg, #111)">${pl.name} <span style="font-weight:500;opacity:0.85">(${pl.position || ''})</span></div>
+          <div style="margin-top:8px;color:var(--hub-fg, #333)">Skill: ${skill} · Clube anterior: ${prev} · Salário mínimo: ${formatMoney(minC)}</div>
+          <div style="margin-top:12px;display:flex;gap:8px;align-items:center;">
+            <label style="min-width:120px;color:var(--hub-fg, #111)">Salário mensal</label>
+            <input id="buyFreeSalaryInput" type="number" min="${minC}" value="${minC || Math.max(500, Number(pl.salary || 500))}" style="width:200px;padding:8px;border-radius:8px;border:1px solid rgba(0,0,0,0.12);background:rgba(255,255,255,0.9);color:#111" />
+          </div>
+          <div style="margin-top:16px;display:flex;justify-content:flex-end;gap:10px;">
+            <button id="buyFreeCancelBtn" style="padding:10px 14px;border-radius:10px;border:none;background:#efefef;color:#111">Cancelar</button>
+            <button id="buyFreeConfirmBtn" style="padding:10px 14px;border-radius:10px;border:none;background:#2b7;color:#fff">Assinar (1 ano)</button>
+          </div>`;
     box.innerHTML = html;
     overlay.appendChild(box);
 

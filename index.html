@@ -4,6 +4,8 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>FootLab t1</title>
+    <!-- Inline tiny favicon to avoid automatic /favicon.ico 404s when serving -->
+    <link rel="icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR4nGNgYAAAAAMAAWgmWQ0AAAAASUVORK5CYII=" />
     <link rel="stylesheet" href="style.css" />
   </head>
   <body>
@@ -66,6 +68,9 @@
         <div style="display: flex; gap: 24px; font-size: 1.05em">
           <div><strong>Treinador:</strong> <span id="coachNameDisplay"></span></div>
           <div><strong>Equipa:</strong> <span id="playerTeamNameHub"></span></div>
+        </div>
+        <div id="module-status-indicator" style="margin-left:18px; font-size:0.85rem; color:#ffecb3;">
+          <strong>Modules:</strong> <span id="module-status-list">loading…</span>
         </div>
         <div style="font-size: 1.15em; font-weight: 700; color: #ffeb3b">
           <span id="currentJornadaDisplay">1ª JORNADA</span>
@@ -180,12 +185,195 @@
     <script src="src/logic/lineups.js"></script>
     <script src="src/matches.js"></script>
     <script src="src/services/finance.js"></script>
-    <script src="src/legacy_ui/matchBoard.js"></script>
+    <script>
+      // Dynamically load ESM UI modules only when served over http/https
+      (function () {
+        var isFile = location.protocol === 'file:';
+        if (isFile) {
+          // show a prominent banner instructing the developer to run the dev server
+          var id = 'file-protocol-warning';
+          if (!document.getElementById(id)) {
+            var wrap = document.createElement('div');
+            wrap.id = id;
+            wrap.style.position = 'fixed';
+            wrap.style.left = '0';
+            wrap.style.top = '0';
+            wrap.style.right = '0';
+            wrap.style.zIndex = '9999';
+            wrap.style.background = 'linear-gradient(90deg,#ff7043,#ffab40)';
+            wrap.style.color = '#111';
+            wrap.style.padding = '12px 16px';
+            wrap.style.fontFamily = 'sans-serif';
+            wrap.style.boxShadow = '0 4px 12px rgba(0,0,0,0.25)';
+            wrap.innerHTML = '<strong>Warning:</strong> the app was opened via <code>file://</code>. ES modules cannot be loaded from the file protocol, so tactics and match board modules are disabled.\n'
+              + '<span style="margin-left:12px">Run <code>npm run serve</code> and open <a id="__local_link" href="#">http://localhost:8080/</a></span>';
+
+            var btn = document.createElement('button');
+            btn.textContent = 'Check localhost:8080';
+            btn.style.marginLeft = '12px';
+            btn.onclick = function () {
+              var statusId = '__local_status';
+              var statusEl = document.getElementById(statusId);
+              if (!statusEl) {
+                statusEl = document.createElement('span');
+                statusEl.id = statusId;
+                statusEl.style.marginLeft = '12px';
+                statusEl.style.fontWeight = '700';
+                wrap.appendChild(statusEl);
+              }
+              statusEl.textContent = 'Checking http://localhost:8080/ ...';
+              var attempts = 0;
+              function tryCheck() {
+                attempts++;
+                fetch('http://localhost:8080/', { mode: 'cors' })
+                  .then(function (r) {
+                    if (r.ok) {
+                      window.location.href = 'http://localhost:8080/';
+                    } else {
+                      statusEl.textContent = 'Dev server responded with HTTP ' + r.status;
+                    }
+                  })
+                  .catch(function (e) {
+                    if (attempts < 6) {
+                      var wait = attempts * 1000;
+                      statusEl.textContent = 'No server on localhost:8080 — retrying in ' + (wait / 1000) + 's...';
+                      setTimeout(tryCheck, wait);
+                    } else {
+                      statusEl.textContent = 'No dev server detected. Start it with: npm run serve';
+                      alert('No dev server detected at http://localhost:8080/. Start it with: npm run serve');
+                    }
+                  });
+              }
+              tryCheck();
+            };
+
+            wrap.appendChild(btn);
+            document.body.appendChild(wrap);
+            var link = document.getElementById('__local_link');
+            if (link) link.href = 'http://localhost:8080/';
+          }
+          return;
+        }
+
+        // When served over http/https, inject the ESM UI modules normally.
+        (function () {
+          window.__moduleDiagnostics = window.__moduleDiagnostics || { modules: {}, globalErrors: [] };
+
+          function updateModuleStatusDisplay() {
+            try {
+              var el = document.getElementById('module-status-list');
+              if (!el) return;
+              var parts = [];
+              for (var k in window.__moduleDiagnostics.modules) {
+                var m = window.__moduleDiagnostics.modules[k];
+                if (m.status === 'loaded') parts.push(k + ' ✓ ' + (m.loadTime != null ? (m.loadTime + 'ms') : '')); else if (m.status === 'error') parts.push(k + ' ✕'); else parts.push(k + ' …');
+              }
+              if (window.__moduleDiagnostics.globalErrors.length) parts.push('errors: ' + window.__moduleDiagnostics.globalErrors.length);
+              el.textContent = parts.join(' | ');
+            } catch (e) {
+              console.error('module status update failed', e && e.message);
+            }
+          }
+
+          function registerModule(name, src) {
+            var entry = { name: name, src: src, start: Date.now(), status: 'loading', loadTime: null, error: null };
+            window.__moduleDiagnostics.modules[name] = entry;
+            updateModuleStatusDisplay();
+            var s = document.createElement('script');
+            s.type = 'module';
+            s.src = src;
+            s.onload = function () {
+              entry.status = 'loaded';
+              entry.loadTime = Date.now() - entry.start;
+              updateModuleStatusDisplay();
+              console.log('[module-status] loaded', name, entry.loadTime + 'ms');
+            };
+            s.onerror = function (ev) {
+              entry.status = 'error';
+              entry.error = ev && (ev.message || 'error');
+              entry.loadTime = Date.now() - entry.start;
+              updateModuleStatusDisplay();
+              console.error('[module-status] failed', name, entry.error);
+            };
+            document.body.appendChild(s);
+            return s;
+          }
+
+          // capture global JS errors and rejections
+          window.addEventListener('error', function (e) {
+            try {
+              window.__moduleDiagnostics.globalErrors.push({ type: 'error', msg: String(e && e.message || e) });
+              updateModuleStatusDisplay();
+            } catch (ex) {}
+          });
+          window.addEventListener('unhandledrejection', function (ev) {
+            try {
+              window.__moduleDiagnostics.globalErrors.push({ type: 'promise', msg: String(ev && ev.reason || ev) });
+              updateModuleStatusDisplay();
+            } catch (ex) {}
+          });
+
+          // register the UI modules
+          registerModule('matchBoard', 'src/ui/matchBoard.mjs');
+          registerModule('tactics', 'src/ui/tactics.mjs');
+        })();
+      })();
+    </script>
     <script src="src/legacy_ui/overlays.js"></script>
-    <script src="src/legacy_ui/tactics.js"></script>
+    
     <script src="src/legacy_ui/hub.js"></script>
     <script src="src/ui.js"></script>
     <script src="src/main.js"></script>
     <script src="src/core/simulation.js"></script>
+    <script>
+      // Diagnostic helper: poll for Tactics and MatchBoard and log when they attach
+      (function () {
+        try {
+          var reported = { Tactics: false, MatchBoard: false };
+          var tries = 0;
+          var maxTries = 150; // ~30s
+          var id = '__diag_box';
+          var diagBox = document.getElementById(id);
+          if (!diagBox) {
+            diagBox = document.createElement('div');
+            diagBox.id = id;
+            diagBox.style.position = 'fixed';
+            diagBox.style.right = '12px';
+            diagBox.style.bottom = '12px';
+            diagBox.style.zIndex = 9998;
+            diagBox.style.background = 'rgba(0,0,0,0.6)';
+            diagBox.style.color = '#fff';
+            diagBox.style.padding = '8px 10px';
+            diagBox.style.fontSize = '12px';
+            diagBox.style.borderRadius = '6px';
+            diagBox.style.maxWidth = '220px';
+            diagBox.textContent = 'Diagnostics: waiting...';
+            document.body.appendChild(diagBox);
+          }
+
+          var interval = setInterval(function () {
+            tries++;
+            if (!reported.Tactics && window.Tactics) {
+              reported.Tactics = true;
+              console.log('[diagnostic] window.Tactics attached', window.Tactics);
+              diagBox.textContent = 'Diagnostics: Tactics OK';
+            }
+            if (!reported.MatchBoard && window.MatchBoard) {
+              reported.MatchBoard = true;
+              console.log('[diagnostic] window.MatchBoard attached', window.MatchBoard);
+              diagBox.textContent = reported.Tactics ? 'Diagnostics: Tactics & MatchBoard OK' : 'Diagnostics: MatchBoard OK';
+            }
+            if ((reported.Tactics && reported.MatchBoard) || tries > maxTries) {
+              if (!reported.Tactics) console.warn('[diagnostic] window.Tactics NOT found');
+              if (!reported.MatchBoard) console.warn('[diagnostic] window.MatchBoard NOT found');
+              if (!reported.Tactics || !reported.MatchBoard) diagBox.style.background = 'rgba(128,32,32,0.85)';
+              clearInterval(interval);
+            }
+          }, 200);
+        } catch (e) {
+          console.error('Diagnostics failed', e && e.message);
+        }
+      })();
+    </script>
   </body>
 </html>

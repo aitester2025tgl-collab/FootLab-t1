@@ -233,6 +233,8 @@ function selectPlayersForRelease(allDivisions, options) {
           // mark as pending release but keep in squad until signed or moved to free
           const clone = Object.assign({}, p);
           clone.previousSalary = Number(p.salary || 0);
+          // carry a minimum-contract expectation so buyers and UI can honor it
+          clone.minContract = Math.max(0, Math.round(clone.previousSalary * 0.9));
           try {
             clone.playerValue = computePlayerMarketValue(
               clone,
@@ -288,6 +290,8 @@ function selectExpiringPlayersToLeave(allDivisions, options) {
         if (Math.random() < prob) {
           const clone = Object.assign({}, p);
           clone.previousSalary = Number(p.salary || 0);
+          // carry a minimum-contract expectation so buyers and UI can honor it
+          clone.minContract = Math.max(0, Math.round(clone.previousSalary * 0.9));
           try {
             clone.playerValue = computePlayerMarketValue(
               clone,
@@ -341,7 +345,12 @@ function processPendingReleases() {
           )
             continue;
           const fee = Number(p.leavingFee || 0);
-          if (Number(c.budget || 0) < fee) continue;
+          // quick affordability check: buyer must afford leaving fee + first payment
+          const buyerBudget = Number(c.budget || 0);
+          // compute minOffer from player's explicit minContract when present
+          const inferredMin = Math.max(1, Math.round(Number(p.previousSalary || 0) * 0.9));
+          const minOfferFromPlayer = typeof p.minContract === 'number' ? Number(p.minContract) : inferredMin;
+          if (buyerBudget < fee + minOfferFromPlayer) continue;
           // try to find real player object in seller (if still present)
           let realPlayer = null;
           if (
@@ -353,16 +362,16 @@ function processPendingReleases() {
               (pp) => (pp && pp.id && p.id && pp.id === p.id) || (pp && pp.name === p.name)
             );
           }
-          // if finance negotiation helper exists, use it
-          const offerSalary = Math.max(1, Math.round(Number(p.previousSalary || 500) * 1.05));
+          // compute an offer salary that respects player's minimum and a base uplift
+          const baseOffer = Math.max(1, Math.round(Number(p.previousSalary || 500) * 1.05));
+          const offerSalary = Math.max(baseOffer, minOfferFromPlayer);
+
           let negotiation = null;
-          // `prob` may be assigned inside the fallback branch; declare here so
-          // it is available for later logging/inspection without causing
-          // reference errors outside the block scope.
+          // `prob` may be assigned inside the fallback branch; declare here for logging
           let prob;
           try {
             if (window.Finance && typeof window.Finance.negotiatePlayerContract === 'function') {
-              // if realPlayer available, pass reference; otherwise pass id
+              // use Finance helper when available (it should validate min/affordability)
               negotiation = window.Finance.negotiatePlayerContract(
                 c,
                 realPlayer || p.id || p.name,
@@ -370,15 +379,37 @@ function processPendingReleases() {
                 1
               );
             } else {
-              // fallback: simple probability based on club budget vs fee
-              // Make the multiplier larger when debugPurchases is enabled so headless
-              // tests can observe transfers more easily.
-              const probMultiplier = cfg && cfg.debugPurchases === true ? 0.25 : 0.02;
+              // fallback: probability based on buyer budget vs fee, boosted by how much
+              // the player improves the buyer (skill delta)
+              const baseMultiplier = cfg && cfg.debugPurchases === true ? 0.25 : 0.02;
+              // compute buyer average skill to estimate need
+              let buyerAvgSkill = 50;
+              try {
+                if (c && c.team && Array.isArray(c.team.players) && c.team.players.length) {
+                  const sum = c.team.players.reduce((acc, pp) => acc + (Number(pp && pp.skill) || 0), 0);
+                  buyerAvgSkill = Math.round(sum / c.team.players.length) || 50;
+                }
+              } catch (e) {
+                buyerAvgSkill = 50;
+              }
+              const skillDelta = Math.max(0, (Number(p.skill || 0) - Number(buyerAvgSkill || 0)));
+              const desirability = Math.min(3, skillDelta / 10); // +10 skill -> +1.0, clamp to avoid runaway
+
               prob = Math.max(
                 0.05,
-                Math.min(0.95, (Number(c.budget || 0) / Math.max(1, fee)) * probMultiplier)
+                Math.min(
+                  0.95,
+                  (buyerBudget / Math.max(1, fee)) * baseMultiplier * (1 + desirability)
+                )
               );
-              negotiation = { accepted: Math.random() < prob };
+
+              // ensure buyer can afford first payment as well (double-check)
+              if (buyerBudget < fee + offerSalary) {
+                negotiation = { accepted: false };
+              } else {
+                negotiation = { accepted: Math.random() < prob };
+              }
+
               if (
                 cfg &&
                 cfg.debugPurchases === true &&
@@ -389,7 +420,9 @@ function processPendingReleases() {
                   PlayersLogger.debug('Auto-buy attempt:', {
                     buyer: (c && c.team && c.team.name) || c.name,
                     fee,
+                    offerSalary,
                     prob,
+                    skillDelta,
                   });
                 } catch (e) {
                   /* ignore */
@@ -446,6 +479,33 @@ function processPendingReleases() {
                 /* ignore */
               }
             }
+            // ensure the accepted salary still respects player's minimum expectation
+            try {
+              const expectedMin = typeof p.minContract === 'number' ? Number(p.minContract) : inferredMin;
+              if (offerSalary < expectedMin) {
+                // treat as rejected — negotiation reported accept but offered salary was too low
+                if (
+                  cfg &&
+                  cfg.debugPurchases === true &&
+                  PlayersLogger &&
+                  typeof PlayersLogger.debug === 'function'
+                ) {
+                  try {
+                    PlayersLogger.debug('Negotiation accepted but offer below minContract — rejecting', {
+                      player: p && (p.name || p.id),
+                      offerSalary,
+                      expectedMin,
+                    });
+                  } catch (e) {
+                    /* ignore */
+                  }
+                }
+                negotiation.accepted = false;
+              }
+            } catch (e) {
+              /* ignore */
+            }
+
             // apply payment and move player
             try {
               // deduct fee from buyer
@@ -475,6 +535,22 @@ function processPendingReleases() {
               playerToAdd.contractYearsLeft = 1;
               c.team.players = c.team.players || [];
               c.team.players.push(playerToAdd);
+              // record transfer history
+              try {
+                window.TRANSFER_HISTORY = window.TRANSFER_HISTORY || [];
+                window.TRANSFER_HISTORY.push({
+                  player: playerToAdd.name || playerToAdd.id,
+                  from: p.originalClubRef && (p.originalClubRef.team ? p.originalClubRef.team.name : p.originalClubRef.name) || p.previousClubName || '',
+                  to: (c && c.team && c.team.name) || c.name || '',
+                  fee: fee,
+                  salary: offerSalary,
+                  type: 'purchase',
+                  time: Date.now(),
+                  jornada: typeof window.currentJornada !== 'undefined' ? window.currentJornada : null,
+                });
+              } catch (e) {
+                /* ignore history errors */
+              }
               if (PlayersLogger && typeof PlayersLogger.debug === 'function') {
                 try {
                   PlayersLogger.debug('Auto-purchase:', {
@@ -509,6 +585,22 @@ function processPendingReleases() {
         p.originalClubRef && p.originalClubRef.division ? p.originalClubRef.division : 4
       );
     p.leavingFee = Math.max(0, Math.round((p.playerValue || 0) * 0.8));
+    // record moved to free transfers in history then remove originalClubRef and add to free list
+    try {
+      window.TRANSFER_HISTORY = window.TRANSFER_HISTORY || [];
+      window.TRANSFER_HISTORY.push({
+        player: p.name || p.id,
+        from: p.originalClubRef && (p.originalClubRef.team ? p.originalClubRef.team.name : p.originalClubRef.name) || p.previousClubName || '',
+        to: 'FREE',
+        fee: 0,
+        salary: p.minContract || 0,
+        type: 'free',
+        time: Date.now(),
+        jornada: typeof window.currentJornada !== 'undefined' ? window.currentJornada : null,
+      });
+    } catch (e) {
+      /* ignore history errors */
+    }
     // remove originalClubRef before adding to free list
     try {
       delete p.originalClubRef;

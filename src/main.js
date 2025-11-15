@@ -478,6 +478,9 @@ if (!_startBtn) {
         }
 
         currentJornada++;
+        // keep the global/window-facing value in sync so other modules reading
+        // `window.currentJornada` see the authoritative next-round number
+        if (typeof window !== 'undefined') window.currentJornada = currentJornada;
         document.getElementById('screen-match').style.display = 'none';
         document.getElementById('screen-hub').style.display = 'flex';
 
@@ -756,8 +759,18 @@ if (!_startBtn) {
         }
 
         if (typeof renderHubContent === 'function') {
-          // Before rendering the team menu after a simulation, allow other clubs to make offers
-          if (window.Offers && typeof window.Offers.showPendingReleasesPopup === 'function') {
+          // Render the team menu. If the simulation flow set the flag,
+          // show pending release offers first, otherwise render directly.
+          if (
+            window._offersPendingOnNextTeamEntry &&
+            window.Offers &&
+            typeof window.Offers.showPendingReleasesPopup === 'function'
+          ) {
+            try {
+              window._offersPendingOnNextTeamEntry = false;
+            } catch (_) {
+              /* ignore */
+            }
             window.Offers.showPendingReleasesPopup(() => {
               try {
                 renderHubContent('menu-team');
@@ -846,6 +859,14 @@ if (!_startBtn) {
           currentRoundMatches = snap.currentRoundMatches || currentRoundMatches;
           playerClub = snap.playerClub || playerClub;
           currentJornada = snap.currentJornada || currentJornada;
+          // expose restored jornada to window consumers and update the UI
+          if (typeof window !== 'undefined') window.currentJornada = currentJornada;
+          try {
+            const jornadaDisplayEl = document.getElementById('currentJornadaDisplay');
+            if (jornadaDisplayEl) jornadaDisplayEl.textContent = `${currentJornada}ª JORNADA`;
+          } catch (_) {
+            /* ignore */
+          }
 
           // export to globals
           window.playerClub = playerClub;

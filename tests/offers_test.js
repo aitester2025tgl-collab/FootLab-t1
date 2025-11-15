@@ -64,7 +64,7 @@ window.PENDING_RELEASES = [
 ];
 
 // load the hub module
-require('./src/legacy_ui/hub');
+require('../src/legacy_ui/hub');
 
 try {
   // call the popup; confirm returns false so it will not proceed with transfer, but should not throw

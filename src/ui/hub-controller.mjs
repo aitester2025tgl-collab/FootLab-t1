@@ -164,6 +164,12 @@ export function initHubUI() {
     defaultBtn.style.background = 'linear-gradient(90deg, rgba(255,255,255,0.13) 0%, rgba(0,0,0,0.13) 100%)';
     defaultBtn.style.color = getReadableTextColor((E.playerClub && E.playerClub.team && E.playerClub.team.bgColor) || '#2e2e2e', (E.playerClub && E.playerClub.team && E.playerClub.team.color) || '#008000');
     defaultBtn.style.boxShadow = '0 6px 18px rgba(0,0,0,0.16)';
+    try {
+      const hubMenu = document.getElementById('hub-menu');
+      const leftCol = document.getElementById('left-column');
+      if (hubMenu) hubMenu.classList.add('compact-buttons');
+      if (leftCol) leftCol.classList.add('compact');
+    } catch (e) {}
     renderHubContent('menu-team');
     try { if (typeof updateBudgetDisplays === 'function') updateBudgetDisplays(window.playerClub); } catch (_) {}
   }

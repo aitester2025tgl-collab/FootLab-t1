@@ -30,6 +30,23 @@ export function initTacticPanel() {
       const wide = (profile.LW || 0) + (profile.RW || 0);
       if (wide < 2) return false;
     }
+    // Check striker/forward count requirement. Prefer explicit `requires.strikers` if present,
+    // otherwise infer required forwards from tactic name (last number in formation, e.g. '4-3-3' -> 3).
+    const reqStrikers =
+      typeof req.strikers === 'number'
+        ? req.strikers
+        : (function () {
+            try {
+              const parts = (tactic && tactic.name && tactic.name.match(/\d+/g)) || [];
+              if (parts.length === 0) return null;
+              return parseInt(parts[parts.length - 1], 10);
+            } catch (e) {
+              return null;
+            }
+          })();
+    if (reqStrikers != null) {
+      if ((profile.ST || 0) < reqStrikers) return false;
+    }
     return true;
   }
 

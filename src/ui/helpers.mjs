@@ -17,11 +17,36 @@ export function luminance(rgb) {
   return 0.2126 * s[0] + 0.7152 * s[1] + 0.0722 * s[2];
 }
 
+// Compute a readable foreground color (pref if it provides better contrast, else black/white)
 export function getReadableTextColor(bg, pref) {
-  const E = window.Elifoot || window;
-  if (E.ColorUtils && typeof E.ColorUtils.getReadableTextColor === 'function')
-    return E.ColorUtils.getReadableTextColor(bg, pref);
-  return pref || '#ffffff';
+  const hex = String(bg || '#2e2e2e');
+  const prefHex = pref || null;
+  // helper to compute contrast ratio against white/black
+  try {
+    const bgRgb = hexToRgb(hex);
+    const L = luminance(bgRgb);
+    // contrast ratios vs white and black
+    const contrastWhite = (1.0 + 0.05) / (L + 0.05);
+    const contrastBlack = (L + 0.05) / (0.0 + 0.05);
+
+    // if preferred color is provided and looks readable, use it
+    if (prefHex) {
+      try {
+        const prefRgb = hexToRgb(prefHex);
+        const Lp = luminance(prefRgb);
+        // contrast of pref vs bg
+        const contrastPref = (Math.max(L, Lp) + 0.05) / (Math.min(L, Lp) + 0.05);
+        if (contrastPref >= Math.max(contrastWhite, contrastBlack)) return prefHex;
+      } catch (e) {
+        // ignore and fallback
+      }
+    }
+
+    // choose the higher-contrast of black or white
+    return contrastWhite >= contrastBlack ? '#ffffff' : '#000000';
+  } catch (e) {
+    return pref || '#ffffff';
+  }
 }
 
 export function normalizePosition(pos) {

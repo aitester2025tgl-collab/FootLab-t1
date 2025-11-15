@@ -1987,4 +1987,22 @@ Probabilidade estimada: ${(prob * 100).toFixed(1)}%`);
     });
   }
 })();
+// Post-load hygiene: remove any leftover redundant offers toggle if present in built bundle
+try {
+  if (typeof window !== 'undefined') {
+    document.addEventListener('DOMContentLoaded', () => {
+      try {
+        const byId = document.getElementById('offersProposeBtn');
+        if (byId && byId.parentNode) byId.parentNode.removeChild(byId);
+        // also remove any nodes with the legacy class
+        const legacy = document.querySelectorAll('.offer-propose-btn');
+        legacy.forEach((n) => n.parentNode && n.parentNode.removeChild(n));
+      } catch (e) {
+        /* ignore */
+      }
+    });
+  }
+} catch (e) {
+  /* ignore */
+}
 //# sourceMappingURL=app.bundle.js.map

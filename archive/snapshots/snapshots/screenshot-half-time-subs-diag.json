@@ -1,0 +1,18 @@
+{
+  "before": {
+    "innerHTMLLen": 45,
+    "textSnippet": "ERROEquipa não tem jogadores!",
+    "childCount": 2,
+    "firstChildTag": "H2",
+    "firstChildClass": ""
+  },
+  "after": {
+    "innerHTMLLen": 45,
+    "textSnippet": "ERROEquipa não tem jogadores!",
+    "childCount": 2,
+    "firstChildTag": "H2",
+    "firstChildClass": ""
+  },
+  "beforeHash": "6ced760279afd523c41f81465136df7c44c76a7c11f022ebf261dc333944d4fd",
+  "afterHash": "7348b69afd47c8a68beb7233b22cfd8471486c20221503896152a484a2a9e0be"
+}

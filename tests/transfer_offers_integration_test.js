@@ -73,7 +73,7 @@ window.PENDING_RELEASES = [
 ];
 
 // load hub (offers) code
-require('./src/legacy_ui/hub');
+require('../src/legacy_ui/hub');
 
 logger.info('Starting full transfer integration test');
 
@@ -85,10 +85,9 @@ window.Offers.showPendingReleasesPopup(() => {
 // programmatically click the first 'Propor' button in the offers popup to trigger the transfer flow
 setTimeout(() => {
   try {
-    const proposeBtn = document.querySelector('.offer-propose-btn');
-    if (proposeBtn) {
-      proposeBtn.dispatchEvent(new window.MouseEvent('click', { bubbles: true }));
-    }
+    // The UI now uses an inline propose button inside the overlay; click that instead
+    const doBtn = document.getElementById('offersDoProposeBtn') || document.querySelector('.offer-propose-btn');
+    if (doBtn) doBtn.dispatchEvent(new window.MouseEvent('click', { bubbles: true }));
   } catch (e) {
     console.error('error clicking proposeBtn', e);
   }

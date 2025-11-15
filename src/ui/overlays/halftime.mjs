@@ -46,7 +46,7 @@ export function showHalfTimeSubsOverlay(club, match, cb) {
     panel.innerHTML = [
       `<h2 style="background:${teamBg};color:${fg};padding:8px 0;border-radius:8px;margin:0 0 8px 0;">Substituições ao Intervalo - ${club.team.name} <small style="margin-left:10px;opacity:0.9;font-weight:600;">(${scoreText})</small></h2>`,
       `<div class="subs-columns">`,
-      `<div class="subs-col starters-col" style="background:rgba(255,255,255,0.02);color:${fg};"><h3 style="margin:0 0 8px 0;">Onze Inicial</h3><ol class="starters-list">${starters.map((p, si) => `<li data-si='${si}' data-name='${p.name}' data-pos='${p.position}'><span style="flex:0 0 36px;">${p.position}</span> <span class="player-name">${p.name}</span> <span class="player-skill">(skill: ${p.skill || 0})</span></li>`).join('')}</ol></div>`,
+      `<div class="subs-col starters-col" style="background:rgba(255,255,255,0.02);color:${fg};"><h3 style="margin:0 0 8px 0;">Onze Inicial</h3><ol class="starters-list">${starters.map((p, si) => `<li data-si='${si}' data-name='${p.name}' data-pos='${p.position}'><span class="player-pos-badge">${normalizePosition(p.position)}</span> <span class="player-name">${p.name}</span> <span class="player-skill">(skill: ${p.skill || 0})</span></li>`).join('')}</ol></div>`,
       `<div class="subs-col subs-col-right" style="background:rgba(0,0,0,0.04);color:${fg};"><h3 style="margin:0 0 8px 0;">Suplentes</h3><ul class="subs-list">${rawSubsForPanel
         .map((p, idx) => {
           const cls = normalizePosition(p.position || p.pos || '') === 'GK' ? 'is-gk' : '';
@@ -136,7 +136,7 @@ export function showHalfTimeSubsOverlay(club, match, cb) {
     const renderLists = function () {
       const startersHtml = (isHome ? match.homePlayers : match.awayPlayers)
         .map(
-          (p, si) => `<li data-si="${si}" data-name="${p.name}" data-pos="${normalizePosition(p.position)}"><span style="flex:0 0 36px;">${normalizePosition(p.position)}</span> <span class="player-name">${p.name}</span> <span class="player-skill">(skill: ${p.skill || 0})</span></li>`
+          (p, si) => `<li data-si="${si}" data-name="${p.name}" data-pos="${normalizePosition(p.position)}"><span class="player-pos-badge">${normalizePosition(p.position)}</span> <span class="player-name">${p.name}</span> <span class="player-skill">(skill: ${p.skill || 0})</span></li>`
         )
         .join('');
       const rawSubs = isHome ? match.homeSubs || [] : match.awaySubs || [];

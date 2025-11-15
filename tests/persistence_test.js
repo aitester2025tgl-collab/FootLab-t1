@@ -1,5 +1,5 @@
 /* eslint-disable no-console, no-unused-vars */
-const Persistence = require('./src/core/persistence');
+const Persistence = require('../src/core/persistence');
 
 const logger = require('./testLogger').getLogger();
 

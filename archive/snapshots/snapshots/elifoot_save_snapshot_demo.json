@@ -1,0 +1,8 @@
+{
+  "currentJornada": 5,
+  "coachName": "AutoCoach",
+  "playerClub": { "team": { "name": "Demo FC" }, "division": 4 },
+  "allDivisions": [],
+  "allClubs": [],
+  "currentRoundMatches": []
+}

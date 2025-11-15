@@ -20,11 +20,16 @@ html {
   --hub-panel-bg: #333333; /* Solid panel background for boxes */
 }
 
+/* Compact side-panel width used when team menu is active */
+:root {
+  --side-panel-compact-width: 180px;
+}
+
 /* (Retro theme removed - reverted to base theme.) */
 
 /* Single side-panel width so finance (left bottom) and next-opponent (right bottom) are symmetric */
 :root {
-  --side-panel-width: 300px;
+  --side-panel-width: 340px;
 }
 
 /* ----------------------------------- */
@@ -217,58 +222,113 @@ html {
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.28);
   color: var(--team-menu-fg, #fff);
   box-sizing: border-box;
-  min-height: 100%;
+  min-height: auto;
 }
 
 .hub-menu-main {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  padding: 0 12px;
+  gap: 10px;
+  padding: 0 16px;
 }
 .hub-menu-footer {
   padding: 0 12px;
 }
 
 .hub-menu-btn {
-  background: rgba(255, 255, 255, 0.04);
+  background: rgba(255, 255, 255, 0.06);
   color: var(--team-menu-fg, #fff);
   border: none;
-  margin: 8px 0;
-  padding: 14px 16px; /* larger padding for readability */
+  margin: 10px 0;
+  padding: 20px 20px; /* larger padding for more prominent menu */
   width: 100%;
   box-sizing: border-box;
   text-align: left;
-  font-size: 1.02em;
-  font-weight: 700;
-  border-radius: 10px;
+  font-size: 1.18em; /* slightly larger to improve readability */
+  font-weight: 800;
+  border-radius: 14px;
   cursor: pointer;
   transition:
     background 0.15s,
     transform 0.08s;
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.18);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.18);
 }
 
 .hub-menu-btn:hover {
-  background: rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.12);
   transform: translateY(-2px);
 }
 
 .hub-menu-btn.active {
-  font-weight: 800;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.06));
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.22);
+  font-weight: 900;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0.08));
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.26);
+}
+
+/* Compact variant for team menu: make left-side buttons smaller when viewing the team pane */
+#hub-menu.compact-buttons .hub-menu-btn {
+  padding: 10px 12px; /* reduce vertical footprint */
+  margin: 6px 0; /* tighter spacing */
+  font-size: 0.98em; /* slightly smaller text */
+  border-radius: 10px; /* slightly less rounded */
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
+}
+
+#hub-menu.compact-buttons .hub-menu-btn:hover {
+  transform: translateY(-1px);
+}
+
+/* More aggressive compacting: shrink the menu padding and make buttons visually narrower */
+#hub-menu.compact-buttons {
+  padding: 4px 6px; /* minimal outer padding so footer box is visible */
+}
+
+#hub-menu.compact-buttons .hub-menu-main {
+  padding: 0 4px;
+  overflow: visible; /* ensure footer remains visible */
+  gap: 2px; /* tight spacing between buttons */
+}
+
+/* Buttons should be only slightly larger than player names (~0.92em). */
+#hub-menu.compact-buttons .hub-menu-btn {
+  /* Aggressively compact: aim for ~50% of previous visual height */
+  font-size: 0.78em; /* very small to match player name size */
+  padding: 1px 6px; /* minimal vertical padding */
+  margin: 1px 0; /* very tight spacing */
+  border-radius: 3px;
+  box-shadow: none; /* remove heavy shadow to reduce visual weight */
+  width: 100%;
+  height: 26px; /* slightly larger (+~10%) to match requested adjustment */
+  line-height: 1.0;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  font-weight: 600;
+}
+
+#hub-menu.compact-buttons .hub-menu-btn:hover {
+  transform: translateY(-1px);
+}
+
+#hub-menu.compact-buttons .hub-menu-btn.active {
+  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+}
+
+/* Narrow the left column when compact so buttons don't feel oversized */
+#left-column.compact {
+  width: var(--side-panel-compact-width) !important;
+  min-width: var(--side-panel-compact-width) !important;
 }
 
 /* Painel de Finanças Lateral */
 #hub-finance-panel {
-  width: 250px;
+  width: 320px; /* slightly wider to match the larger menu size */
   padding: 20px;
-  background-color: rgba(0, 0, 0, 0.2);
-  border-left: 1px solid rgba(255, 255, 255, 0.1);
+  background-color: rgba(0, 0, 0, 0.18);
+  border-left: 1px solid rgba(255, 255, 255, 0.12);
   display: flex;
   flex-direction: column;
-  font-size: 0.9em;
+  font-size: 0.95em;
 }
 
 .finance-info {
@@ -336,10 +396,16 @@ html {
 .team-roster-grid .player-name {
   font-size: 0.92em; /* keep player name readable (match roster base size) */
   font-weight: 500;
+  /* allow names to wrap to two lines so first + last names are visible */
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
   overflow: hidden;
   text-overflow: ellipsis;
-  white-space: nowrap;
-  line-height: 1.1;
+  white-space: normal;
+  word-break: break-word;
+  line-height: 1.15;
   text-shadow: 0 1px 1px rgba(0, 0, 0, 0.35); /* subtle shadow for legibility */
 }
 
@@ -452,7 +518,7 @@ html {
 /* Modern transfer overlay styling (theme-aware) */
 .transfer-overlay-root {
   width: 100%;
-  max-width: 920px;
+  max-width: 1100px; /* align with .subs-panel / halftime panel sizing */
   box-sizing: border-box;
   padding: 18px;
   border-radius: 12px;
@@ -473,6 +539,31 @@ html {
   text-align: center;
   font-size: 0.98em;
   letter-spacing: 0.6px;
+}
+
+/* Inline propose area inside transfer overlay */
+.offer-propose-area {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  justify-content: flex-end;
+}
+.offer-input {
+  width: 140px;
+  padding: 8px 10px;
+  border-radius: 6px;
+  border: 1px solid rgba(0,0,0,0.12);
+  background: rgba(255,255,255,0.02);
+  color: inherit;
+}
+.transfer-msg {
+  font-size: 0.95em;
+  opacity: 0.95;
+}
+
+/* Slightly narrower transfer overlay on wide screens to reduce visual domination */
+@media (min-width: 1200px) {
+  .transfer-overlay-root { max-width: 860px; }
 }
 
 .transfer-card {
@@ -532,9 +623,63 @@ html {
   font-size: 0.95em;
 }
 .transfer-btn.primary {
-  background: linear-gradient(180deg, #2b7, #1f7); /* subtle green */
+  background: linear-gradient(180deg, #39a86a 0%, #2b7 100%); /* friendlier green */
   color: #012;
+  box-shadow: 0 4px 12px rgba(43, 139, 87, 0.12);
 }
+
+/* Hide the redundant small 'Propor' toggle button inside the transfer overlay
+   Keep it in the DOM for automated tests that dispatch events, but visually hide it. */
+.transfer-overlay-root .offer-propose-btn {
+  display: none !important;
+}
+
+/* Make the inline propose area visually integrated with a subtle card look */
+.offer-propose-area {
+  background: rgba(0,0,0,0.06);
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid rgba(0,0,0,0.06);
+  align-items: center;
+}
+.offer-input {
+  background: rgba(255,255,255,0.96);
+  color: #111;
+  border: 1px solid rgba(0,0,0,0.08);
+}
+.transfer-msg {
+  color: rgba(255,255,255,0.95);
+  font-weight: 600;
+}
+
+/* Slightly soften the hub menu look and improve contrast/shape */
+#hub-menu {
+  background: linear-gradient(180deg, var(--hub-panel-bg, #2e2e2e), rgba(0,0,0,0.03));
+  padding: 12px 10px;
+  border-radius: 10px;
+  border: 1px solid rgba(0,0,0,0.18);
+}
+.hub-menu-btn {
+  background: rgba(255,255,255,0.04);
+  color: var(--team-menu-fg, #fff);
+  padding: 14px 14px;
+  font-size: 1.02em;
+  border-radius: 12px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.12);
+}
+.hub-menu-btn:hover {
+  background: rgba(255,255,255,0.08);
+}
+
+/* Compact variant adjustments: keep compact but more balanced */
+#hub-menu.compact-buttons .hub-menu-btn {
+  padding: 6px 8px;
+  height: 30px;
+  font-size: 0.86em;
+  border-radius: 8px;
+  box-shadow: none;
+}
+
 
 @media (max-width: 600px) {
   .transfer-card .transfer-label {
@@ -627,9 +772,16 @@ html {
 .player-pos-badge {
   flex: 0 0 56px;
   width: 56px;
+  min-width: 56px;
   text-align: center;
   font-weight: 800;
+  border-radius: 6px;
+  padding: 6px 8px;
+  box-sizing: border-box;
+  /* Use CSS variables set by overlays/hub to reflect team colors */
+  background: var(--team-menu-bg, rgba(255,255,255,0.06));
   color: var(--team-menu-fg, #ffd800);
+  box-shadow: inset 0 -1px 0 rgba(0,0,0,0.12);
 }
 .subs-list .player-name,
 .starters-list .player-name,
@@ -1358,12 +1510,15 @@ html {
   padding: 8px;
   border-radius: 8px;
   background: rgba(0, 0, 0, 0.04);
-  width: 160px; /* narrower width so more cards fit per row */
-  height: 96px; /* slightly reduced height for tighter grid */
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
+  position: relative; /* keep stacking context local and avoid accidental absolute overlap */
+  min-width: 140px;
+  max-width: 220px;
+  width: 100%;
+  min-height: 78px; /* let content determine height while keeping a reasonable minimum */
 }
 .player-box .player-salary,
 .intro-player-box .player-salary,
@@ -1570,9 +1725,28 @@ html {
   margin-bottom: 8px;
 }
 .cards-wrap {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
+  /* Row-first flow with a maximum of 5 cards per row. After 5 items the
+     list wraps into the next visual lane (row). Responsive breakpoints
+     reduce columns on narrower screens. */
+  display: grid;
+  grid-template-columns: repeat(5, minmax(160px, 1fr));
+  grid-auto-rows: minmax(78px, auto);
+  gap: 8px;
+  align-items: start;
+}
+
+/* Responsive column caps for smaller viewports */
+@media (max-width: 1200px) {
+  .cards-wrap { grid-template-columns: repeat(4, minmax(140px, 1fr)); }
+}
+@media (max-width: 980px) {
+  .cards-wrap { grid-template-columns: repeat(3, minmax(140px, 1fr)); }
+}
+@media (max-width: 680px) {
+  .cards-wrap { grid-template-columns: repeat(2, minmax(120px, 1fr)); }
+}
+@media (max-width: 420px) {
+  .cards-wrap { grid-template-columns: 1fr; }
 }
 .subs-back-button {
   padding: 10px 22px;

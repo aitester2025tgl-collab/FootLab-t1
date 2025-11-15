@@ -24,7 +24,7 @@ window.Elifoot.GameConfig = window.Elifoot.GameConfig || {
 };
 
 // Load the overlays module (it will attach to window.Elifoot.Overlays)
-require('./src/legacy_ui/overlays');
+require('../src/legacy_ui/overlays');
 
 // Build a sample club and match for home side
 const club = { team: { name: 'Test Club', bgColor: '#123456', color: '#fff' } };

@@ -1,0 +1,30 @@
+{
+  "pass": false,
+  "measured": {
+    "leftColumn": {
+      "w": 340,
+      "h": 463
+    },
+    "firstButton": {
+      "w": 282,
+      "h": 67,
+      "fontSize": "18.88px",
+      "paddingTop": "20px",
+      "paddingBottom": "20px",
+      "marginTop": "10px",
+      "marginBottom": "10px"
+    },
+    "finance": {
+      "visible": true,
+      "top": 1272,
+      "bottom": 1446,
+      "h": 174
+    }
+  },
+  "thresholds": {
+    "maxButtonHeightPx": 40,
+    "maxLeftColumnWidthPx": 260,
+    "financeShouldBeVisible": true
+  },
+  "screenshot": "C:\\Users\\Tiago\\Documents\\AI projects\\Elifoot do Tiago\\snapshots\\test-menu-compact-1763235689178.png"
+}

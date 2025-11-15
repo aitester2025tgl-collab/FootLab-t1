@@ -1,7 +1,7 @@
 /* eslint-disable no-console, no-unused-vars */
 // tests/promotion_integration_test.js
 const assert = require('assert');
-const { applyPromotionRelegation } = require('./src/core/promotion');
+const { applyPromotionRelegation } = require('../src/core/promotion');
 
 function makeDivision(divIndex) {
   // produce 18 clubs with predictable names and tiebreak values

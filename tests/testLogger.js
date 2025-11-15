@@ -47,7 +47,7 @@ function getLogger() {
 
   // Try to load core logger (Node tests can require it)
   try {
-    const coreLogger = require('./src/core/logger');
+    const coreLogger = require('../src/core/logger');
     if (coreLogger && (coreLogger.info || coreLogger.log)) return coreLogger;
   } catch (e) {
     /* ignore */

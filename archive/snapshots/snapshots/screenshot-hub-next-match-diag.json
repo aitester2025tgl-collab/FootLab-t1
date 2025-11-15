@@ -1,0 +1,18 @@
+{
+  "before": {
+    "innerHTMLLen": 52,
+    "textSnippet": "ClassificaçãoDivisão não encontrada.",
+    "childCount": 2,
+    "firstChildTag": "H2",
+    "firstChildClass": ""
+  },
+  "after": {
+    "innerHTMLLen": 149,
+    "textSnippet": "Próximo JogoSem jogo agendado nesta jornada.Exemplo de jogos desta ronda:",
+    "childCount": 2,
+    "firstChildTag": "H2",
+    "firstChildClass": ""
+  },
+  "beforeHash": "a90af79f69d4f0fd25a30bddfb2f7e9eba7f3471f51ccc20ab4299dfc6a412fb",
+  "afterHash": "a90af79f69d4f0fd25a30bddfb2f7e9eba7f3471f51ccc20ab4299dfc6a412fb"
+}
