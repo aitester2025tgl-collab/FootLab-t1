@@ -1,0 +1,98 @@
+[
+  {
+    "name": "Dominik Livakovic",
+    "position": "GK"
+  },
+  {
+    "name": "Paulo Gazzaniga",
+    "position": "GK"
+  },
+  {
+    "name": "Vladyslav Krapyvtsov",
+    "position": "GK"
+  },
+  {
+    "name": "Vitor Reis",
+    "position": "CB"
+  },
+  {
+    "name": "Alejandro Francés",
+    "position": "CB"
+  },
+  {
+    "name": "Daley Blind",
+    "position": "CB"
+  },
+  {
+    "name": "David López",
+    "position": "CB"
+  },
+  {
+    "name": "Álex Moreno",
+    "position": "LB"
+  },
+  {
+    "name": "Arnau Martínez",
+    "position": "RB"
+  },
+  {
+    "name": "Hugo Rincón",
+    "position": "RB"
+  },
+  {
+    "name": "Axel Witsel",
+    "position": "DM"
+  },
+  {
+    "name": "Azzedine Ounahi",
+    "position": "CM"
+  },
+  {
+    "name": "Donny van de Beek",
+    "position": "CM"
+  },
+  {
+    "name": "Jhon Solís",
+    "position": "CM"
+  },
+  {
+    "name": "Iván Martín",
+    "position": "AM"
+  },
+  {
+    "name": "Thomas Lemar",
+    "position": "AM"
+  },
+  {
+    "name": "Bryan Gil",
+    "position": "LW"
+  },
+  {
+    "name": "Joel Roca",
+    "position": "LW"
+  },
+  {
+    "name": "Yáser Asprilla",
+    "position": "RW"
+  },
+  {
+    "name": "Viktor Tsygankov",
+    "position": "RW"
+  },
+  {
+    "name": "Portu",
+    "position": "RW"
+  },
+  {
+    "name": "Vladyslav Vanat",
+    "position": "ST"
+  },
+  {
+    "name": "Abel Ruiz",
+    "position": "ST"
+  },
+  {
+    "name": "Cristhian Stuani",
+    "position": "ST"
+  }
+]

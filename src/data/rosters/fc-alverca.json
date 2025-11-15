@@ -1,0 +1,114 @@
+[
+  {
+    "name": "André Gomes",
+    "position": "GK"
+  },
+  {
+    "name": "Matheus Mendes",
+    "position": "GK"
+  },
+  {
+    "name": "Bastien Meupiyou",
+    "position": "CB"
+  },
+  {
+    "name": "Naves",
+    "position": "CB"
+  },
+  {
+    "name": "Sergi Gómez",
+    "position": "CB"
+  },
+  {
+    "name": "Steven Baseya",
+    "position": "CB"
+  },
+  {
+    "name": "Julián Martínez",
+    "position": "CB"
+  },
+  {
+    "name": "Talisca",
+    "position": "CB"
+  },
+  {
+    "name": "Lamine N'Diaye",
+    "position": "CB"
+  },
+  {
+    "name": "Chissumba",
+    "position": "LB"
+  },
+  {
+    "name": "Isaac James",
+    "position": "LB"
+  },
+  {
+    "name": "Nabil Touaizi",
+    "position": "RB"
+  },
+  {
+    "name": "Gonçalo Esteves",
+    "position": "RB"
+  },
+  {
+    "name": "Tomás Mendes",
+    "position": "DM"
+  },
+  {
+    "name": "Sabit Abdulai",
+    "position": "DM"
+  },
+  {
+    "name": "Abderrahmane Soumare",
+    "position": "DM"
+  },
+  {
+    "name": "Amorim",
+    "position": "CM"
+  },
+  {
+    "name": "Davy Gui",
+    "position": "CM"
+  },
+  {
+    "name": "Gian Cabezas",
+    "position": "CM"
+  },
+  {
+    "name": "Diogo Martins",
+    "position": "CM"
+  },
+  {
+    "name": "Lincoln",
+    "position": "AM"
+  },
+  {
+    "name": "Léo Chú",
+    "position": "LW"
+  },
+  {
+    "name": "Chiquinho",
+    "position": "LW"
+  },
+  {
+    "name": "Figueiredo",
+    "position": "LW"
+  },
+  {
+    "name": "Stéphane Diarra",
+    "position": "RW"
+  },
+  {
+    "name": "Marko Milovanović",
+    "position": "ST"
+  },
+  {
+    "name": "Sandro Lima",
+    "position": "ST"
+  },
+  {
+    "name": "Tiago Leite",
+    "position": "ST"
+  }
+]

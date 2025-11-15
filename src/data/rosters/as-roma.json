@@ -1,0 +1,110 @@
+[
+  {
+    "name": "Mile Svilar",
+    "position": "GK"
+  },
+  {
+    "name": "Devis Vásquez",
+    "position": "GK"
+  },
+  {
+    "name": "Pierluigi Gollini",
+    "position": "GK"
+  },
+  {
+    "name": "Evan Ndicka",
+    "position": "CB"
+  },
+  {
+    "name": "Gianluca Mancini",
+    "position": "CB"
+  },
+  {
+    "name": "Daniele Ghilardi",
+    "position": "CB"
+  },
+  {
+    "name": "Mario Hermoso",
+    "position": "CB"
+  },
+  {
+    "name": "Jan Ziolkowski",
+    "position": "CB"
+  },
+  {
+    "name": "Angeliño",
+    "position": "LB"
+  },
+  {
+    "name": "Konstantinos Tsimikas",
+    "position": "LB"
+  },
+  {
+    "name": "Wesley",
+    "position": "RB"
+  },
+  {
+    "name": "Devyne Rensch",
+    "position": "RB"
+  },
+  {
+    "name": "Zeki Çelik",
+    "position": "RB"
+  },
+  {
+    "name": "Buba Sangaré",
+    "position": "RB"
+  },
+  {
+    "name": "Bryan Cristante",
+    "position": "CM"
+  },
+  {
+    "name": "Manu Koné",
+    "position": "CM"
+  },
+  {
+    "name": "Neil El Aynaoui",
+    "position": "CM"
+  },
+  {
+    "name": "Niccolò Pisilli",
+    "position": "CM"
+  },
+  {
+    "name": "Edoardo Bove",
+    "position": "CM"
+  },
+  {
+    "name": "Tommaso Baldanzi",
+    "position": "CM"
+  },
+  {
+    "name": "Lorenzo Pellegrini",
+    "position": "CM"
+  },
+  {
+    "name": "Stephan El Shaarawy",
+    "position": "LW"
+  },
+  {
+    "name": "Matías Soulé",
+    "position": "RW"
+  },
+  {
+    "name": "Leon Bailey",
+    "position": "RW"
+  },
+  {
+    "name": "Paulo Dybala",
+    "position": "ST"
+  },
+  {
+    "name": "Artem Dovbyk",
+    "position": "ST"
+  },
+  {
+    "name": "Evan Ferguson",
+    "position": "ST"
+  }
+]

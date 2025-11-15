@@ -1,0 +1,110 @@
+[
+  {
+    "name": "Luiz Júnior",
+    "position": "GK"
+  },
+  {
+    "name": "Diego Conde",
+    "position": "GK"
+  },
+  {
+    "name": "Arnau Tenas",
+    "position": "GK"
+  },
+  {
+    "name": "Renato Veiga",
+    "position": "CB"
+  },
+  {
+    "name": "Logan Costa",
+    "position": "CB"
+  },
+  {
+    "name": "Juan Foyth",
+    "position": "CB"
+  },
+  {
+    "name": "Rafa Marín",
+    "position": "CB"
+  },
+  {
+    "name": "Willy Kambwala",
+    "position": "CB"
+  },
+  {
+    "name": "Sergi Cardona",
+    "position": "LB"
+  },
+  {
+    "name": "Alfonso Pedraza",
+    "position": "LB"
+  },
+  {
+    "name": "Santiago Mouriño",
+    "position": "RB"
+  },
+  {
+    "name": "Pau Navarro",
+    "position": "RB"
+  },
+  {
+    "name": "Adrià Altimira",
+    "position": "RB"
+  },
+  {
+    "name": "Pape Gueye",
+    "position": "CM"
+  },
+  {
+    "name": "Thomas Partey",
+    "position": "CM"
+  },
+  {
+    "name": "Santi Comesaña",
+    "position": "CM"
+  },
+  {
+    "name": "Dani Parejo",
+    "position": "CM"
+  },
+  {
+    "name": "Alberto Moleiro",
+    "position": "LW"
+  },
+  {
+    "name": "Manor Solomon",
+    "position": "LW"
+  },
+  {
+    "name": "Ilias Akhomach",
+    "position": "RW"
+  },
+  {
+    "name": "Tajon Buchanan",
+    "position": "RW"
+  },
+  {
+    "name": "Nicolas Pépé",
+    "position": "RW"
+  },
+  {
+    "name": "Georges Mikautadze",
+    "position": "ST"
+  },
+  {
+    "name": "Tani Oluwaseyi",
+    "position": "ST"
+  },
+  {
+    "name": "Ayoze Pérez",
+    "position": "ST"
+  },
+  {
+    "name": "Gerard Moreno",
+    "position": "ST"
+  },
+  {
+    "name": "Pau Cabanes",
+    "position": "ST"
+  }
+]

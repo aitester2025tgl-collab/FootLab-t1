@@ -1,0 +1,110 @@
+[
+  {
+    "name": "Alex Meret",
+    "position": "GK"
+  },
+  {
+    "name": "Vanja Milinković-Savić",
+    "position": "GK"
+  },
+  {
+    "name": "Nikita Contini",
+    "position": "GK"
+  },
+  {
+    "name": "Alessandro Buongiorno",
+    "position": "CB"
+  },
+  {
+    "name": "Sam Beukema",
+    "position": "CB"
+  },
+  {
+    "name": "Amir Rrahmani",
+    "position": "CB"
+  },
+  {
+    "name": "Luca Marianucci",
+    "position": "CB"
+  },
+  {
+    "name": "Juan Jesus",
+    "position": "CB"
+  },
+  {
+    "name": "Miguel Gutiérrez",
+    "position": "LB"
+  },
+  {
+    "name": "Mathías Olivera",
+    "position": "LB"
+  },
+  {
+    "name": "Leonardo Spinazzola",
+    "position": "LB"
+  },
+  {
+    "name": "Giovanni Di Lorenzo",
+    "position": "RB"
+  },
+  {
+    "name": "Pasquale Mazzocchi",
+    "position": "RB"
+  },
+  {
+    "name": "Stanislav Lobotka",
+    "position": "CM"
+  },
+  {
+    "name": "Billy Gilmour",
+    "position": "CM"
+  },
+  {
+    "name": "Scott McTominay",
+    "position": "CM"
+  },
+  {
+    "name": "Frank Anguissa",
+    "position": "CM"
+  },
+  {
+    "name": "Kevin De Bruyne",
+    "position": "CM"
+  },
+  {
+    "name": "Eljif Elmas",
+    "position": "CM"
+  },
+  {
+    "name": "Antonio Vergara",
+    "position": "CM"
+  },
+  {
+    "name": "Noa Lang",
+    "position": "LW"
+  },
+  {
+    "name": "David Neres",
+    "position": "RW"
+  },
+  {
+    "name": "Matteo Politano",
+    "position": "RW"
+  },
+  {
+    "name": "Rasmus Højlund",
+    "position": "ST"
+  },
+  {
+    "name": "Lorenzo Lucca",
+    "position": "ST"
+  },
+  {
+    "name": "Romelu Lukaku",
+    "position": "ST"
+  },
+  {
+    "name": "Giuseppe Ambrosino",
+    "position": "ST"
+  }
+]

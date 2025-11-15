@@ -1,0 +1,94 @@
+[
+  {
+    "name": "Antonio Sivera",
+    "position": "GK"
+  },
+  {
+    "name": "Raúl Fernández",
+    "position": "GK"
+  },
+  {
+    "name": "Jon Pacheco",
+    "position": "CB"
+  },
+  {
+    "name": "Moussa Diarra",
+    "position": "CB"
+  },
+  {
+    "name": "Facundo Garcés",
+    "position": "CB"
+  },
+  {
+    "name": "Nikola Maras",
+    "position": "CB"
+  },
+  {
+    "name": "Youssef Enríquez",
+    "position": "LB"
+  },
+  {
+    "name": "Victor Parada",
+    "position": "LB"
+  },
+  {
+    "name": "Nahuel Tenaglia",
+    "position": "RB"
+  },
+  {
+    "name": "Jonny Otto",
+    "position": "RB"
+  },
+  {
+    "name": "Antonio Blanco",
+    "position": "DM"
+  },
+  {
+    "name": "Carlos Protesoni",
+    "position": "DM"
+  },
+  {
+    "name": "Ander Guevara",
+    "position": "CM"
+  },
+  {
+    "name": "Carles Aleñá",
+    "position": "CM"
+  },
+  {
+    "name": "Jon Guridi",
+    "position": "CM"
+  },
+  {
+    "name": "Pablo Ibáñez",
+    "position": "CM"
+  },
+  {
+    "name": "Calebe",
+    "position": "AM"
+  },
+  {
+    "name": "Denis Suárez",
+    "position": "AM"
+  },
+  {
+    "name": "Abde Rebbach",
+    "position": "LW"
+  },
+  {
+    "name": "Carlos Vicente",
+    "position": "RW"
+  },
+  {
+    "name": "Lucas Boyé",
+    "position": "ST"
+  },
+  {
+    "name": "Toni Martínez",
+    "position": "ST"
+  },
+  {
+    "name": "Mariano Díaz",
+    "position": "ST"
+  }
+]

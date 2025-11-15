@@ -1,0 +1,106 @@
+[
+  {
+    "name": "Diogo Costa",
+    "position": "GK"
+  },
+  {
+    "name": "Cláudio Ramos",
+    "position": "GK"
+  },
+  {
+    "name": "João Costa",
+    "position": "GK"
+  },
+  {
+    "name": "Jakub Kiwior",
+    "position": "CB"
+  },
+  {
+    "name": "Nehuén Pérez",
+    "position": "CB"
+  },
+  {
+    "name": "Jan Bednarek",
+    "position": "CB"
+  },
+  {
+    "name": "Dominik Prpić",
+    "position": "CB"
+  },
+  {
+    "name": "Francisco Moura",
+    "position": "LB"
+  },
+  {
+    "name": "Zaidu",
+    "position": "LB"
+  },
+  {
+    "name": "Alberto Costa",
+    "position": "RB"
+  },
+  {
+    "name": "Martim Fernandes",
+    "position": "RB"
+  },
+  {
+    "name": "Pedro Lima",
+    "position": "RB"
+  },
+  {
+    "name": "Alan Varela",
+    "position": "CM"
+  },
+  {
+    "name": "Pablo Rosario",
+    "position": "CM"
+  },
+  {
+    "name": "Tomás Pérez",
+    "position": "CM"
+  },
+  {
+    "name": "Victor Froholdt",
+    "position": "CM"
+  },
+  {
+    "name": "Stephen Eustaquio",
+    "position": "CM"
+  },
+  {
+    "name": "Rodrigo Mora",
+    "position": "AM"
+  },
+  {
+    "name": "Gabri Veiga",
+    "position": "AM"
+  },
+  {
+    "name": "Borja Sainz",
+    "position": "LW"
+  },
+  {
+    "name": "William Gomes",
+    "position": "LW"
+  },
+  {
+    "name": "Yann Karamoh",
+    "position": "LW"
+  },
+  {
+    "name": "Pepê",
+    "position": "RW"
+  },
+  {
+    "name": "Samu Aghehowa",
+    "position": "ST"
+  },
+  {
+    "name": "Deniz Gül",
+    "position": "ST"
+  },
+  {
+    "name": "Luuk de Jong",
+    "position": "ST"
+  }
+]

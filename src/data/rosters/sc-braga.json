@@ -1,0 +1,110 @@
+[
+  {
+    "name": "Lukas Hornicek",
+    "position": "GK"
+  },
+  {
+    "name": "Tiago Sá",
+    "position": "GK"
+  },
+  {
+    "name": "Alaa Bellaarouch",
+    "position": "GK"
+  },
+  {
+    "name": "Sikou Niakaté",
+    "position": "CB"
+  },
+  {
+    "name": "Bright Arrey-Mbi",
+    "position": "CB"
+  },
+  {
+    "name": "Gustaf Lagerbielke",
+    "position": "CB"
+  },
+  {
+    "name": "Paulo Oliveira",
+    "position": "CB"
+  },
+  {
+    "name": "Jonatás Noro",
+    "position": "CB"
+  },
+  {
+    "name": "Leonardo Lelo",
+    "position": "LB"
+  },
+  {
+    "name": "Víctor Gómez",
+    "position": "RB"
+  },
+  {
+    "name": "Gabriel Moscardo",
+    "position": "CM"
+  },
+  {
+    "name": "Vítor Carvalho",
+    "position": "CM"
+  },
+  {
+    "name": "Florian Grillitsch",
+    "position": "CM"
+  },
+  {
+    "name": "Yanis da Rocha",
+    "position": "CM"
+  },
+  {
+    "name": "Rodrigo Zalazar",
+    "position": "CM"
+  },
+  {
+    "name": "Mario Dorgeles",
+    "position": "CM"
+  },
+  {
+    "name": "Gorby",
+    "position": "CM"
+  },
+  {
+    "name": "Diego Rodrigues",
+    "position": "CM"
+  },
+  {
+    "name": "João Moutinho",
+    "position": "CM"
+  },
+  {
+    "name": "Vasconcelos",
+    "position": "AM"
+  },
+  {
+    "name": "Ricardo Horta",
+    "position": "LW"
+  },
+  {
+    "name": "Gabri Martínez",
+    "position": "LW"
+  },
+  {
+    "name": "João Marques",
+    "position": "LW"
+  },
+  {
+    "name": "Sandro Vidigal",
+    "position": "LW"
+  },
+  {
+    "name": "Pau Víctor",
+    "position": "ST"
+  },
+  {
+    "name": "Fran Navarro",
+    "position": "ST"
+  },
+  {
+    "name": "Amine El Ouazzani",
+    "position": "ST"
+  }
+]

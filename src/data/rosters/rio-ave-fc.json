@@ -1,0 +1,114 @@
+[
+  {
+    "name": "Cezary Miszta",
+    "position": "GK"
+  },
+  {
+    "name": "Kevin Chamorro",
+    "position": "GK"
+  },
+  {
+    "name": "Andreas Ntoi",
+    "position": "CB"
+  },
+  {
+    "name": "Francisco Petrasso",
+    "position": "CB"
+  },
+  {
+    "name": "Jonathan Panzo",
+    "position": "CB"
+  },
+  {
+    "name": "Jakub Brabec",
+    "position": "CB"
+  },
+  {
+    "name": "Nelson Abbey",
+    "position": "CB"
+  },
+  {
+    "name": "Julien Lomboto",
+    "position": "CB"
+  },
+  {
+    "name": "Omar Richards",
+    "position": "LB"
+  },
+  {
+    "name": "Nikolaos Athanasiou",
+    "position": "LB"
+  },
+  {
+    "name": "Marios Vrousai",
+    "position": "RB"
+  },
+  {
+    "name": "Eric da Silva Moreira",
+    "position": "RB"
+  },
+  {
+    "name": "João Tomé",
+    "position": "RB"
+  },
+  {
+    "name": "Theofanis Bakoulas",
+    "position": "CM"
+  },
+  {
+    "name": "Tamás Nikitscher",
+    "position": "CM"
+  },
+  {
+    "name": "Georgios Liavas",
+    "position": "CM"
+  },
+  {
+    "name": "Lorent Talla",
+    "position": "CM"
+  },
+  {
+    "name": "Brandon Aguilera",
+    "position": "CM"
+  },
+  {
+    "name": "João Graça",
+    "position": "CM"
+  },
+  {
+    "name": "Ole Pohlmann",
+    "position": "AM"
+  },
+  {
+    "name": "Antonis Papakanellos",
+    "position": "AM"
+  },
+  {
+    "name": "Tobías Medina",
+    "position": "LW"
+  },
+  {
+    "name": "André Luiz",
+    "position": "RW"
+  },
+  {
+    "name": "Dario Špikić",
+    "position": "RW"
+  },
+  {
+    "name": "Rafael Lobato",
+    "position": "RW"
+  },
+  {
+    "name": "Clayton",
+    "position": "ST"
+  },
+  {
+    "name": "Marc Gual",
+    "position": "ST"
+  },
+  {
+    "name": "Karem Zoabi",
+    "position": "ST"
+  }
+]

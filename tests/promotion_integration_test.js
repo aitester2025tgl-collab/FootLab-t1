@@ -1,5 +1,7 @@
+/* eslint-disable no-console, no-unused-vars */
+// tests/promotion_integration_test.js
 const assert = require('assert');
-const { applyPromotionRelegation } = require('../core/promotion');
+const { applyPromotionRelegation } = require('./src/core/promotion');
 
 function makeDivision(divIndex) {
   // produce 18 clubs with predictable names and tiebreak values
@@ -8,18 +10,26 @@ function makeDivision(divIndex) {
     const points = 100 - i; // descending so club 1 highest
     const gf = 50 - i; // descending
     const ga = i; // ascending
-    clubs.push({ team: { name: `D${divIndex+1}_T${i}` }, division: divIndex+1, points, goalsFor: gf, goalsAgainst: ga });
+    clubs.push({
+      team: { name: `D${divIndex + 1}_T${i}` },
+      division: divIndex + 1,
+      points,
+      goalsFor: gf,
+      goalsAgainst: ga,
+    });
   }
   return clubs;
 }
 
 // Build 4 divisions
-const allDivisions = [ makeDivision(0), makeDivision(1), makeDivision(2), makeDivision(3) ];
+const allDivisions = [makeDivision(0), makeDivision(1), makeDivision(2), makeDivision(3)];
+
+const logger = require('./testLogger').getLogger();
 
 // Quick sanity: top of each division should be T1 and bottom T18
-for (let d=0; d<4; d++) {
-  assert.strictEqual(allDivisions[d][0].team.name, `D${d+1}_T1`);
-  assert.strictEqual(allDivisions[d][17].team.name, `D${d+1}_T18`);
+for (let d = 0; d < 4; d++) {
+  assert.strictEqual(allDivisions[d][0].team.name, `D${d + 1}_T1`);
+  assert.strictEqual(allDivisions[d][17].team.name, `D${d + 1}_T18`);
 }
 
 const result = applyPromotionRelegation(allDivisions);
@@ -51,9 +61,9 @@ assert.strictEqual(result.relegated[1][0].team.name, 'D2_T16');
 assert.strictEqual(result.relegated[2][2].team.name, 'D3_T18');
 
 // Validate newDivisions sizes: since 3 promoted up and 3 relegated down per border, sizes should remain 18
-result.newDivisions.forEach((d,idx)=>{
-  assert.strictEqual(d.length, 18, `division ${idx+1} should have 18 clubs after movement`);
+result.newDivisions.forEach((d, idx) => {
+  assert.strictEqual(d.length, 18, `division ${idx + 1} should have 18 clubs after movement`);
 });
 
-console.log('Promotion/Relegation test PASSED');
+logger.info('Promotion/Relegation test PASSED');
 process.exit(0);

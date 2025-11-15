@@ -1,0 +1,114 @@
+[
+  {
+    "name": "Patrick Sequeira",
+    "position": "GK"
+  },
+  {
+    "name": "Ivan Mandić",
+    "position": "GK"
+  },
+  {
+    "name": "João Goulart",
+    "position": "CB"
+  },
+  {
+    "name": "Kaique Rocha",
+    "position": "CB"
+  },
+  {
+    "name": "Tchamba",
+    "position": "CB"
+  },
+  {
+    "name": "David Sousa",
+    "position": "CB"
+  },
+  {
+    "name": "Kaly",
+    "position": "CB"
+  },
+  {
+    "name": "José Fonte",
+    "position": "CB"
+  },
+  {
+    "name": "Abdu Conté",
+    "position": "LB"
+  },
+  {
+    "name": "Fahem Benaïssa",
+    "position": "LB"
+  },
+  {
+    "name": "Gaizka Larrazabal",
+    "position": "RB"
+  },
+  {
+    "name": "André Geraldes",
+    "position": "RB"
+  },
+  {
+    "name": "Seba Pérez",
+    "position": "DM"
+  },
+  {
+    "name": "Iyad Mohamed",
+    "position": "DM"
+  },
+  {
+    "name": "Rafael Brito",
+    "position": "DM"
+  },
+  {
+    "name": "Renato Nhaga",
+    "position": "CM"
+  },
+  {
+    "name": "Yassin Oukili",
+    "position": "CM"
+  },
+  {
+    "name": "Miguel Sousa",
+    "position": "CM"
+  },
+  {
+    "name": "Kevin Prieto",
+    "position": "RM"
+  },
+  {
+    "name": "Tiago Morais",
+    "position": "LW"
+  },
+  {
+    "name": "Kelian Nsona",
+    "position": "LW"
+  },
+  {
+    "name": "Jérémy Livolant",
+    "position": "RW"
+  },
+  {
+    "name": "Xander Severina",
+    "position": "RW"
+  },
+  {
+    "name": "Korede Osundina",
+    "position": "RW"
+  },
+  {
+    "name": "Dailon Livramento",
+    "position": "ST"
+  },
+  {
+    "name": "Max Svensson",
+    "position": "ST"
+  },
+  {
+    "name": "Cassiano",
+    "position": "ST"
+  },
+  {
+    "name": "Clau Mendes",
+    "position": "ST"
+  }
+]

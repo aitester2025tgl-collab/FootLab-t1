@@ -1,0 +1,102 @@
+[
+  {
+    "name": "Gianluigi Donnarumma",
+    "position": "GK"
+  },
+  {
+    "name": "James Trafford",
+    "position": "GK"
+  },
+  {
+    "name": "Stefan Ortega",
+    "position": "GK"
+  },
+  {
+    "name": "Josko Gvardiol",
+    "position": "CB"
+  },
+  {
+    "name": "Rúben Dias",
+    "position": "CB"
+  },
+  {
+    "name": "Abdukodir Khusanov",
+    "position": "CB"
+  },
+  {
+    "name": "John Stones",
+    "position": "CB"
+  },
+  {
+    "name": "Nathan Aké",
+    "position": "CB"
+  },
+  {
+    "name": "Rayan Aït-Nouri",
+    "position": "LB"
+  },
+  {
+    "name": "Nico O'Reilly",
+    "position": "LB"
+  },
+  {
+    "name": "Rico Lewis",
+    "position": "RB"
+  },
+  {
+    "name": "Matheus Nunes",
+    "position": "RB"
+  },
+  {
+    "name": "Rodri",
+    "position": "CM"
+  },
+  {
+    "name": "Nico González",
+    "position": "CM"
+  },
+  {
+    "name": "Kalvin Phillips",
+    "position": "CM"
+  },
+  {
+    "name": "Tijjani Reijnders",
+    "position": "CM"
+  },
+  {
+    "name": "Mateo Kovacic",
+    "position": "CM"
+  },
+  {
+    "name": "Bernardo Silva",
+    "position": "CM"
+  },
+  {
+    "name": "Jérémy Doku",
+    "position": "LW"
+  },
+  {
+    "name": "Savinho",
+    "position": "LW"
+  },
+  {
+    "name": "Phil Foden",
+    "position": "RW"
+  },
+  {
+    "name": "Rayan Cherki",
+    "position": "RW"
+  },
+  {
+    "name": "Oscar Bobb",
+    "position": "RW"
+  },
+  {
+    "name": "Erling Haaland",
+    "position": "ST"
+  },
+  {
+    "name": "Omar Marmoush",
+    "position": "ST"
+  }
+]

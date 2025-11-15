@@ -1,0 +1,110 @@
+[
+  {
+    "name": "Aaron Ramsdale",
+    "position": "GK"
+  },
+  {
+    "name": "Nick Pope",
+    "position": "GK"
+  },
+  {
+    "name": "Max Thompson",
+    "position": "GK"
+  },
+  {
+    "name": "Sven Botman",
+    "position": "CB"
+  },
+  {
+    "name": "Malick Thiaw",
+    "position": "CB"
+  },
+  {
+    "name": "Fabian Schär",
+    "position": "CB"
+  },
+  {
+    "name": "Dan Burn",
+    "position": "CB"
+  },
+  {
+    "name": "Jamaal Lascelles",
+    "position": "CB"
+  },
+  {
+    "name": "Lewis Hall",
+    "position": "LB"
+  },
+  {
+    "name": "Alex Murphy",
+    "position": "LB"
+  },
+  {
+    "name": "Tino Livramento",
+    "position": "RB"
+  },
+  {
+    "name": "Kieran Trippier",
+    "position": "RB"
+  },
+  {
+    "name": "Emil Krafth",
+    "position": "RB"
+  },
+  {
+    "name": "Harrison Ashby",
+    "position": "RB"
+  },
+  {
+    "name": "Sandro Tonali",
+    "position": "CM"
+  },
+  {
+    "name": "Bruno Guimarães",
+    "position": "CM"
+  },
+  {
+    "name": "Jacob Ramsey",
+    "position": "CM"
+  },
+  {
+    "name": "Joelinton",
+    "position": "CM"
+  },
+  {
+    "name": "Lewis Miley",
+    "position": "CM"
+  },
+  {
+    "name": "Joe Willock",
+    "position": "CM"
+  },
+  {
+    "name": "Anthony Gordon",
+    "position": "LW"
+  },
+  {
+    "name": "Harvey Barnes",
+    "position": "LW"
+  },
+  {
+    "name": "Anthony Elanga",
+    "position": "RW"
+  },
+  {
+    "name": "Jacob Murphy",
+    "position": "RW"
+  },
+  {
+    "name": "Nick Woltemade",
+    "position": "ST"
+  },
+  {
+    "name": "Yoane Wissa",
+    "position": "ST"
+  },
+  {
+    "name": "William Osula",
+    "position": "ST"
+  }
+]

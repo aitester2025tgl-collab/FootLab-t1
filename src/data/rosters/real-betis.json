@@ -1,0 +1,106 @@
+[
+  {
+    "name": "Álvaro Valles",
+    "position": "GK"
+  },
+  {
+    "name": "Pau López",
+    "position": "GK"
+  },
+  {
+    "name": "Adrián",
+    "position": "GK"
+  },
+  {
+    "name": "Natan",
+    "position": "CB"
+  },
+  {
+    "name": "Valentín Gómez",
+    "position": "CB"
+  },
+  {
+    "name": "Diego Llorente",
+    "position": "CB"
+  },
+  {
+    "name": "Marc Bartra",
+    "position": "CB"
+  },
+  {
+    "name": "Junior Firpo",
+    "position": "LB"
+  },
+  {
+    "name": "Ricardo Rodríguez",
+    "position": "LB"
+  },
+  {
+    "name": "Ángel Ortiz",
+    "position": "RB"
+  },
+  {
+    "name": "Héctor Bellerín",
+    "position": "RB"
+  },
+  {
+    "name": "Sofyan Amrabat",
+    "position": "CM"
+  },
+  {
+    "name": "Marc Roca",
+    "position": "CM"
+  },
+  {
+    "name": "Sergi Altimira",
+    "position": "CM"
+  },
+  {
+    "name": "Nelson Deossa",
+    "position": "CM"
+  },
+  {
+    "name": "Pablo Fornals",
+    "position": "CM"
+  },
+  {
+    "name": "Giovani Lo Celso",
+    "position": "CM"
+  },
+  {
+    "name": "Isco",
+    "position": "CM"
+  },
+  {
+    "name": "Abde Ezzalzouli",
+    "position": "LW"
+  },
+  {
+    "name": "Rodrigo Riquelme",
+    "position": "LW"
+  },
+  {
+    "name": "Antony",
+    "position": "RW"
+  },
+  {
+    "name": "Pablo García",
+    "position": "RW"
+  },
+  {
+    "name": "Aitor Ruibal",
+    "position": "RW"
+  },
+  {
+    "name": "Cucho Hernández",
+    "position": "ST"
+  },
+  {
+    "name": "Chimy Ávila",
+    "position": "ST"
+  },
+  {
+    "name": "Cédric Bakambu",
+    "position": "ST"
+  }
+]

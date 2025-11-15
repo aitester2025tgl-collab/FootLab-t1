@@ -1,0 +1,114 @@
+[
+  {
+    "name": "Dean Henderson",
+    "position": "GK"
+  },
+  {
+    "name": "Walter Benítez",
+    "position": "GK"
+  },
+  {
+    "name": "Marc Guéhi",
+    "position": "CB"
+  },
+  {
+    "name": "Maxence Lacroix",
+    "position": "CB"
+  },
+  {
+    "name": "Chris Richards",
+    "position": "CB"
+  },
+  {
+    "name": "Jaydee Canvot",
+    "position": "CB"
+  },
+  {
+    "name": "Chadi Riad",
+    "position": "CB"
+  },
+  {
+    "name": "Tyrick Mitchell",
+    "position": "LB"
+  },
+  {
+    "name": "Borna Sosa",
+    "position": "LB"
+  },
+  {
+    "name": "Rio Cardines",
+    "position": "LB"
+  },
+  {
+    "name": "Daniel Muñoz",
+    "position": "RB"
+  },
+  {
+    "name": "Caleb Kporha",
+    "position": "RB"
+  },
+  {
+    "name": "Nathaniel Clyne",
+    "position": "RB"
+  },
+  {
+    "name": "Adam Wharton",
+    "position": "CM"
+  },
+  {
+    "name": "Cheick Doucouré",
+    "position": "CM"
+  },
+  {
+    "name": "Jefferson Lerma",
+    "position": "CM"
+  },
+  {
+    "name": "Kaden Rodney",
+    "position": "CM"
+  },
+  {
+    "name": "Will Hughes",
+    "position": "CM"
+  },
+  {
+    "name": "Naouirou Ahamada",
+    "position": "CM"
+  },
+  {
+    "name": "Daichi Kamada",
+    "position": "CM"
+  },
+  {
+    "name": "Justin Devenny",
+    "position": "CM"
+  },
+  {
+    "name": "Asher Agbinone",
+    "position": "LW"
+  },
+  {
+    "name": "Ismaïla Sarr",
+    "position": "RW"
+  },
+  {
+    "name": "Yéremy Pino",
+    "position": "RW"
+  },
+  {
+    "name": "Jean-Philippe Mateta",
+    "position": "ST"
+  },
+  {
+    "name": "Eddie Nketiah",
+    "position": "ST"
+  },
+  {
+    "name": "Christantus Uche",
+    "position": "ST"
+  },
+  {
+    "name": "Zach Marsh",
+    "position": "ST"
+  }
+]

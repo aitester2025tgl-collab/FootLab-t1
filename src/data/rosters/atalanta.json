@@ -1,0 +1,106 @@
+[
+  {
+    "name": "Marco Carnesecchi",
+    "position": "GK"
+  },
+  {
+    "name": "Marco Sportiello",
+    "position": "GK"
+  },
+  {
+    "name": "Francesco Rossi",
+    "position": "GK"
+  },
+  {
+    "name": "Giorgio Scalvini",
+    "position": "CB"
+  },
+  {
+    "name": "Isak Hien",
+    "position": "CB"
+  },
+  {
+    "name": "Odilon Kossounou",
+    "position": "CB"
+  },
+  {
+    "name": "Sead Kolasinac",
+    "position": "CB"
+  },
+  {
+    "name": "Berat Djimsiti",
+    "position": "CB"
+  },
+  {
+    "name": "Honest Ahanor",
+    "position": "LB"
+  },
+  {
+    "name": "Marten de Roon",
+    "position": "CM"
+  },
+  {
+    "name": "Éderson",
+    "position": "CM"
+  },
+  {
+    "name": "Yunus Musah",
+    "position": "CM"
+  },
+  {
+    "name": "Mario Pasalić",
+    "position": "CM"
+  },
+  {
+    "name": "Marco Brescianini",
+    "position": "CM"
+  },
+  {
+    "name": "Raoul Bellanova",
+    "position": "RM"
+  },
+  {
+    "name": "Davide Zappacosta",
+    "position": "RM"
+  },
+  {
+    "name": "Nicola Zalewski",
+    "position": "LM"
+  },
+  {
+    "name": "Mitchel Bakker",
+    "position": "LM"
+  },
+  {
+    "name": "Lorenzo Bernasconi",
+    "position": "LM"
+  },
+  {
+    "name": "Charles De Ketelaere",
+    "position": "AM"
+  },
+  {
+    "name": "Lazar Samardžić",
+    "position": "AM"
+  },
+  {
+    "name": "Daniel Maldini",
+    "position": "AM"
+  },
+  {
+    "name": "Kamaldeen Sulemana",
+    "position": "LW"
+  },
+  {
+    "name": "Ademola Lookman",
+    "position": "SS"
+  },
+  {
+    "name": "Gianluca Scamacca",
+    "position": "ST"
+  },
+  {
+    "name": "Nikola Krstović",
+    "position": "ST"
+  }
+]

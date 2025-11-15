@@ -1,0 +1,110 @@
+[
+  {
+    "name": "David de Gea",
+    "position": "GK"
+  },
+  {
+    "name": "Tommaso Martinelli",
+    "position": "GK"
+  },
+  {
+    "name": "Luca Lezzerini",
+    "position": "GK"
+  },
+  {
+    "name": "Pietro Comuzzo",
+    "position": "CB"
+  },
+  {
+    "name": "Luca Ranieri",
+    "position": "CB"
+  },
+  {
+    "name": "Marin Pongracic",
+    "position": "CB"
+  },
+  {
+    "name": "Mattia Viti",
+    "position": "CB"
+  },
+  {
+    "name": "Pablo Marí",
+    "position": "CB"
+  },
+  {
+    "name": "Eman Kospo",
+    "position": "CB"
+  },
+  {
+    "name": "Eddy Kouadio",
+    "position": "CB"
+  },
+  {
+    "name": "Niccolò Fortini",
+    "position": "LB"
+  },
+  {
+    "name": "Robin Gosens",
+    "position": "LB"
+  },
+  {
+    "name": "Fabiano Parisi",
+    "position": "LB"
+  },
+  {
+    "name": "Dodô",
+    "position": "RB"
+  },
+  {
+    "name": "Tariq Lamptey",
+    "position": "RB"
+  },
+  {
+    "name": "Rolando Mandragora",
+    "position": "CM"
+  },
+  {
+    "name": "Nicolò Fagioli",
+    "position": "CM"
+  },
+  {
+    "name": "Simon Sohm",
+    "position": "CM"
+  },
+  {
+    "name": "Jacopo Fazzini",
+    "position": "CM"
+  },
+  {
+    "name": "Hans Nicolussi Caviglia",
+    "position": "CM"
+  },
+  {
+    "name": "Amir Richardson",
+    "position": "CM"
+  },
+  {
+    "name": "Cher Ndour",
+    "position": "CM"
+  },
+  {
+    "name": "Gino Infantino",
+    "position": "CM"
+  },
+  {
+    "name": "Abdelhamid Sabiri",
+    "position": "CM"
+  },
+  {
+    "name": "Albert Gudmundsson",
+    "position": "ST"
+  },
+  {
+    "name": "Moise Kean",
+    "position": "ST"
+  },
+  {
+    "name": "Roberto Piccoli",
+    "position": "ST"
+  }
+]

@@ -1,0 +1,106 @@
+[
+  {
+    "name": "Juan Castillo",
+    "position": "GK"
+  },
+  {
+    "name": "Charles",
+    "position": "GK"
+  },
+  {
+    "name": "Gui",
+    "position": "GK"
+  },
+  {
+    "name": "Rodrigo Abascal",
+    "position": "CB"
+  },
+  {
+    "name": "Óscar Rivas",
+    "position": "CB"
+  },
+  {
+    "name": "Thiago Balieiro",
+    "position": "CB"
+  },
+  {
+    "name": "Miguel Nóbrega",
+    "position": "CB"
+  },
+  {
+    "name": "João Mendes",
+    "position": "LB"
+  },
+  {
+    "name": "Orest Lebedenko",
+    "position": "LB"
+  },
+  {
+    "name": "Maga",
+    "position": "RB"
+  },
+  {
+    "name": "Tony Strata",
+    "position": "RB"
+  },
+  {
+    "name": "Diogo Sousa",
+    "position": "DM"
+  },
+  {
+    "name": "Rica Rocha",
+    "position": "DM"
+  },
+  {
+    "name": "Matija Mitrović",
+    "position": "CM"
+  },
+  {
+    "name": "Beni",
+    "position": "CM"
+  },
+  {
+    "name": "Gonçalo Nogueira",
+    "position": "CM"
+  },
+  {
+    "name": "Samu",
+    "position": "AM"
+  },
+  {
+    "name": "Miguel Nogueira",
+    "position": "AM"
+  },
+  {
+    "name": "Vando Félix",
+    "position": "LW"
+  },
+  {
+    "name": "Fabio Blanco",
+    "position": "LW"
+  },
+  {
+    "name": "Noah Saviolo",
+    "position": "LW"
+  },
+  {
+    "name": "Oumar Camara",
+    "position": "LW"
+  },
+  {
+    "name": "Gustavo Silva",
+    "position": "RW"
+  },
+  {
+    "name": "Telmo Arcanjo",
+    "position": "RW"
+  },
+  {
+    "name": "Alioune Ndoye",
+    "position": "ST"
+  },
+  {
+    "name": "Nélson Oliveira",
+    "position": "ST"
+  }
+]

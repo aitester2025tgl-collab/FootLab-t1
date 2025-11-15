@@ -1,0 +1,106 @@
+[
+  {
+    "name": "Álex Remiro",
+    "position": "GK"
+  },
+  {
+    "name": "Unai Marrero",
+    "position": "GK"
+  },
+  {
+    "name": "Igor Zubeldia",
+    "position": "CB"
+  },
+  {
+    "name": "Jon Martín",
+    "position": "CB"
+  },
+  {
+    "name": "Duje Caleta-Car",
+    "position": "CB"
+  },
+  {
+    "name": "Aritz Elustondo",
+    "position": "CB"
+  },
+  {
+    "name": "Sergio Gómez",
+    "position": "LB"
+  },
+  {
+    "name": "Aihen Muñoz",
+    "position": "LB"
+  },
+  {
+    "name": "Jon Aramburu",
+    "position": "RB"
+  },
+  {
+    "name": "Álvaro Odriozola",
+    "position": "RB"
+  },
+  {
+    "name": "Jon Gorrotxategi",
+    "position": "CM"
+  },
+  {
+    "name": "Carlos Soler",
+    "position": "CM"
+  },
+  {
+    "name": "Luka Sucic",
+    "position": "CM"
+  },
+  {
+    "name": "Yangel Herrera",
+    "position": "CM"
+  },
+  {
+    "name": "Beñat Turrientes",
+    "position": "CM"
+  },
+  {
+    "name": "Brais Méndez",
+    "position": "CM"
+  },
+  {
+    "name": "Pablo Marín",
+    "position": "CM"
+  },
+  {
+    "name": "Arsen Zakharyan",
+    "position": "CM"
+  },
+  {
+    "name": "Mikel Goti",
+    "position": "CM"
+  },
+  {
+    "name": "Ander Barrenetxea",
+    "position": "LW"
+  },
+  {
+    "name": "Gonçalo Guedes",
+    "position": "LW"
+  },
+  {
+    "name": "Takefusa Kubo",
+    "position": "RW"
+  },
+  {
+    "name": "Mikel Oyarzabal",
+    "position": "ST"
+  },
+  {
+    "name": "Orri Óskarsson",
+    "position": "ST"
+  },
+  {
+    "name": "Umar Sadiq",
+    "position": "ST"
+  },
+  {
+    "name": "Jon Karrikaburu",
+    "position": "ST"
+  }
+]

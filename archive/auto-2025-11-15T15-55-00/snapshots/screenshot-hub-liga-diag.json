@@ -1,0 +1,18 @@
+{
+  "before": {
+    "innerHTMLLen": 24910,
+    "textSnippet": "PLANTEL (28 jogadores)\nGuarda-redes (2)\nGK\nIvan Mandić\n34\n300 €\nGK\nPatrick Sequeira\n33\n300 €\nDefesas (10)\nCB\nTchamba\n35\n300 €\nLB\nAbdu Conté\n35\n300 €\nCB\nJoão Goulart\n34\n300 € *\nCB\nDavid Sousa\n34\n300 €\nCB\nKaly\n34\n300 €\nCB\nJosé Fonte\n34\n300 €\nLB\nFahem Benaïssa\n34\n300 €\nRB\nGaizka Larrazabal\n34\n300 €\nRB\nAndré Geraldes\n34\n300 €\nCB\nKaique Rocha\n33\n300 € *\nMédios (12)\nCM\nSeba Pérez\n35\n300 €\nCM\nRafael Brit",
+    "childCount": 1,
+    "firstChildTag": "DIV",
+    "firstChildClass": "hub-box team-roster-grid"
+  },
+  "after": {
+    "innerHTMLLen": 25055,
+    "textSnippet": "Classificação - Divisão 4\nPOS\tEQUIPA\tJ\tV\tE\tD\tGM\tGS\tPTS\n1\t\nFC Porto\n\t0\t0\t0\t0\t0\t0\t0\n2\t\nSporting CP\n\t0\t0\t0\t0\t0\t0\t0\n3\t\nSL Benfica\n\t0\t0\t0\t0\t0\t0\t0\n4\t\nSC Braga\n\t0\t0\t0\t0\t0\t0\t0\n5\t\nFC Famalicao\n\t0\t0\t0\t0\t0\t0\t0\n6\t\nRio Ave FC\n\t0\t0\t0\t0\t0\t0\t0\n7\t\nCD Santa Clara\n\t0\t0\t0\t0\t0\t0\t0\n8\t\nEstoril Praia\n\t0\t0\t0\t0\t0\t0\t0\n9\t\nFC Alverca\n\t0\t0\t0\t0\t0\t0\t0\n10\t\nGil Vicente FC\n\t0\t0\t0\t0\t0\t0\t0\n11\t\n⭐\nCasa Pia AC\n\t0\t0\t0\t0\t0\t0\t0\n12\t\nMoreire",
+    "childCount": 2,
+    "firstChildTag": "H2",
+    "firstChildClass": ""
+  },
+  "beforeHash": "4ea0079973adbc72773ee30c3e1037d58548a8ee8e8660f5f50e698c16157247",
+  "afterHash": "8bd29cff2169f38fd16a96ba912be181e7269f4169183a62eeda4738a02663b9"
+}

@@ -1,0 +1,110 @@
+[
+  {
+    "name": "Odysseas Vlachodimos",
+    "position": "GK"
+  },
+  {
+    "name": "Álvaro Fernández",
+    "position": "GK"
+  },
+  {
+    "name": "Ørjan Nyland",
+    "position": "GK"
+  },
+  {
+    "name": "Kike Salas",
+    "position": "CB"
+  },
+  {
+    "name": "Fábio Cardoso",
+    "position": "CB"
+  },
+  {
+    "name": "Marcão",
+    "position": "CB"
+  },
+  {
+    "name": "César Azpilicueta",
+    "position": "CB"
+  },
+  {
+    "name": "Tanguy Nianzou",
+    "position": "CB"
+  },
+  {
+    "name": "Andrés Castrín",
+    "position": "CB"
+  },
+  {
+    "name": "Ramón Martínez",
+    "position": "CB"
+  },
+  {
+    "name": "Gabriel Suazo",
+    "position": "LB"
+  },
+  {
+    "name": "Juanlu Sánchez",
+    "position": "RB"
+  },
+  {
+    "name": "José Ángel Carmona",
+    "position": "RB"
+  },
+  {
+    "name": "Batista Mendy",
+    "position": "CM"
+  },
+  {
+    "name": "Lucien Agoumé",
+    "position": "CM"
+  },
+  {
+    "name": "Nemanja Gudelj",
+    "position": "CM"
+  },
+  {
+    "name": "Djibril Sow",
+    "position": "CM"
+  },
+  {
+    "name": "Joan Jordán",
+    "position": "CM"
+  },
+  {
+    "name": "Manu Bueno",
+    "position": "CM"
+  },
+  {
+    "name": "Rubén Vargas",
+    "position": "LW"
+  },
+  {
+    "name": "Alfon González",
+    "position": "LW"
+  },
+  {
+    "name": "Chidera Ejuke",
+    "position": "LW"
+  },
+  {
+    "name": "Adnan Januzaj",
+    "position": "RW"
+  },
+  {
+    "name": "Peque Fernández",
+    "position": "ST"
+  },
+  {
+    "name": "Isaac Romero",
+    "position": "ST"
+  },
+  {
+    "name": "Akor Adams",
+    "position": "ST"
+  },
+  {
+    "name": "Alexis Sánchez",
+    "position": "ST"
+  }
+]

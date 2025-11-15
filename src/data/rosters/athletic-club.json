@@ -1,0 +1,110 @@
+[
+  {
+    "name": "Unai Simón",
+    "position": "GK"
+  },
+  {
+    "name": "Álex Padilla",
+    "position": "GK"
+  },
+  {
+    "name": "Dani Vivian",
+    "position": "CB"
+  },
+  {
+    "name": "Aitor Paredes",
+    "position": "CB"
+  },
+  {
+    "name": "Aymeric Laporte",
+    "position": "CB"
+  },
+  {
+    "name": "Yeray Álvarez",
+    "position": "CB"
+  },
+  {
+    "name": "Unai Egiluz",
+    "position": "CB"
+  },
+  {
+    "name": "Adama Boiro",
+    "position": "LB"
+  },
+  {
+    "name": "Yuri Berchiche",
+    "position": "LB"
+  },
+  {
+    "name": "Jesús Areso",
+    "position": "RB"
+  },
+  {
+    "name": "Andoni Gorosabel",
+    "position": "RB"
+  },
+  {
+    "name": "Iñigo Lekue",
+    "position": "RB"
+  },
+  {
+    "name": "Mikel Vesga",
+    "position": "CM"
+  },
+  {
+    "name": "Mikel Jauregizar",
+    "position": "CM"
+  },
+  {
+    "name": "Beñat Prados",
+    "position": "CM"
+  },
+  {
+    "name": "Iñigo Ruiz de Galarreta",
+    "position": "CM"
+  },
+  {
+    "name": "Alejandro Rego",
+    "position": "CM"
+  },
+  {
+    "name": "Oihan Sancet",
+    "position": "CM"
+  },
+  {
+    "name": "Unai Gómez",
+    "position": "CM"
+  },
+  {
+    "name": "Nico Williams",
+    "position": "LW"
+  },
+  {
+    "name": "Álex Berenguer",
+    "position": "LW"
+  },
+  {
+    "name": "Nico Serrano",
+    "position": "LW"
+  },
+  {
+    "name": "Iñaki Williams",
+    "position": "RW"
+  },
+  {
+    "name": "Robert Navarro",
+    "position": "RW"
+  },
+  {
+    "name": "Maroan Sannadi",
+    "position": "ST"
+  },
+  {
+    "name": "Gorka Guruzeta",
+    "position": "ST"
+  },
+  {
+    "name": "Urko Izeta",
+    "position": "ST"
+  }
+]

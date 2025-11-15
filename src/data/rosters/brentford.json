@@ -1,0 +1,106 @@
+[
+  {
+    "name": "Caoimhín Kelleher",
+    "position": "GK"
+  },
+  {
+    "name": "Hákon Valdimarsson",
+    "position": "GK"
+  },
+  {
+    "name": "Matthew Cox",
+    "position": "GK"
+  },
+  {
+    "name": "Nathan Collins",
+    "position": "CB"
+  },
+  {
+    "name": "Sepp Van Den Berg",
+    "position": "CB"
+  },
+  {
+    "name": "Kristoffer Ajer",
+    "position": "CB"
+  },
+  {
+    "name": "Ethan Pinnock",
+    "position": "CB"
+  },
+  {
+    "name": "Benjamin Arthur",
+    "position": "CB"
+  },
+  {
+    "name": "Rico Henry",
+    "position": "LB"
+  },
+  {
+    "name": "Michael Kayode",
+    "position": "RB"
+  },
+  {
+    "name": "Aaron Hickey",
+    "position": "RB"
+  },
+  {
+    "name": "Vitaly Janelt",
+    "position": "CM"
+  },
+  {
+    "name": "Yunus Konak",
+    "position": "CM"
+  },
+  {
+    "name": "Jordan Henderson",
+    "position": "CM"
+  },
+  {
+    "name": "Yegor Yarmolyuk",
+    "position": "CM"
+  },
+  {
+    "name": "Mathias Jensen",
+    "position": "CM"
+  },
+  {
+    "name": "Frank Onyeka",
+    "position": "CM"
+  },
+  {
+    "name": "Josh Dasilva",
+    "position": "CM"
+  },
+  {
+    "name": "Paris Maghoma",
+    "position": "CM"
+  },
+  {
+    "name": "Keane Lewis-Potter",
+    "position": "LW"
+  },
+  {
+    "name": "Dango Ouattara",
+    "position": "LW"
+  },
+  {
+    "name": "Kevin Schade",
+    "position": "LW"
+  },
+  {
+    "name": "Reiss Nelson",
+    "position": "LW"
+  },
+  {
+    "name": "Gustavo Nunes",
+    "position": "LW"
+  },
+  {
+    "name": "Romelle Donovan",
+    "position": "RW"
+  },
+  {
+    "name": "Igor Thiago",
+    "position": "ST"
+  }
+]

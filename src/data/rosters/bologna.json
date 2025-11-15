@@ -1,0 +1,114 @@
+[
+  {
+    "name": "Lukasz Skorupski",
+    "position": "GK"
+  },
+  {
+    "name": "Federico Ravaglia",
+    "position": "GK"
+  },
+  {
+    "name": "Massimo Pessina",
+    "position": "GK"
+  },
+  {
+    "name": "Jhon Lucumí",
+    "position": "CB"
+  },
+  {
+    "name": "Martin Vitík",
+    "position": "CB"
+  },
+  {
+    "name": "Torbjørn Heggem",
+    "position": "CB"
+  },
+  {
+    "name": "Nicolò Casale",
+    "position": "CB"
+  },
+  {
+    "name": "Kevin Bonifazi",
+    "position": "CB"
+  },
+  {
+    "name": "Juan Miranda",
+    "position": "LB"
+  },
+  {
+    "name": "Charalampos Lykogiannis",
+    "position": "LB"
+  },
+  {
+    "name": "Emil Holm",
+    "position": "RB"
+  },
+  {
+    "name": "Nadir Zortea",
+    "position": "RB"
+  },
+  {
+    "name": "Lorenzo De Silvestri",
+    "position": "RB"
+  },
+  {
+    "name": "Ibrahim Sulemana",
+    "position": "CM"
+  },
+  {
+    "name": "Nikola Moro",
+    "position": "CM"
+  },
+  {
+    "name": "Lewis Ferguson",
+    "position": "CM"
+  },
+  {
+    "name": "Tommaso Pobega",
+    "position": "CM"
+  },
+  {
+    "name": "Remo Freuler",
+    "position": "CM"
+  },
+  {
+    "name": "Jens Odgaard",
+    "position": "CM"
+  },
+  {
+    "name": "Giovanni Fabbian",
+    "position": "CM"
+  },
+  {
+    "name": "Jonathan Rowe",
+    "position": "LW"
+  },
+  {
+    "name": "Benja Domínguez",
+    "position": "LW"
+  },
+  {
+    "name": "Nicolò Cambiaghi",
+    "position": "LW"
+  },
+  {
+    "name": "Riccardo Orsolini",
+    "position": "RW"
+  },
+  {
+    "name": "Federico Bernardeschi",
+    "position": "RW"
+  },
+  {
+    "name": "Santiago Castro",
+    "position": "ST"
+  },
+  {
+    "name": "Thijs Dallinga",
+    "position": "ST"
+  },
+  {
+    "name": "Ciro Immobile",
+    "position": "ST"
+  }
+]

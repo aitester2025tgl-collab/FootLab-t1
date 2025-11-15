@@ -1,0 +1,106 @@
+[
+  {
+    "name": "André Ferreira",
+    "position": "GK"
+  },
+  {
+    "name": "Caio Secco",
+    "position": "GK"
+  },
+  {
+    "name": "Mika",
+    "position": "GK"
+  },
+  {
+    "name": "Michel",
+    "position": "CB"
+  },
+  {
+    "name": "Maracás",
+    "position": "CB"
+  },
+  {
+    "name": "Gilberto Batista",
+    "position": "CB"
+  },
+  {
+    "name": "Marcelo",
+    "position": "CB"
+  },
+  {
+    "name": "Kiko",
+    "position": "LB"
+  },
+  {
+    "name": "Álvaro Martínez",
+    "position": "LB"
+  },
+  {
+    "name": "Dinis Pinto",
+    "position": "RB"
+  },
+  {
+    "name": "Diogo Travassos",
+    "position": "RB"
+  },
+  {
+    "name": "Mateja Stjepanović",
+    "position": "DM"
+  },
+  {
+    "name": "Afonso Assis",
+    "position": "DM"
+  },
+  {
+    "name": "Vasco Sousa",
+    "position": "CM"
+  },
+  {
+    "name": "Lawrence Ofori",
+    "position": "CM"
+  },
+  {
+    "name": "Rodri Alonso",
+    "position": "CM"
+  },
+  {
+    "name": "Jimi Gower",
+    "position": "CM"
+  },
+  {
+    "name": "Alan",
+    "position": "AM"
+  },
+  {
+    "name": "Benny",
+    "position": "AM"
+  },
+  {
+    "name": "Cedric Teguia",
+    "position": "LW"
+  },
+  {
+    "name": "Kiko Bondoso",
+    "position": "LW"
+  },
+  {
+    "name": "Landerson",
+    "position": "LW"
+  },
+  {
+    "name": "Joel Jorquera",
+    "position": "LW"
+  },
+  {
+    "name": "Guilherme Schettine",
+    "position": "ST"
+  },
+  {
+    "name": "Yan Maranhão",
+    "position": "ST"
+  },
+  {
+    "name": "Luís Semedo",
+    "position": "ST"
+  }
+]

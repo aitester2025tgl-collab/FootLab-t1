@@ -1,0 +1,102 @@
+[
+  {
+    "name": "Andrew",
+    "position": "GK"
+  },
+  {
+    "name": "Dani Figueira",
+    "position": "GK"
+  },
+  {
+    "name": "Marvin Elimbi",
+    "position": "CB"
+  },
+  {
+    "name": "Jonathan Buatu",
+    "position": "CB"
+  },
+  {
+    "name": "Antonio Espigares",
+    "position": "CB"
+  },
+  {
+    "name": "Arthur Tchaptchet",
+    "position": "CB"
+  },
+  {
+    "name": "Ghislain Konan",
+    "position": "LB"
+  },
+  {
+    "name": "Zé Carlos",
+    "position": "RB"
+  },
+  {
+    "name": "Hevertton",
+    "position": "RB"
+  },
+  {
+    "name": "Jonathan Mutombo",
+    "position": "RB"
+  },
+  {
+    "name": "Mohamed Bamba",
+    "position": "DM"
+  },
+  {
+    "name": "Facundo Cáseres",
+    "position": "CM"
+  },
+  {
+    "name": "Zé Carlos",
+    "position": "CM"
+  },
+  {
+    "name": "Gonçalo Maia",
+    "position": "CM"
+  },
+  {
+    "name": "Luís Esteves",
+    "position": "AM"
+  },
+  {
+    "name": "Santi García",
+    "position": "AM"
+  },
+  {
+    "name": "Martín Fernández",
+    "position": "AM"
+  },
+  {
+    "name": "Joelson Fernandes",
+    "position": "LW"
+  },
+  {
+    "name": "Tidjany Touré",
+    "position": "LW"
+  },
+  {
+    "name": "Sergio Bermejo",
+    "position": "RW"
+  },
+  {
+    "name": "Murilo",
+    "position": "RW"
+  },
+  {
+    "name": "Agustín Moreira",
+    "position": "RW"
+  },
+  {
+    "name": "Pablo",
+    "position": "ST"
+  },
+  {
+    "name": "Gustavo Varela",
+    "position": "ST"
+  },
+  {
+    "name": "Carlos Eduardo",
+    "position": "ST"
+  }
+]

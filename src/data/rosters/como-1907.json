@@ -1,0 +1,114 @@
+[
+  {
+    "name": "Jean Butez",
+    "position": "GK"
+  },
+  {
+    "name": "Nikola Cavlina",
+    "position": "GK"
+  },
+  {
+    "name": "Diego Carlos",
+    "position": "CB"
+  },
+  {
+    "name": "Alberto Dossena",
+    "position": "CB"
+  },
+  {
+    "name": "Stefan Posch",
+    "position": "CB"
+  },
+  {
+    "name": "Jacobo Ramón",
+    "position": "CB"
+  },
+  {
+    "name": "Marc Oliver Kempf",
+    "position": "CB"
+  },
+  {
+    "name": "Edoardo Goldaniga",
+    "position": "CB"
+  },
+  {
+    "name": "Álex Valle",
+    "position": "LB"
+  },
+  {
+    "name": "Alberto Moreno",
+    "position": "LB"
+  },
+  {
+    "name": "Marco Sala",
+    "position": "LB"
+  },
+  {
+    "name": "Ignace Van der Brempt",
+    "position": "RB"
+  },
+  {
+    "name": "Mërgim Vojvoda",
+    "position": "RB"
+  },
+  {
+    "name": "Ivan Smolcic",
+    "position": "RB"
+  },
+  {
+    "name": "Máximo Perrone",
+    "position": "CM"
+  },
+  {
+    "name": "Maxence Caqueret",
+    "position": "CM"
+  },
+  {
+    "name": "Lucas Da Cunha",
+    "position": "CM"
+  },
+  {
+    "name": "Sergi Roberto",
+    "position": "CM"
+  },
+  {
+    "name": "Nico Paz",
+    "position": "CM"
+  },
+  {
+    "name": "Martin Baturina",
+    "position": "CM"
+  },
+  {
+    "name": "Simone Verdi",
+    "position": "CM"
+  },
+  {
+    "name": "Jesús Rodríguez",
+    "position": "LW"
+  },
+  {
+    "name": "Assane Diao",
+    "position": "LW"
+  },
+  {
+    "name": "Nicolas Kühn",
+    "position": "RW"
+  },
+  {
+    "name": "Jayden Addai",
+    "position": "RW"
+  },
+  {
+    "name": "Álvaro Morata",
+    "position": "ST"
+  },
+  {
+    "name": "Anastasios Douvikas",
+    "position": "ST"
+  },
+  {
+    "name": "Alberto Cerri",
+    "position": "ST"
+  }
+]

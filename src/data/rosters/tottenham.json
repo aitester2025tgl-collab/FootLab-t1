@@ -1,0 +1,114 @@
+[
+  {
+    "name": "Guglielmo Vicario",
+    "position": "GK"
+  },
+  {
+    "name": "Antonín Kinský",
+    "position": "GK"
+  },
+  {
+    "name": "Cristian Romero",
+    "position": "CB"
+  },
+  {
+    "name": "Micky Van De Ven",
+    "position": "CB"
+  },
+  {
+    "name": "Radu Drăgușin",
+    "position": "CB"
+  },
+  {
+    "name": "Kevin Danso",
+    "position": "CB"
+  },
+  {
+    "name": "Ben Davies",
+    "position": "CB"
+  },
+  {
+    "name": "Kota Takai",
+    "position": "CB"
+  },
+  {
+    "name": "Destiny Udogie",
+    "position": "LB"
+  },
+  {
+    "name": "Djed Spence",
+    "position": "LB"
+  },
+  {
+    "name": "Pedro Porro",
+    "position": "RB"
+  },
+  {
+    "name": "João Palhinha",
+    "position": "CM"
+  },
+  {
+    "name": "Yves Bissouma",
+    "position": "CM"
+  },
+  {
+    "name": "Lucas Bergvall",
+    "position": "CM"
+  },
+  {
+    "name": "Archie Gray",
+    "position": "CM"
+  },
+  {
+    "name": "Pape Matar Sarr",
+    "position": "CM"
+  },
+  {
+    "name": "Rodrigo Bentancur",
+    "position": "CM"
+  },
+  {
+    "name": "Xavi Simons",
+    "position": "CM"
+  },
+  {
+    "name": "Dejan Kulusevski",
+    "position": "CM"
+  },
+  {
+    "name": "James Maddison",
+    "position": "CM"
+  },
+  {
+    "name": "Wilson Odobert",
+    "position": "LW"
+  },
+  {
+    "name": "Mohammed Kudus",
+    "position": "RW"
+  },
+  {
+    "name": "Brennan Johnson",
+    "position": "RW"
+  },
+  {
+    "name": "Dominic Solanke",
+    "position": "ST"
+  },
+  {
+    "name": "Mathys Tel",
+    "position": "ST"
+  },
+  {
+    "name": "Randal Kolo Muani",
+    "position": "ST"
+  },
+  {
+    "name": "Richarlison",
+    "position": "ST"
+  },
+  {
+    "name": "Dane Scarlett",
+    "position": "ST"
+  }
+]

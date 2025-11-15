@@ -1,150 +1,191 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="pt">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>FootLab t1</title>
-<link rel="stylesheet" href="style.css">
-</head>
-<body>
-
-<div id="intro-screen" style="display:flex; align-items:center; justify-content:center;">
-    <div style="text-align:center;padding:40px;background:linear-gradient(135deg,#0d47a1,#42a5f5);color:#fff;border-radius:16px;box-shadow:0 10px 40px rgba(0,0,0,0.25);">
-        <h1 style="font-size:4rem;margin:0;">FootLab t1</h1>
-        <p style="opacity:0.9;margin-top:8px;font-size:1.2rem;">Uma experiência de gestão futebolística</p>
-    <!-- Intro auto-advances; manual button removed to provide a smooth entry animation -->
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>FootLab t1</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div id="intro-screen" style="display: flex; align-items: center; justify-content: center">
+      <div
+        style="
+          text-align: center;
+          padding: 40px;
+          background: linear-gradient(135deg, #0d47a1, #42a5f5);
+          color: #fff;
+          border-radius: 16px;
+          box-shadow: 0 10px 40px rgba(0, 0, 0, 0.25);
+        "
+      >
+        <h1 style="font-size: 4rem; margin: 0">FootLab t1</h1>
+        <p style="opacity: 0.9; margin-top: 8px; font-size: 1.2rem">
+          Uma experiência de gestão futebolística
+        </p>
+        <!-- Intro auto-advances; manual button removed to provide a smooth entry animation -->
+      </div>
     </div>
-</div>
 
-<div id="screen-setup" style="display:none;">
-        <div class="setup-container" style="text-align:center; padding:40px; max-width:420px;">
-            <h1 style="font-size:2.2rem;margin-bottom:8px;">Bem-vindo ao FootLab t1</h1>
-            <p style="margin:0 0 16px 0;opacity:0.9;">Introduz o teu nome para receberes automaticamente uma equipa</p>
-            <input type="text" id="coachName" placeholder="Nome do treinador" style="padding:12px;font-size:1.05rem;width:100%;margin-bottom:16px;border-radius:8px;border:1px solid #ddd;">
-            <button id="startBtn" style="padding:12px 18px;border-radius:10px;font-size:1.05rem;">Receber Equipa e Iniciar</button>
-        </div>
-</div>
-
-<div id="screen-hub" style="display: none;">
-    <div id="hub-header" style="background:rgba(0,0,0,0.4); padding:12px 20px; display:flex; justify-content:space-between; align-items:center; border-bottom:2px solid rgba(255,255,255,0.15);">
-        <div style="display:flex; gap:24px; font-size:1.05em;">
-            <div><strong>Treinador:</strong> <span id="coachNameDisplay"></span></div>
-            <div><strong>Equipa:</strong> <span id="playerTeamNameHub"></span></div>
-        </div>
-        <div style="font-size:1.15em; font-weight:700; color:#FFEB3B;">
-            <span id="currentJornadaDisplay">1ª JORNADA</span>
-        </div>
+    <div id="screen-setup" style="display: none">
+      <div class="setup-container" style="text-align: center; padding: 40px; max-width: 420px">
+        <h1 style="font-size: 2.2rem; margin-bottom: 8px">Bem-vindo ao FootLab t1</h1>
+        <p style="margin: 0 0 16px 0; opacity: 0.9">
+          Introduz o teu nome para receberes automaticamente uma equipa
+        </p>
+        <input
+          type="text"
+          id="coachName"
+          placeholder="Nome do treinador"
+          style="
+            padding: 12px;
+            font-size: 1.05rem;
+            width: 100%;
+            margin-bottom: 16px;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+          "
+        />
+        <button id="startBtn" style="padding: 12px 18px; border-radius: 10px; font-size: 1.05rem">
+          Receber Equipa e Iniciar
+        </button>
+      </div>
     </div>
-    
-    <div id="hub-content-wrapper">
+
+    <div id="screen-hub" style="display: none">
+      <div
+        id="hub-header"
+        style="
+          background: rgba(0, 0, 0, 0.4);
+          padding: 12px 20px;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          border-bottom: 2px solid rgba(255, 255, 255, 0.15);
+        "
+      >
+        <div style="display: flex; gap: 24px; font-size: 1.05em">
+          <div><strong>Treinador:</strong> <span id="coachNameDisplay"></span></div>
+          <div><strong>Equipa:</strong> <span id="playerTeamNameHub"></span></div>
+        </div>
+        <div style="font-size: 1.15em; font-weight: 700; color: #ffeb3b">
+          <span id="currentJornadaDisplay">1ª JORNADA</span>
+        </div>
+      </div>
+
+      <div id="hub-content-wrapper">
         <div id="left-column">
-            <div id="hub-menu" class="hub-box">
-                <div class="hub-menu-main">
-                    <button class="hub-menu-btn" id="menu-team">EQUIPA</button>
-                    <button class="hub-menu-btn" id="menu-liga">LIGA</button>
-                    <button class="hub-menu-btn" id="menu-next-match">PRÓXIMO JOGO</button>
-                    <button class="hub-menu-btn" id="menu-standings">CLASSIFICAÇÕES</button>
-                    <button class="hub-menu-btn" id="menu-transfers">TRANSFERÊNCIAS</button>
-                    <button class="hub-menu-btn" id="menu-finance">FINANÇAS</button>
-                </div>
-                <div class="hub-menu-footer" style="margin-top:8px;">
-                    <button class="hub-menu-btn" id="save-game">GRAVAR JOGO</button>
-                    <button class="hub-menu-btn" id="menu-load">CARREGAR JOGO</button>
-                </div>
+          <div id="hub-menu" class="hub-box">
+            <div class="hub-menu-main">
+              <button class="hub-menu-btn" id="menu-team">EQUIPA</button>
+              <button class="hub-menu-btn" id="menu-liga">LIGA</button>
+              <button class="hub-menu-btn" id="menu-next-match">PRÓXIMO JOGO</button>
+              <button class="hub-menu-btn" id="menu-standings">CLASSIFICAÇÕES</button>
+              <button class="hub-menu-btn" id="menu-transfers">TRANSFERÊNCIAS</button>
+              <button class="hub-menu-btn" id="menu-finance">FINANÇAS</button>
             </div>
-
-                <!-- Finance box moved from footer to left column -->
-                <div id="club-finance-box" class="finance-item hub-box small" style="display:flex;flex-direction:column;gap:6px;">
-                    <div style="font-weight:800; font-size:0.95em;">FINANÇAS</div>
-                    <div style="font-size:0.92em;">ORÇAMENTO: <span id="club-budget" class="finance-value">0 €</span></div>
-                    <div style="font-size:0.92em;">RECEITAS: <span id="club-revenue" class="finance-value">0 €</span></div>
-                    <div style="font-size:0.92em;">DESPESAS: <span id="club-expenses" class="finance-value">0 €</span></div>
-                </div>
-
-                <!-- Tactics panel remains but will be rendered on the right column -->
-                <!-- Next opponent box will be rendered on the right column -->
+            <div class="hub-menu-footer" style="margin-top: 8px">
+              <button class="hub-menu-btn" id="save-game">GRAVAR JOGO</button>
+              <button class="hub-menu-btn" id="menu-load">CARREGAR JOGO</button>
             </div>
+          </div>
 
-            <div id="hub-main-content">
+          <!-- Finance box moved from footer to left column -->
+          <div id="club-finance-box" class="finance-item hub-box small">
+            <div class="finance-title">FINANÇAS</div>
+            <div style="font-size: 0.92em">
+              ORÇAMENTO: <span id="club-budget" class="finance-value">0 €</span>
             </div>
-            
-            <!-- Right column: tactics and next opponent -->
-            <div id="right-column">
-                <div id="hub-tactic-panel" class="hub-box">
-                    <div class="tactic-panel-title">TÁTICAS</div>
-                    <div class="tactic-list" id="tacticList">
-                        <!-- Táticas serão inseridas aqui via JavaScript -->
-                    </div>
-                </div>
+            <div style="font-size: 0.92em">
+              RECEITAS: <span id="club-revenue" class="finance-value">0 €</span>
+            </div>
+            <div style="font-size: 0.92em">
+              DESPESAS: <span id="club-expenses" class="finance-value">0 €</span>
+            </div>
+          </div>
 
-                <!-- Next opponent box (inline, non-floating) -->
-                <div id="next-opponent-box" class="hub-box" style="margin-top:10px;">
-                    <div style="font-size:0.85em; opacity:0.9; font-weight:700;">ADVERSÁRIO</div>
-                    <div id="nextOpponentDetails" style="margin-top:6px; font-size:0.9em;">—</div>
-                </div>
+          <!-- Tactics panel remains but will be rendered on the right column -->
+          <!-- Next opponent box will be rendered on the right column -->
+        </div>
+
+        <div id="hub-main-content"></div>
+
+        <!-- Right column: tactics and next opponent -->
+        <div id="right-column">
+          <div id="hub-tactic-panel" class="hub-box">
+            <div class="tactic-panel-title">TÁTICAS</div>
+            <div class="tactic-list" id="tacticList">
+              <!-- Táticas serão inseridas aqui via JavaScript -->
             </div>
-    </div>
-    
-    <div id="hub-footer-status">
+          </div>
+
+          <!-- Next opponent box (inline, non-floating) -->
+          <div id="next-opponent-box" class="hub-box" style="margin-top: 10px">
+            <div style="font-size: 0.85em; opacity: 0.9; font-weight: 700">ADVERSÁRIO</div>
+            <div id="nextOpponentDetails" style="margin-top: 6px; font-size: 0.9em">—</div>
+          </div>
+        </div>
+      </div>
+
+      <div id="hub-footer-status">
         <div id="footer-status-left" class="footer-panel">
-            <div style="font-size:0.9em; color:rgba(255,255,255,0.85);">Finanças visíveis no painel lateral</div>
+          <div style="font-size: 0.9em; color: rgba(255, 255, 255, 0.85)">
+            Finanças visíveis no painel lateral
+          </div>
         </div>
-        
+
         <div id="footer-action-right-new" class="footer-panel">
-             <button id="simulateBtnHub">SIMULAR DIA DE JOGOS</button>
+          <button id="simulateBtnHub">SIMULAR DIA DE JOGOS</button>
         </div>
-        
+
         <div id="footer-team-name" class="footer-panel">
-            Equipa: <span id="playerTeamNameFooter"></span>
+          Equipa: <span id="playerTeamNameFooter"></span>
         </div>
+      </div>
     </div>
-</div>
 
     <!-- Intro overlay shown for 3 seconds before match screen (kit + team name) -->
-    <div id="intro-overlay" style="display:none;" aria-hidden="true">
-        <div class="intro-card">
-            <div class="intro-badge" id="introBadge"></div>
-            <h2 id="introTeamName">TEAM NAME</h2>
-            <p id="introSubtitle">A equipa que vai entrar em campo</p>
-        </div>
+    <div id="intro-overlay" style="display: none" aria-hidden="true">
+      <div class="intro-card">
+        <div class="intro-badge" id="introBadge"></div>
+        <h2 id="introTeamName">TEAM NAME</h2>
+        <p id="introSubtitle">A equipa que vai entrar em campo</p>
+      </div>
     </div>
 
     <!-- Half-time substitutions overlay (interactive) -->
-    <div id="subs-overlay" style="display:none;" aria-hidden="true"></div>
+    <div id="subs-overlay" style="display: none" aria-hidden="true"></div>
 
-
-<div id="screen-match" style="display:none;">
-    <div id="player-team-match">Seu Jogo: <span id="playerTeamNameMatch"></span></div> 
-    <div id="match-board">
+    <div id="screen-match" style="display: none">
+      <div id="player-team-match">Seu Jogo: <span id="playerTeamNameMatch"></span></div>
+      <div id="match-board">
         <div id="division-1" class="division-board"></div>
         <div id="division-2" class="division-board"></div>
         <div id="division-3" class="division-board"></div>
         <div id="division-4" class="division-board"></div>
-    </div>
-    <div id="progress-container">
+      </div>
+      <div id="progress-container">
         <div class="progress-bar"><div class="progress" id="dayProgress"></div></div>
+      </div>
+      <button id="finishSimBtn" style="display: none">Voltar para o Hub</button>
     </div>
-    <button id="finishSimBtn" style="display:none;">Voltar para o Hub</button>
-</div>
 
-
-<script src="players.js"></script>
-<script src="data/real_rosters_2025_26.js"></script>
-<script src="data/team_colors.js"></script>
-<script src="teams.js"></script>
-<script src="clubs.js"></script>
-<script src="config/gameConfig.js"></script>
-<script src="utils/colors.js"></script>
-<script src="core/globals.js"></script>
-<script src="logic/lineups.js"></script>
-<script src="matches.js"></script>
-<script src="services/finance.js"></script>
-<script src="ui/matchBoard.js"></script>
-<script src="ui/overlays.js"></script>
-<script src="ui/tactics.js"></script>
-<script src="ui/hub.js"></script>
-<script src="ui.js"></script>
-<script src="main.js"></script>
-<script src="core/simulation.js"></script>
-</body>
+    <script src="src/players.js"></script>
+    <script src="archive/data/real_rosters_2025_26.js"></script>
+    <script src="src/data/team_colors.js"></script>
+    <script src="src/teams.js"></script>
+    <script src="src/clubs.js"></script>
+    <script src="src/config/gameConfig.js"></script>
+    <script src="src/utils/colors.js"></script>
+    <script src="src/core/globals.js"></script>
+    <script src="src/logic/lineups.js"></script>
+    <script src="src/matches.js"></script>
+    <script src="src/services/finance.js"></script>
+    <script src="src/legacy_ui/matchBoard.js"></script>
+    <script src="src/legacy_ui/overlays.js"></script>
+    <script src="src/legacy_ui/tactics.js"></script>
+    <script src="src/legacy_ui/hub.js"></script>
+    <script src="src/ui.js"></script>
+    <script src="src/main.js"></script>
+    <script src="src/core/simulation.js"></script>
+  </body>
 </html>

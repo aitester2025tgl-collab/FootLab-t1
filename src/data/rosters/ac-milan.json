@@ -1,0 +1,90 @@
+[
+  {
+    "name": "Mike Maignan",
+    "position": "GK"
+  },
+  {
+    "name": "Pietro Terracciano",
+    "position": "GK"
+  },
+  {
+    "name": "Lorenzo Torriani",
+    "position": "GK"
+  },
+  {
+    "name": "Koni De Winter",
+    "position": "CB"
+  },
+  {
+    "name": "Fikayo Tomori",
+    "position": "CB"
+  },
+  {
+    "name": "Strahinja Pavlović",
+    "position": "CB"
+  },
+  {
+    "name": "Matteo Gabbia",
+    "position": "CB"
+  },
+  {
+    "name": "David Odogu",
+    "position": "CB"
+  },
+  {
+    "name": "Pervis Estupiñán",
+    "position": "LB"
+  },
+  {
+    "name": "Davide Bartesaghi",
+    "position": "LB"
+  },
+  {
+    "name": "Zachary Athekame",
+    "position": "RB"
+  },
+  {
+    "name": "Ardon Jashari",
+    "position": "CM"
+  },
+  {
+    "name": "Youssouf Fofana",
+    "position": "CM"
+  },
+  {
+    "name": "Samuele Ricci",
+    "position": "CM"
+  },
+  {
+    "name": "Adrien Rabiot",
+    "position": "CM"
+  },
+  {
+    "name": "Ruben Loftus-Cheek",
+    "position": "CM"
+  },
+  {
+    "name": "Luka Modrić",
+    "position": "CM"
+  },
+  {
+    "name": "Alexis Saelemaekers",
+    "position": "RW"
+  },
+  {
+    "name": "Rafael Leão",
+    "position": "LW"
+  },
+  {
+    "name": "Christian Pulisic",
+    "position": "RW"
+  },
+  {
+    "name": "Christopher Nkunku",
+    "position": "ST"
+  },
+  {
+    "name": "Santiago Giménez",
+    "position": "ST"
+  }
+]

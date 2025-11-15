@@ -1,0 +1,94 @@
+[
+  {
+    "name": "Emiliano Martínez",
+    "position": "GK"
+  },
+  {
+    "name": "Marco Bizot",
+    "position": "GK"
+  },
+  {
+    "name": "Ezri Konsa",
+    "position": "CB"
+  },
+  {
+    "name": "Pau Torres",
+    "position": "CB"
+  },
+  {
+    "name": "Victor Lindelöf",
+    "position": "CB"
+  },
+  {
+    "name": "Tyrone Mings",
+    "position": "CB"
+  },
+  {
+    "name": "Ian Maatsen",
+    "position": "LB"
+  },
+  {
+    "name": "Lucas Digne",
+    "position": "LB"
+  },
+  {
+    "name": "Matty Cash",
+    "position": "RB"
+  },
+  {
+    "name": "Andrés García",
+    "position": "RB"
+  },
+  {
+    "name": "Amadou Onana",
+    "position": "CM"
+  },
+  {
+    "name": "Boubacar Kamara",
+    "position": "CM"
+  },
+  {
+    "name": "Lamare Bogarde",
+    "position": "CM"
+  },
+  {
+    "name": "Youri Tielemans",
+    "position": "CM"
+  },
+  {
+    "name": "John Mcginn",
+    "position": "CM"
+  },
+  {
+    "name": "Ross Barkley",
+    "position": "CM"
+  },
+  {
+    "name": "Morgan Rogers",
+    "position": "CM"
+  },
+  {
+    "name": "Harvey Elliott",
+    "position": "CM"
+  },
+  {
+    "name": "Emiliano Buendía",
+    "position": "CM"
+  },
+  {
+    "name": "Jadon Sancho",
+    "position": "LW"
+  },
+  {
+    "name": "Evann Guessand",
+    "position": "RW"
+  },
+  {
+    "name": "Donyell Malen",
+    "position": "RW"
+  },
+  {
+    "name": "Ollie Watkins",
+    "position": "ST"
+  }
+]

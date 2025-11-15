@@ -1,0 +1,114 @@
+[
+  {
+    "name": "John Victor",
+    "position": "GK"
+  },
+  {
+    "name": "Matz Sels",
+    "position": "GK"
+  },
+  {
+    "name": "Angus Gunn",
+    "position": "GK"
+  },
+  {
+    "name": "Murillo",
+    "position": "CB"
+  },
+  {
+    "name": "Nikola Milenković",
+    "position": "CB"
+  },
+  {
+    "name": "Morato",
+    "position": "CB"
+  },
+  {
+    "name": "Jair Cunha",
+    "position": "CB"
+  },
+  {
+    "name": "Willy Boly",
+    "position": "CB"
+  },
+  {
+    "name": "Zach Abbott",
+    "position": "CB"
+  },
+  {
+    "name": "Neco Williams",
+    "position": "LB"
+  },
+  {
+    "name": "Oleksandr Zinchenko",
+    "position": "LB"
+  },
+  {
+    "name": "Ola Aina",
+    "position": "RB"
+  },
+  {
+    "name": "Nicolò Savona",
+    "position": "RB"
+  },
+  {
+    "name": "Ibrahim Sangaré",
+    "position": "CM"
+  },
+  {
+    "name": "Elliot Anderson",
+    "position": "CM"
+  },
+  {
+    "name": "Douglas Luiz",
+    "position": "CM"
+  },
+  {
+    "name": "Nicolás Domínguez",
+    "position": "CM"
+  },
+  {
+    "name": "Ryan Yates",
+    "position": "CM"
+  },
+  {
+    "name": "Morgan Gibbs-White",
+    "position": "CM"
+  },
+  {
+    "name": "Omari Hutchinson",
+    "position": "CM"
+  },
+  {
+    "name": "James Mcatee",
+    "position": "CM"
+  },
+  {
+    "name": "Callum Hudson-Odoi",
+    "position": "LW"
+  },
+  {
+    "name": "Dan Ndoye",
+    "position": "RW"
+  },
+  {
+    "name": "Dilane Bakwa",
+    "position": "RW"
+  },
+  {
+    "name": "Arnaud Kalimuendo",
+    "position": "ST"
+  },
+  {
+    "name": "Igor Jesus",
+    "position": "ST"
+  },
+  {
+    "name": "Taiwo Awoniyi",
+    "position": "ST"
+  },
+  {
+    "name": "Chris Wood",
+    "position": "ST"
+  }
+]

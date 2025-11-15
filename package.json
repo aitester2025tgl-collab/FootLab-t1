@@ -2,17 +2,36 @@
   "name": "elifoot-smoke",
   "version": "1.0.0",
   "description": "Smoke test for Elifoot project using jsdom",
-  "main": "smoke_test.js",
+  "main": "src/smoke_test.js",
   "scripts": {
-  "smoke": "node smoke_test.js",
-  "test": "node tests/transfer_integration_test.js",
-  "test:rounds": "node tests/generate_rounds_test.js",
-  "test:promotions": "node tests/promotion_integration_test.js",
-  "test:unit": "npm run test:rounds && npm run test:promotions"
+    "smoke": "node src/smoke_test.js",
+    "test:rounds": "node tests/generate_rounds_test.js",
+    "test:promotions": "node tests/promotion_integration_test.js",
+    "test:legacy": "node tests/transfer_integration_test.js",
+    "test:unit": "node tests/persistence_test.js && node tests/substitutions_test.js && node tests/offers_test.js",
+    "test:integration": "node tests/transfer_integration_test.js && node tests/transfer_offers_integration_test.js && node tests/promotion_integration_test.js",
+    "test:smoke": "node src/smoke_test.js && node tests/pending_releases_smoke_test.js",
+    "lint": "eslint . --ext .js",
+    "format": "prettier --write .",
+    "build": "node build.js",
+    "build:watch": "node build.js --watch",
+    "test": "npm run test:unit && npm run test:integration && npm run test:smoke",
+    "screenshot-snapshot": "node tools/screenshot_from_snapshot.js",
+    "start:electron": "electron src/electron-main.js"
   },
   "author": "",
   "license": "MIT",
   "dependencies": {
     "jsdom": "^22.0.0"
+  },
+  "devDependencies": {
+    "electron": "^39.2.0",
+    "esbuild": "^0.18.20",
+    "eslint": "^8.57.1",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-prettier": "^5.5.4",
+    "pngjs": "^7.0.0",
+    "prettier": "^3.6.2",
+    "puppeteer": "^24.30.0"
   }
 }

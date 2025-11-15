@@ -1,0 +1,106 @@
+[
+  {
+    "name": "Bart Verbruggen",
+    "position": "GK"
+  },
+  {
+    "name": "Jason Steele",
+    "position": "GK"
+  },
+  {
+    "name": "Tom Mcgill",
+    "position": "GK"
+  },
+  {
+    "name": "Jan Paul Van Hecke",
+    "position": "CB"
+  },
+  {
+    "name": "Olivier Boscagli",
+    "position": "CB"
+  },
+  {
+    "name": "Diego Coppola",
+    "position": "CB"
+  },
+  {
+    "name": "Adam Webster",
+    "position": "CB"
+  },
+  {
+    "name": "Lewis Dunk",
+    "position": "CB"
+  },
+  {
+    "name": "Ferdi Kadıoğlu",
+    "position": "LB"
+  },
+  {
+    "name": "Maxim De Cuyper",
+    "position": "LB"
+  },
+  {
+    "name": "Joël Veltman",
+    "position": "RB"
+  },
+  {
+    "name": "Carlos Baleba",
+    "position": "CM"
+  },
+  {
+    "name": "Mats Wieffer",
+    "position": "CM"
+  },
+  {
+    "name": "Jack Hinshelwood",
+    "position": "CM"
+  },
+  {
+    "name": "Yasin Ayari",
+    "position": "CM"
+  },
+  {
+    "name": "Diego Gómez",
+    "position": "CM"
+  },
+  {
+    "name": "James Milner",
+    "position": "CM"
+  },
+  {
+    "name": "Kaoru Mitoma",
+    "position": "LW"
+  },
+  {
+    "name": "Tom Watson",
+    "position": "LW"
+  },
+  {
+    "name": "Yankuba Minteh",
+    "position": "RW"
+  },
+  {
+    "name": "Brajan Gruda",
+    "position": "RW"
+  },
+  {
+    "name": "Solly March",
+    "position": "RW"
+  },
+  {
+    "name": "Georginio Rutter",
+    "position": "ST"
+  },
+  {
+    "name": "Charalampos Kostoulas",
+    "position": "ST"
+  },
+  {
+    "name": "Stefanos Tzimas",
+    "position": "ST"
+  },
+  {
+    "name": "Danny Welbeck",
+    "position": "ST"
+  }
+]

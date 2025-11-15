@@ -1,0 +1,106 @@
+[
+  {
+    "name": "Mads Hermansen",
+    "position": "GK"
+  },
+  {
+    "name": "Alphonse Areola",
+    "position": "GK"
+  },
+  {
+    "name": "Lukasz Fabianski",
+    "position": "GK"
+  },
+  {
+    "name": "Maximilian Kilman",
+    "position": "CB"
+  },
+  {
+    "name": "Jean-Clair Todibo",
+    "position": "CB"
+  },
+  {
+    "name": "Igor Julio",
+    "position": "CB"
+  },
+  {
+    "name": "Konstantinos Mavropanos",
+    "position": "CB"
+  },
+  {
+    "name": "El Hadji Malick Diouf",
+    "position": "LB"
+  },
+  {
+    "name": "Oliver Scarles",
+    "position": "LB"
+  },
+  {
+    "name": "Aaron Wan-Bissaka",
+    "position": "RB"
+  },
+  {
+    "name": "Kyle Walker-Peters",
+    "position": "RB"
+  },
+  {
+    "name": "Soungoutou Magassa",
+    "position": "CM"
+  },
+  {
+    "name": "Tomáš Souček",
+    "position": "CM"
+  },
+  {
+    "name": "Guido Rodríguez",
+    "position": "CM"
+  },
+  {
+    "name": "Freddie Potts",
+    "position": "CM"
+  },
+  {
+    "name": "Mateus Fernandes",
+    "position": "CM"
+  },
+  {
+    "name": "James Ward-Prowse",
+    "position": "CM"
+  },
+  {
+    "name": "Andrew Irving",
+    "position": "CM"
+  },
+  {
+    "name": "Lucas Paquetá",
+    "position": "CM"
+  },
+  {
+    "name": "George Earthy",
+    "position": "CM"
+  },
+  {
+    "name": "Crysencio Summerville",
+    "position": "LW"
+  },
+  {
+    "name": "Jarrod Bowen",
+    "position": "RW"
+  },
+  {
+    "name": "Luís Guilherme",
+    "position": "RW"
+  },
+  {
+    "name": "Niclas Füllkrug",
+    "position": "ST"
+  },
+  {
+    "name": "Callum Wilson",
+    "position": "ST"
+  },
+  {
+    "name": "Callum Marshall",
+    "position": "ST"
+  }
+]

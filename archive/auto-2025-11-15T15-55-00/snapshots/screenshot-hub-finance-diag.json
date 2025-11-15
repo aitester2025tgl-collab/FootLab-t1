@@ -1,0 +1,18 @@
+{
+  "before": {
+    "innerHTMLLen": 67,
+    "textSnippet": "Transferências\n\nNenhum jogador disponível no mercado.",
+    "childCount": 2,
+    "firstChildTag": "H2",
+    "firstChildClass": ""
+  },
+  "after": {
+    "innerHTMLLen": 2260,
+    "textSnippet": "Finanças\nOrçamento: 500.000 €\nCapacidade do Estádio (atual): 10.000 lugares\nLimite atual do motor: 65.000 lugares (pode expandir até 100.000)\nAumentar estádio (%)\nAumentar\n1000 lugares → custo aprox. 40.000 € (40€/lugar)\nPreço do bilhete (€)\nGuardar\nEstimativa por jogo: 1157 espectadores → receita ~ 23.140 €\nNotas: o custo por lugar aumenta com o tamanho atual do estádio. A receita dos jogos entra",
+    "childCount": 2,
+    "firstChildTag": "H2",
+    "firstChildClass": ""
+  },
+  "beforeHash": "624721ef222cff2835d70726df6041df3cdac7c762ffd3b412c8df0da7f5d69c",
+  "afterHash": "53b13c28d2d27ac94ef20b5d85ccfe65325affa1f7733694e75ea542f21f661f"
+}

@@ -1,0 +1,110 @@
+[
+  {
+    "name": "Lazar Carević",
+    "position": "GK"
+  },
+  {
+    "name": "Ivan Zlobin",
+    "position": "GK"
+  },
+  {
+    "name": "Hugo Cunha",
+    "position": "GK"
+  },
+  {
+    "name": "Léo Realpe",
+    "position": "CB"
+  },
+  {
+    "name": "Justin de Haas",
+    "position": "CB"
+  },
+  {
+    "name": "Renan Santana",
+    "position": "CB"
+  },
+  {
+    "name": "Ibrahima Ba",
+    "position": "CB"
+  },
+  {
+    "name": "Rafa Soares",
+    "position": "LB"
+  },
+  {
+    "name": "Pedro Bondo",
+    "position": "LB"
+  },
+  {
+    "name": "Garcia",
+    "position": "RB"
+  },
+  {
+    "name": "Rodrigo Pinheiro",
+    "position": "RB"
+  },
+  {
+    "name": "Tom van de Looi",
+    "position": "CM"
+  },
+  {
+    "name": "Mathias de Amorim",
+    "position": "CM"
+  },
+  {
+    "name": "Marcos Peña",
+    "position": "CM"
+  },
+  {
+    "name": "Otar Mamageishvili",
+    "position": "CM"
+  },
+  {
+    "name": "Gonzalo Pastor",
+    "position": "CM"
+  },
+  {
+    "name": "Gustavo Sá",
+    "position": "AM"
+  },
+  {
+    "name": "Sorriso",
+    "position": "LW"
+  },
+  {
+    "name": "Óscar Aranda",
+    "position": "LW"
+  },
+  {
+    "name": "Antoine Joujou",
+    "position": "LW"
+  },
+  {
+    "name": "Roméo Beney",
+    "position": "LW"
+  },
+  {
+    "name": "Rochinha",
+    "position": "LW"
+  },
+  {
+    "name": "Gil Dias",
+    "position": "RW"
+  },
+  {
+    "name": "Pedro Santos",
+    "position": "RW"
+  },
+  {
+    "name": "Simon Elisor",
+    "position": "ST"
+  },
+  {
+    "name": "Umar Abubakar",
+    "position": "ST"
+  },
+  {
+    "name": "Yassir Zabiri",
+    "position": "ST"
+  }
+]

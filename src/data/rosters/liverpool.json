@@ -1,0 +1,106 @@
+[
+  {
+    "name": "Giorgi Mamardashvili",
+    "position": "GK"
+  },
+  {
+    "name": "Alisson",
+    "position": "GK"
+  },
+  {
+    "name": "Freddie Woodman",
+    "position": "GK"
+  },
+  {
+    "name": "Ibrahima Konaté",
+    "position": "CB"
+  },
+  {
+    "name": "Giovanni Leoni",
+    "position": "CB"
+  },
+  {
+    "name": "Virgil Van Dijk",
+    "position": "CB"
+  },
+  {
+    "name": "Joe Gomez",
+    "position": "CB"
+  },
+  {
+    "name": "Rhys Williams",
+    "position": "CB"
+  },
+  {
+    "name": "Milos Kerkez",
+    "position": "LB"
+  },
+  {
+    "name": "Andrew Robertson",
+    "position": "LB"
+  },
+  {
+    "name": "Jeremie Frimpong",
+    "position": "RB"
+  },
+  {
+    "name": "Conor Bradley",
+    "position": "RB"
+  },
+  {
+    "name": "Ryan Gravenberch",
+    "position": "CM"
+  },
+  {
+    "name": "Stefan Bajcetic",
+    "position": "CM"
+  },
+  {
+    "name": "Wataru Endo",
+    "position": "CM"
+  },
+  {
+    "name": "Alexis Mac Allister",
+    "position": "CM"
+  },
+  {
+    "name": "Curtis Jones",
+    "position": "CM"
+  },
+  {
+    "name": "Trey Nyoni",
+    "position": "CM"
+  },
+  {
+    "name": "Florian Wirtz",
+    "position": "CM"
+  },
+  {
+    "name": "Dominik Szoboszlai",
+    "position": "CM"
+  },
+  {
+    "name": "Cody Gakpo",
+    "position": "LW"
+  },
+  {
+    "name": "Rio Ngumoha",
+    "position": "LW"
+  },
+  {
+    "name": "Mohamed Salah",
+    "position": "RW"
+  },
+  {
+    "name": "Federico Chiesa",
+    "position": "RW"
+  },
+  {
+    "name": "Alexander Isak",
+    "position": "ST"
+  },
+  {
+    "name": "Hugo Ekitiké",
+    "position": "ST"
+  }
+]

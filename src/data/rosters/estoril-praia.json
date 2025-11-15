@@ -1,0 +1,106 @@
+[
+  {
+    "name": "Joel Robles",
+    "position": "GK"
+  },
+  {
+    "name": "Martin Turk",
+    "position": "GK"
+  },
+  {
+    "name": "Diogo Dias",
+    "position": "GK"
+  },
+  {
+    "name": "Kévin Boma",
+    "position": "CB"
+  },
+  {
+    "name": "Felix Bacher",
+    "position": "CB"
+  },
+  {
+    "name": "Ferro",
+    "position": "CB"
+  },
+  {
+    "name": "Antef Tsoungui",
+    "position": "CB"
+  },
+  {
+    "name": "Or Israelov",
+    "position": "CB"
+  },
+  {
+    "name": "Pedro Amaral",
+    "position": "LB"
+  },
+  {
+    "name": "Gonçalo Costa",
+    "position": "LB"
+  },
+  {
+    "name": "Tiago Parente",
+    "position": "LB"
+  },
+  {
+    "name": "Ricard Sánchez",
+    "position": "RB"
+  },
+  {
+    "name": "Pedro Carvalho",
+    "position": "RB"
+  },
+  {
+    "name": "Patrick de Paula",
+    "position": "DM"
+  },
+  {
+    "name": "Jordan Holsgrove",
+    "position": "DM"
+  },
+  {
+    "name": "Jandro Orellana",
+    "position": "DM"
+  },
+  {
+    "name": "Tiago Brito",
+    "position": "DM"
+  },
+  {
+    "name": "Xeka",
+    "position": "CM"
+  },
+  {
+    "name": "Nodar Lominadze",
+    "position": "CM"
+  },
+  {
+    "name": "João Carvalho",
+    "position": "AM"
+  },
+  {
+    "name": "Pizzi",
+    "position": "AM"
+  },
+  {
+    "name": "André Lacximicant",
+    "position": "LW"
+  },
+  {
+    "name": "Rafik Guitane",
+    "position": "RW"
+  },
+  {
+    "name": "Fabrício Garcia",
+    "position": "RW"
+  },
+  {
+    "name": "Yanis Begraoui",
+    "position": "ST"
+  },
+  {
+    "name": "Alejandro Marqués",
+    "position": "ST"
+  }
+]

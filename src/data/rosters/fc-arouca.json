@@ -1,0 +1,106 @@
+[
+  {
+    "name": "Nico Mantl",
+    "position": "GK"
+  },
+  {
+    "name": "João Valido",
+    "position": "GK"
+  },
+  {
+    "name": "Jakub Vinarčík",
+    "position": "GK"
+  },
+  {
+    "name": "José Fontán",
+    "position": "CB"
+  },
+  {
+    "name": "Boris Popović",
+    "position": "CB"
+  },
+  {
+    "name": "Omar Fayed",
+    "position": "CB"
+  },
+  {
+    "name": "Matías Rocha",
+    "position": "CB"
+  },
+  {
+    "name": "Diogo Monteiro",
+    "position": "CB"
+  },
+  {
+    "name": "Amadou Dante",
+    "position": "LB"
+  },
+  {
+    "name": "Arnau Solà",
+    "position": "LB"
+  },
+  {
+    "name": "Tiago Esgaio",
+    "position": "RB"
+  },
+  {
+    "name": "Alex Pinto",
+    "position": "RB"
+  },
+  {
+    "name": "Taichi Fukui",
+    "position": "CM"
+  },
+  {
+    "name": "Espen van Ee",
+    "position": "CM"
+  },
+  {
+    "name": "Pedro Santos",
+    "position": "CM"
+  },
+  {
+    "name": "Mateo Flores",
+    "position": "CM"
+  },
+  {
+    "name": "David Simão",
+    "position": "CM"
+  },
+  {
+    "name": "Hyun-ju Lee",
+    "position": "AM"
+  },
+  {
+    "name": "Pablo Gozálbez",
+    "position": "AM"
+  },
+  {
+    "name": "Naïs Djouahra",
+    "position": "LW"
+  },
+  {
+    "name": "Brian Mansilla",
+    "position": "LW"
+  },
+  {
+    "name": "Miguel Puche",
+    "position": "LW"
+  },
+  {
+    "name": "Alfonso Trezza",
+    "position": "RW"
+  },
+  {
+    "name": "Dylan Nandín",
+    "position": "ST"
+  },
+  {
+    "name": "Iván Barbero",
+    "position": "ST"
+  },
+  {
+    "name": "Romualdas Jansonas",
+    "position": "ST"
+  }
+]

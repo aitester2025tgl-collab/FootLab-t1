@@ -1,0 +1,7 @@
+node_modules/
+archive/
+data/backups/
+*.min.js
+*.bundle.js
+dist/
+**/backups/

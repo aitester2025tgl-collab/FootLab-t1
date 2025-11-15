@@ -1,0 +1,102 @@
+[
+  {
+    "name": "Josep Martínez",
+    "position": "GK"
+  },
+  {
+    "name": "Yann Sommer",
+    "position": "GK"
+  },
+  {
+    "name": "Raffaele Di Gennaro",
+    "position": "GK"
+  },
+  {
+    "name": "Alessandro Bastoni",
+    "position": "CB"
+  },
+  {
+    "name": "Yann Bisseck",
+    "position": "CB"
+  },
+  {
+    "name": "Manuel Akanji",
+    "position": "CB"
+  },
+  {
+    "name": "Stefan de Vrij",
+    "position": "CB"
+  },
+  {
+    "name": "Tomás Palacios",
+    "position": "CB"
+  },
+  {
+    "name": "Francesco Acerbi",
+    "position": "CB"
+  },
+  {
+    "name": "Federico Dimarco",
+    "position": "LB"
+  },
+  {
+    "name": "Carlos Augusto",
+    "position": "LB"
+  },
+  {
+    "name": "Denzel Dumfries",
+    "position": "RB"
+  },
+  {
+    "name": "Matteo Darmian",
+    "position": "RB"
+  },
+  {
+    "name": "Hakan Çalhanoğlu",
+    "position": "CM"
+  },
+  {
+    "name": "Nicolò Barella",
+    "position": "CM"
+  },
+  {
+    "name": "Davide Frattesi",
+    "position": "CM"
+  },
+  {
+    "name": "Petar Sučić",
+    "position": "CM"
+  },
+  {
+    "name": "Andy Diouf",
+    "position": "CM"
+  },
+  {
+    "name": "Piotr Zieliński",
+    "position": "CM"
+  },
+  {
+    "name": "Henrikh Mkhitaryan",
+    "position": "CM"
+  },
+  {
+    "name": "Luis Henrique",
+    "position": "RW"
+  },
+  {
+    "name": "Lautaro Martínez",
+    "position": "ST"
+  },
+  {
+    "name": "Marcus Thuram",
+    "position": "ST"
+  },
+  {
+    "name": "Pio Esposito",
+    "position": "ST"
+  },
+  {
+    "name": "Ange-Yoan Bonny",
+    "position": "ST"
+  }
+]

@@ -1,0 +1,114 @@
+[
+  {
+    "name": "João Gonçalves",
+    "position": "GK"
+  },
+  {
+    "name": "Simão",
+    "position": "GK"
+  },
+  {
+    "name": "Rúben Semedo",
+    "position": "CB"
+  },
+  {
+    "name": "Paulo Vitor",
+    "position": "CB"
+  },
+  {
+    "name": "Sidi Bane",
+    "position": "CB"
+  },
+  {
+    "name": "Cristian Devenish",
+    "position": "CB"
+  },
+  {
+    "name": "Ponck",
+    "position": "CB"
+  },
+  {
+    "name": "Aderllan Santos",
+    "position": "CB"
+  },
+  {
+    "name": "Daniel Rivas",
+    "position": "LB"
+  },
+  {
+    "name": "Kiki",
+    "position": "LB"
+  },
+  {
+    "name": "Diogo Spencer",
+    "position": "RB"
+  },
+  {
+    "name": "Guillem Molina",
+    "position": "RB"
+  },
+  {
+    "name": "Gustavo Assunção",
+    "position": "DM"
+  },
+  {
+    "name": "Ángel Algobia",
+    "position": "DM"
+  },
+  {
+    "name": "Tiago Hernández",
+    "position": "DM"
+  },
+  {
+    "name": "Jaume Grau",
+    "position": "CM"
+  },
+  {
+    "name": "Gustavo Mendonça",
+    "position": "CM"
+  },
+  {
+    "name": "Pedro Lima",
+    "position": "CM"
+  },
+  {
+    "name": "Rafael Barbosa",
+    "position": "AM"
+  },
+  {
+    "name": "António Machado",
+    "position": "AM"
+  },
+  {
+    "name": "Óscar Perea",
+    "position": "LW"
+  },
+  {
+    "name": "Tunde Akinsola",
+    "position": "LW"
+  },
+  {
+    "name": "Kobamelo Kodisang",
+    "position": "RW"
+  },
+  {
+    "name": "Bruno Lourenço",
+    "position": "RW"
+  },
+  {
+    "name": "Jordi Escobar",
+    "position": "ST"
+  },
+  {
+    "name": "Tomané",
+    "position": "ST"
+  },
+  {
+    "name": "Diego Duarte",
+    "position": "ST"
+  },
+  {
+    "name": "Nenê",
+    "position": "ST"
+  }
+]

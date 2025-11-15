@@ -1,0 +1,110 @@
+[
+  {
+    "name": "Bernardo",
+    "position": "GK"
+  },
+  {
+    "name": "Lucas Cañizares",
+    "position": "GK"
+  },
+  {
+    "name": "Gabriel Souza",
+    "position": "GK"
+  },
+  {
+    "name": "Christian Marques",
+    "position": "CB"
+  },
+  {
+    "name": "Brayan Medina",
+    "position": "CB"
+  },
+  {
+    "name": "Diego Tavares",
+    "position": "CB"
+  },
+  {
+    "name": "João Afonso",
+    "position": "CB"
+  },
+  {
+    "name": "Rémy Vita",
+    "position": "LB"
+  },
+  {
+    "name": "Nor Maviram",
+    "position": "LB"
+  },
+  {
+    "name": "Tiago Manso",
+    "position": "RB"
+  },
+  {
+    "name": "Bebeto",
+    "position": "RB"
+  },
+  {
+    "name": "Joe Hodge",
+    "position": "DM"
+  },
+  {
+    "name": "Cícero",
+    "position": "DM"
+  },
+  {
+    "name": "Juan Sebastián Rodríguez",
+    "position": "DM"
+  },
+  {
+    "name": "André Ceitil",
+    "position": "DM"
+  },
+  {
+    "name": "Yaya Sithole",
+    "position": "CM"
+  },
+  {
+    "name": "Hélder Tavares",
+    "position": "CM"
+  },
+  {
+    "name": "Hugo Félix",
+    "position": "AM"
+  },
+  {
+    "name": "Xabi Huarte",
+    "position": "AM"
+  },
+  {
+    "name": "Ivan Cavaleiro",
+    "position": "LW"
+  },
+  {
+    "name": "Moudjatovic",
+    "position": "LW"
+  },
+  {
+    "name": "Rony Lopes",
+    "position": "RW"
+  },
+  {
+    "name": "Maranhão",
+    "position": "RW"
+  },
+  {
+    "name": "Yarlen",
+    "position": "RW"
+  },
+  {
+    "name": "Afonso Rodrigues",
+    "position": "RW"
+  },
+  {
+    "name": "Jordan",
+    "position": "ST"
+  },
+  {
+    "name": "Yefrei Rodríguez",
+    "position": "ST"
+  }
+]

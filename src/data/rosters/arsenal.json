@@ -1,0 +1,82 @@
+[
+  {
+    "name": "David Raya",
+    "position": "GK"
+  },
+  {
+    "name": "Karl Hein",
+    "position": "GK"
+  },
+  {
+    "name": "Ben White",
+    "position": "RB"
+  },
+  {
+    "name": "Takehiro Tomiyasu",
+    "position": "RB"
+  },
+  {
+    "name": "Jakub Kiwior",
+    "position": "CB"
+  },
+  {
+    "name": "William Saliba",
+    "position": "CB"
+  },
+  {
+    "name": "Gabriel Magalhães",
+    "position": "CB"
+  },
+  {
+    "name": "Nuno Tavares",
+    "position": "LB"
+  },
+  {
+    "name": "Kieran Tierney",
+    "position": "LB"
+  },
+  {
+    "name": "Declan Rice",
+    "position": "CM"
+  },
+  {
+    "name": "Jorginho",
+    "position": "CM"
+  },
+  {
+    "name": "Martin Ødegaard",
+    "position": "CM"
+  },
+  {
+    "name": "Fabio Vieira",
+    "position": "CM"
+  },
+  {
+    "name": "Kai Havertz",
+    "position": "CM"
+  },
+  {
+    "name": "Albert Sambi Lokonga",
+    "position": "CM"
+  },
+  {
+    "name": "Bukayo Saka",
+    "position": "RW"
+  },
+  {
+    "name": "Gabriel Martinelli",
+    "position": "LW"
+  },
+  {
+    "name": "Leandro Trossard",
+    "position": "LW"
+  },
+  {
+    "name": "Gabriel Jesus",
+    "position": "ST"
+  },
+  {
+    "name": "Folarin Balogun",
+    "position": "ST"
+  }
+]

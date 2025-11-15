@@ -1,0 +1,98 @@
+[
+  {
+    "name": "Jan Oblak",
+    "position": "GK"
+  },
+  {
+    "name": "Juan Musso",
+    "position": "GK"
+  },
+  {
+    "name": "Robin Le Normand",
+    "position": "CB"
+  },
+  {
+    "name": "Dávid Hancko",
+    "position": "CB"
+  },
+  {
+    "name": "José María Giménez",
+    "position": "CB"
+  },
+  {
+    "name": "Clément Lenglet",
+    "position": "CB"
+  },
+  {
+    "name": "Matteo Ruggeri",
+    "position": "LB"
+  },
+  {
+    "name": "Javi Galán",
+    "position": "LB"
+  },
+  {
+    "name": "Marcos Llorente",
+    "position": "RB"
+  },
+  {
+    "name": "Nahuel Molina",
+    "position": "RB"
+  },
+  {
+    "name": "Marc Pubill",
+    "position": "RB"
+  },
+  {
+    "name": "Pablo Barrios",
+    "position": "CM"
+  },
+  {
+    "name": "Conor Gallagher",
+    "position": "CM"
+  },
+  {
+    "name": "Johnny Cardoso",
+    "position": "CM"
+  },
+  {
+    "name": "Koke",
+    "position": "CM"
+  },
+  {
+    "name": "Álex Baena",
+    "position": "LW"
+  },
+  {
+    "name": "Thiago Almada",
+    "position": "LW"
+  },
+  {
+    "name": "Nico González",
+    "position": "LW"
+  },
+  {
+    "name": "Carlos Martín",
+    "position": "LW"
+  },
+  {
+    "name": "Giuliano Simeone",
+    "position": "RW"
+  },
+  {
+    "name": "Giacomo Raspadori",
+    "position": "ST"
+  },
+  {
+    "name": "Antoine Griezmann",
+    "position": "ST"
+  },
+  {
+    "name": "Julián Alvarez",
+    "position": "ST"
+  },
+  {
+    "name": "Alexander Sørloth",
+    "position": "ST"
+  }
+]

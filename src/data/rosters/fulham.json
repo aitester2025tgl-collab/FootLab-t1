@@ -1,0 +1,94 @@
+[
+  {
+    "name": "Bernd Leno",
+    "position": "GK"
+  },
+  {
+    "name": "Benjamin Lecomte",
+    "position": "GK"
+  },
+  {
+    "name": "Calvin Bassey",
+    "position": "CB"
+  },
+  {
+    "name": "Joachim Andersen",
+    "position": "CB"
+  },
+  {
+    "name": "Issa Diop",
+    "position": "CB"
+  },
+  {
+    "name": "Jorge Cuenca",
+    "position": "CB"
+  },
+  {
+    "name": "Antonee Robinson",
+    "position": "LB"
+  },
+  {
+    "name": "Ryan Sessegnon",
+    "position": "LB"
+  },
+  {
+    "name": "Kenny Tete",
+    "position": "RB"
+  },
+  {
+    "name": "Timothy Castagne",
+    "position": "RB"
+  },
+  {
+    "name": "Sander Berge",
+    "position": "CM"
+  },
+  {
+    "name": "Saša Lukić",
+    "position": "CM"
+  },
+  {
+    "name": "Josh King",
+    "position": "CM"
+  },
+  {
+    "name": "Harrison Reed",
+    "position": "CM"
+  },
+  {
+    "name": "Tom Cairney",
+    "position": "CM"
+  },
+  {
+    "name": "Emile Smith Rowe",
+    "position": "CM"
+  },
+  {
+    "name": "Alex Iwobi",
+    "position": "LW"
+  },
+  {
+    "name": "Harry Wilson",
+    "position": "RW"
+  },
+  {
+    "name": "Samuel Chukwueze",
+    "position": "RW"
+  },
+  {
+    "name": "Adama Traoré",
+    "position": "RW"
+  },
+  {
+    "name": "Rodrigo Muniz",
+    "position": "ST"
+  },
+  {
+    "name": "Raúl Jiménez",
+    "position": "ST"
+  },
+  {
+    "name": "Jonah Kusi-Asare",
+    "position": "ST"
+  }
+]

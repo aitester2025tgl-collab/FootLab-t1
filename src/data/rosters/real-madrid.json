@@ -1,0 +1,102 @@
+[
+  {
+    "name": "Thibaut Courtois",
+    "position": "GK"
+  },
+  {
+    "name": "Andriy Lunin",
+    "position": "GK"
+  },
+  {
+    "name": "Dean Huijsen",
+    "position": "CB"
+  },
+  {
+    "name": "Éder Militão",
+    "position": "CB"
+  },
+  {
+    "name": "Raúl Asencio",
+    "position": "CB"
+  },
+  {
+    "name": "Antonio Rüdiger",
+    "position": "CB"
+  },
+  {
+    "name": "David Alaba",
+    "position": "CB"
+  },
+  {
+    "name": "Álvaro Carreras",
+    "position": "LB"
+  },
+  {
+    "name": "Fran García",
+    "position": "LB"
+  },
+  {
+    "name": "Ferland Mendy",
+    "position": "LB"
+  },
+  {
+    "name": "Trent Alexander-Arnold",
+    "position": "RB"
+  },
+  {
+    "name": "Daniel Carvajal",
+    "position": "RB"
+  },
+  {
+    "name": "Aurélien Tchouaméni",
+    "position": "CM"
+  },
+  {
+    "name": "Federico Valverde",
+    "position": "CM"
+  },
+  {
+    "name": "Eduardo Camavinga",
+    "position": "CM"
+  },
+  {
+    "name": "Dani Ceballos",
+    "position": "CM"
+  },
+  {
+    "name": "Jude Bellingham",
+    "position": "CM"
+  },
+  {
+    "name": "Arda Güler",
+    "position": "CM"
+  },
+  {
+    "name": "Vinicius Junior",
+    "position": "LW"
+  },
+  {
+    "name": "Rodrygo",
+    "position": "RW"
+  },
+  {
+    "name": "Franco Mastantuono",
+    "position": "RW"
+  },
+  {
+    "name": "Brahim Díaz",
+    "position": "RW"
+  },
+  {
+    "name": "Kylian Mbappé",
+    "position": "ST"
+  },
+  {
+    "name": "Endrick",
+    "position": "ST"
+  },
+  {
+    "name": "Gonzalo García",
+    "position": "ST"
+  }
+]

@@ -1,0 +1,94 @@
+[
+  {
+    "name": "Joan García",
+    "position": "GK"
+  },
+  {
+    "name": "Marc-André ter Stegen",
+    "position": "GK"
+  },
+  {
+    "name": "Wojciech Szczesny",
+    "position": "GK"
+  },
+  {
+    "name": "Pau Cubarsí",
+    "position": "CB"
+  },
+  {
+    "name": "Ronald Araujo",
+    "position": "CB"
+  },
+  {
+    "name": "Eric García",
+    "position": "CB"
+  },
+  {
+    "name": "Andreas Christensen",
+    "position": "CB"
+  },
+  {
+    "name": "Alejandro Balde",
+    "position": "LB"
+  },
+  {
+    "name": "Gerard Martín",
+    "position": "LB"
+  },
+  {
+    "name": "Jules Koundé",
+    "position": "RB"
+  },
+  {
+    "name": "Marc Casadó",
+    "position": "CM"
+  },
+  {
+    "name": "Marc Bernal",
+    "position": "CM"
+  },
+  {
+    "name": "Pedri",
+    "position": "CM"
+  },
+  {
+    "name": "Frenkie de Jong",
+    "position": "CM"
+  },
+  {
+    "name": "Gavi",
+    "position": "CM"
+  },
+  {
+    "name": "Fermín López",
+    "position": "CM"
+  },
+  {
+    "name": "Dani Olmo",
+    "position": "CM"
+  },
+  {
+    "name": "Raphinha",
+    "position": "LW"
+  },
+  {
+    "name": "Marcus Rashford",
+    "position": "LW"
+  },
+  {
+    "name": "Lamine Yamal",
+    "position": "RW"
+  },
+  {
+    "name": "Roony Bardghji",
+    "position": "RW"
+  },
+  {
+    "name": "Ferran Torres",
+    "position": "ST"
+  },
+  {
+    "name": "Robert Lewandowski",
+    "position": "ST"
+  }
+]

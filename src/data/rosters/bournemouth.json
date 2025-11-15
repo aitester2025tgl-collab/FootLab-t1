@@ -1,0 +1,102 @@
+[
+  {
+    "name": "Djordje Petrovic",
+    "position": "GK"
+  },
+  {
+    "name": "Will Dennis",
+    "position": "GK"
+  },
+  {
+    "name": "Bafodé Diakité",
+    "position": "CB"
+  },
+  {
+    "name": "Marcos Senesi",
+    "position": "CB"
+  },
+  {
+    "name": "Veljko Milosavljevic",
+    "position": "CB"
+  },
+  {
+    "name": "James Hill",
+    "position": "CB"
+  },
+  {
+    "name": "Matai Akinmboni",
+    "position": "CB"
+  },
+  {
+    "name": "Adrien Truffert",
+    "position": "LB"
+  },
+  {
+    "name": "Julio Soler",
+    "position": "LB"
+  },
+  {
+    "name": "Álex Jiménez",
+    "position": "RB"
+  },
+  {
+    "name": "Julián Araujo",
+    "position": "RB"
+  },
+  {
+    "name": "Adam Smith",
+    "position": "RB"
+  },
+  {
+    "name": "Tyler Adams",
+    "position": "CM"
+  },
+  {
+    "name": "Alex Scott",
+    "position": "CM"
+  },
+  {
+    "name": "Lewis Cook",
+    "position": "CM"
+  },
+  {
+    "name": "Ryan Christie",
+    "position": "CM"
+  },
+  {
+    "name": "Marcus Tavernier",
+    "position": "CM"
+  },
+  {
+    "name": "Justin Kluivert",
+    "position": "CM"
+  },
+  {
+    "name": "Amine Adli",
+    "position": "CM"
+  },
+  {
+    "name": "Antoine Semenyo",
+    "position": "RW"
+  },
+  {
+    "name": "Ben Gannon-Doak",
+    "position": "RW"
+  },
+  {
+    "name": "David Brooks",
+    "position": "RW"
+  },
+  {
+    "name": "Evanilson",
+    "position": "ST"
+  },
+  {
+    "name": "Eli Kroupi",
+    "position": "ST"
+  },
+  {
+    "name": "Enes Ünal",
+    "position": "ST"
+  }
+]

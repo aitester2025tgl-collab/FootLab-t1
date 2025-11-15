@@ -1,0 +1,102 @@
+[
+  {
+    "name": "Rui Silva",
+    "position": "GK"
+  },
+  {
+    "name": "João Virgínia",
+    "position": "GK"
+  },
+  {
+    "name": "Gonçalo Inácio",
+    "position": "CB"
+  },
+  {
+    "name": "Ousmane Diomande",
+    "position": "CB"
+  },
+  {
+    "name": "Zeno Debast",
+    "position": "CB"
+  },
+  {
+    "name": "Eduardo Quaresma",
+    "position": "CB"
+  },
+  {
+    "name": "Maxi Araújo",
+    "position": "LB"
+  },
+  {
+    "name": "Nuno Santos",
+    "position": "LB"
+  },
+  {
+    "name": "Matheus Reis",
+    "position": "LB"
+  },
+  {
+    "name": "Ricardo Mangas",
+    "position": "LB"
+  },
+  {
+    "name": "Georgios Vagiannidis",
+    "position": "RB"
+  },
+  {
+    "name": "Iván Fresneda",
+    "position": "RB"
+  },
+  {
+    "name": "Morten Hjulmand",
+    "position": "CM"
+  },
+  {
+    "name": "Daniel Bragança",
+    "position": "CM"
+  },
+  {
+    "name": "Hidemasa Morita",
+    "position": "CM"
+  },
+  {
+    "name": "Giorgi Kochorashvili",
+    "position": "CM"
+  },
+  {
+    "name": "João Simões",
+    "position": "AM"
+  },
+  {
+    "name": "Geny Catamo",
+    "position": "RW"
+  },
+  {
+    "name": "Pedro Gonçalves",
+    "position": "LW"
+  },
+  {
+    "name": "Alisson Santos",
+    "position": "LW"
+  },
+  {
+    "name": "Geovany Quenda",
+    "position": "RW"
+  },
+  {
+    "name": "Francisco Trincão",
+    "position": "RW"
+  },
+  {
+    "name": "Fotis Ioannidis",
+    "position": "ST"
+  },
+  {
+    "name": "Luis Suárez",
+    "position": "ST"
+  },
+  {
+    "name": "Rodrigo Ribeiro",
+    "position": "ST"
+  }
+]

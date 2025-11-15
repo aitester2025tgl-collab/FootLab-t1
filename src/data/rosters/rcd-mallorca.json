@@ -1,0 +1,98 @@
+[
+  {
+    "name": "Leo Román",
+    "position": "GK"
+  },
+  {
+    "name": "Lucas Bergström",
+    "position": "GK"
+  },
+  {
+    "name": "Iván Cuéllar",
+    "position": "GK"
+  },
+  {
+    "name": "Martin Valjent",
+    "position": "CB"
+  },
+  {
+    "name": "Antonio Raíllo",
+    "position": "CB"
+  },
+  {
+    "name": "David López",
+    "position": "CB"
+  },
+  {
+    "name": "Johan Mojica",
+    "position": "LB"
+  },
+  {
+    "name": "Toni Lato",
+    "position": "LB"
+  },
+  {
+    "name": "Pablo Maffeo",
+    "position": "RB"
+  },
+  {
+    "name": "Mateu Morey",
+    "position": "RB"
+  },
+  {
+    "name": "Samú Costa",
+    "position": "DM"
+  },
+  {
+    "name": "Omar Mascarell",
+    "position": "DM"
+  },
+  {
+    "name": "Sergi Darder",
+    "position": "CM"
+  },
+  {
+    "name": "Antonio Sánchez",
+    "position": "CM"
+  },
+  {
+    "name": "Manu Morlanes",
+    "position": "CM"
+  },
+  {
+    "name": "Pablo Torre",
+    "position": "AM"
+  },
+  {
+    "name": "Dani Rodríguez",
+    "position": "AM"
+  },
+  {
+    "name": "Jan Virgili",
+    "position": "LW"
+  },
+  {
+    "name": "Javi Llabrés",
+    "position": "LW"
+  },
+  {
+    "name": "Takuma Asano",
+    "position": "RW"
+  },
+  {
+    "name": "Vedat Muriqi",
+    "position": "ST"
+  },
+  {
+    "name": "Mateo Joseph",
+    "position": "ST"
+  },
+  {
+    "name": "Abdón Prats",
+    "position": "ST"
+  },
+  {
+    "name": "Marc Domènech",
+    "position": "ST"
+  }
+]

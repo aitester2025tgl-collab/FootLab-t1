@@ -1,0 +1,86 @@
+[
+  {
+    "name": "Sergio Herrera",
+    "position": "GK"
+  },
+  {
+    "name": "Aitor Fernández",
+    "position": "GK"
+  },
+  {
+    "name": "Enzo Boyomo",
+    "position": "CB"
+  },
+  {
+    "name": "Jorge Herrando",
+    "position": "CB"
+  },
+  {
+    "name": "Alejandro Catena",
+    "position": "CB"
+  },
+  {
+    "name": "Abel Bretones",
+    "position": "LB"
+  },
+  {
+    "name": "Juan Cruz",
+    "position": "LB"
+  },
+  {
+    "name": "Valentin Rosier",
+    "position": "RB"
+  },
+  {
+    "name": "Lucas Torró",
+    "position": "DM"
+  },
+  {
+    "name": "Iker Muñoz",
+    "position": "DM"
+  },
+  {
+    "name": "Jon Moncayola",
+    "position": "CM"
+  },
+  {
+    "name": "Asier Osambela",
+    "position": "CM"
+  },
+  {
+    "name": "Aimar Oroz",
+    "position": "AM"
+  },
+  {
+    "name": "Víctor Muñoz",
+    "position": "LW"
+  },
+  {
+    "name": "Moi Gómez",
+    "position": "LW"
+  },
+  {
+    "name": "Sheraldo Becker",
+    "position": "LW"
+  },
+  {
+    "name": "Rubén García",
+    "position": "RW"
+  },
+  {
+    "name": "Iker Benito",
+    "position": "RW"
+  },
+  {
+    "name": "Kike Barja",
+    "position": "RW"
+  },
+  {
+    "name": "Ante Budimir",
+    "position": "ST"
+  },
+  {
+    "name": "Raúl García",
+    "position": "ST"
+  }
+]

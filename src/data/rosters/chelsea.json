@@ -1,0 +1,114 @@
+[
+  {
+    "name": "Robert Sánchez",
+    "position": "GK"
+  },
+  {
+    "name": "Filip Jørgensen",
+    "position": "GK"
+  },
+  {
+    "name": "Levi Colwill",
+    "position": "CB"
+  },
+  {
+    "name": "Trevoh Chalobah",
+    "position": "CB"
+  },
+  {
+    "name": "Wesley Fofana",
+    "position": "CB"
+  },
+  {
+    "name": "Tosin Adarabioyo",
+    "position": "CB"
+  },
+  {
+    "name": "Benoît Badiashile",
+    "position": "CB"
+  },
+  {
+    "name": "Axel Disasi",
+    "position": "CB"
+  },
+  {
+    "name": "Josh Acheampong",
+    "position": "CB"
+  },
+  {
+    "name": "Marc Cucurella",
+    "position": "LB"
+  },
+  {
+    "name": "Jorrel Hato",
+    "position": "LB"
+  },
+  {
+    "name": "Reece James",
+    "position": "RB"
+  },
+  {
+    "name": "Malo Gusto",
+    "position": "RB"
+  },
+  {
+    "name": "Moisés Caicedo",
+    "position": "CM"
+  },
+  {
+    "name": "Roméo Lavia",
+    "position": "CM"
+  },
+  {
+    "name": "Dário Essugo",
+    "position": "CM"
+  },
+  {
+    "name": "Enzo Fernández",
+    "position": "CM"
+  },
+  {
+    "name": "Andrey Santos",
+    "position": "CM"
+  },
+  {
+    "name": "Cole Palmer",
+    "position": "CM"
+  },
+  {
+    "name": "Facundo Buonanotte",
+    "position": "CM"
+  },
+  {
+    "name": "Jamie Gittens",
+    "position": "LW"
+  },
+  {
+    "name": "Alejandro Garnacho",
+    "position": "LW"
+  },
+  {
+    "name": "Estêvão",
+    "position": "RW"
+  },
+  {
+    "name": "Pedro Neto",
+    "position": "RW"
+  },
+  {
+    "name": "Raheem Sterling",
+    "position": "RW"
+  },
+  {
+    "name": "João Pedro",
+    "position": "ST"
+  },
+  {
+    "name": "Liam Delap",
+    "position": "ST"
+  },
+  {
+    "name": "Marc Guiu",
+    "position": "ST"
+  }
+]
