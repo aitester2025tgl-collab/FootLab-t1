@@ -5,7 +5,7 @@ const path = require('path');
 
 (async () => {
   try {
-    const filePath = path.resolve(__dirname, '..', 'index.html');
+    const filePath = path.resolve(__dirname, '..', 'archive', 'legacy_root_files', 'index.html');
     let html = fs.readFileSync(filePath, 'utf8');
     const dom = new JSDOM(html, {
       runScripts: 'dangerously',
