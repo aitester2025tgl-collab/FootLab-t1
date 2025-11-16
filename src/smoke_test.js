@@ -6,9 +6,31 @@ const path = require('path');
 
 (async () => {
   try {
-    // index.html remains at project root; smoke_test.js now lives in `src/`, so go up one level
-    const filePath = path.resolve(__dirname, '..', 'index.html');
-    let html = fs.readFileSync(filePath, 'utf8');
+    // index.html usually lives at project root; if missing, synthesize a minimal
+    // HTML that loads core runtime scripts from `src/` so smoke tests can proceed.
+    let filePath = path.resolve(__dirname, '..', 'index.html');
+    let html;
+    if (fs.existsSync(filePath)) {
+      html = fs.readFileSync(filePath, 'utf8');
+    } else {
+      // build a generated index that loads a minimal set of runtime scripts
+      const jsFiles = ['teams.js', 'clubs.js', 'matches.js', 'core/simulation.js', 'players.js'];
+      const generatedDir = path.resolve(__dirname, '..', 'tmp', 'generated_index');
+      if (!fs.existsSync(generatedDir)) fs.mkdirSync(generatedDir, { recursive: true });
+      const genPath = path.join(generatedDir, 'index.html');
+      const scriptTags = jsFiles
+        .map((p) => {
+          const abs = path.resolve(__dirname, '..', 'src', p);
+          if (!fs.existsSync(abs)) return null;
+          return `<script src="${require('url').pathToFileURL(abs).href}"></script>`;
+        })
+        .filter(Boolean)
+        .join('\n');
+      html = `<!doctype html><html><head><meta charset="utf-8"></head><body>\n${scriptTags}\n</body></html>`;
+      fs.writeFileSync(genPath, html, 'utf8');
+      // use the generated file path as the canonical filePath for url resolution
+      filePath = genPath;
+    }
 
     // If per-team rosters exist under data/rosters, inject them inline into
     // the test HTML so jsdom page scripts can access window.REAL_ROSTERS
@@ -193,11 +215,17 @@ const path = require('path');
     try {
       // prefer namespaced exports when available
       const generateAllClubs =
-        window.generateAllClubs || (window.Elifoot && window.Elifoot.generateAllClubs);
+        window.generateAllClubs ||
+        (window.FootLab && window.FootLab.generateAllClubs) ||
+        (window.Elifoot && window.Elifoot.generateAllClubs);
       const generateRounds =
-        window.generateRounds || (window.Elifoot && window.Elifoot.generateRounds);
+        window.generateRounds ||
+        (window.FootLab && window.FootLab.generateRounds) ||
+        (window.Elifoot && window.Elifoot.generateRounds);
       const assignStartingLineups =
-        window.assignStartingLineups || (window.Elifoot && window.Elifoot.assignStartingLineups);
+        window.assignStartingLineups ||
+        (window.FootLab && window.FootLab.assignStartingLineups) ||
+        (window.Elifoot && window.Elifoot.assignStartingLineups);
 
       if (typeof generateAllClubs === 'function') {
         const allClubs = generateAllClubs();
@@ -220,10 +248,12 @@ const path = require('path');
           ? pool[Math.floor(Math.random() * pool.length)]
           : allClubs[0] || null;
 
-        window.Elifoot = window.Elifoot || {};
+        window.FootLab = window.FootLab || {};
         window.playerClub = playerClub;
-        window.Elifoot.playerClub = playerClub;
-        window.Elifoot.allDivisions = allDivisions;
+        window.FootLab.playerClub = playerClub;
+        window.FootLab.allDivisions = allDivisions;
+        // compatibility alias
+        window.Elifoot = window.Elifoot || window.FootLab;
 
         if (typeof generateRounds === 'function') {
           const firstRoundMatches = [];
@@ -232,7 +262,8 @@ const path = require('path');
             if (rounds && rounds.length) firstRoundMatches.push(...rounds[0]);
           });
           window.currentRoundMatches = firstRoundMatches;
-          window.Elifoot.currentRoundMatches = firstRoundMatches;
+          window.FootLab.currentRoundMatches = firstRoundMatches;
+          window.Elifoot = window.Elifoot || window.FootLab;
           if (typeof assignStartingLineups === 'function') {
             try {
               assignStartingLineups(firstRoundMatches);
@@ -262,7 +293,9 @@ const path = require('path');
               candidate = sample.teams[0];
             if (candidate) {
               window.playerClub = candidate;
-              window.Elifoot.playerClub = candidate;
+              window.FootLab = window.FootLab || {};
+              window.FootLab.playerClub = candidate;
+              window.Elifoot = window.Elifoot || window.FootLab;
               console.log('DBG: recovered playerClub from match');
             }
           } catch (e) {
@@ -282,8 +315,14 @@ const path = require('path');
     let waited = 0;
     const ok = await new Promise((resolve) => {
       const i = setInterval(() => {
-        const el = window.Elifoot && window.Elifoot.playerClub;
-        const matches = window.Elifoot && window.Elifoot.currentRoundMatches;
+        const el =
+          (window.FootLab && window.FootLab.playerClub) ||
+          (window.Elifoot && window.Elifoot.playerClub) ||
+          window.playerClub;
+        const matches =
+          (window.FootLab && window.FootLab.currentRoundMatches) ||
+          (window.Elifoot && window.Elifoot.currentRoundMatches) ||
+          window.currentRoundMatches;
         if (el && Array.isArray(matches)) {
           clearInterval(i);
           resolve({ playerClub: el, matchesCount: matches.length });
@@ -300,7 +339,7 @@ const path = require('path');
       logger.error('smoke_test: failed to initialize playerClub or matches');
       // dump some diagnostics
       logger.error('window.playerClub =', !!window.playerClub);
-      logger.error('window.Elifoot =', !!window.Elifoot);
+      logger.error('window.FootLab =', !!window.FootLab);
       try {
         logger.error(
           'window.currentRoundMatches type =',

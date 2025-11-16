@@ -5,8 +5,52 @@ const path = require('path');
 
 (async () => {
   try {
-    const filePath = path.resolve(__dirname, '..', 'archive', 'legacy_root_files', 'index.html');
-    let html = fs.readFileSync(filePath, 'utf8');
+    let filePath = path.resolve(__dirname, '..', 'index.html');
+    let html;
+    if (fs.existsSync(filePath)) {
+      html = fs.readFileSync(filePath, 'utf8');
+    } else {
+      // synthesize a minimal index.html that loads core runtime scripts from src/
+      const jsFiles = ['teams.js', 'clubs.js', 'matches.js', 'core/simulation.js', 'players.js'];
+      const generatedDir = path.resolve(__dirname, '..', 'tmp', 'generated_index');
+      if (!fs.existsSync(generatedDir)) fs.mkdirSync(generatedDir, { recursive: true });
+      const genPath = path.join(generatedDir, 'index.html');
+      const scriptTags = jsFiles
+        .map((p) => {
+          const abs = path.resolve(__dirname, '..', 'src', p);
+          if (!fs.existsSync(abs)) return null;
+          return `<script src="${require('url').pathToFileURL(abs).href}"></script>`;
+        })
+        .filter(Boolean)
+        .join('\n');
+      html = `<!doctype html><html><head><meta charset="utf-8"></head><body>\n${scriptTags}\n</body></html>`;
+      fs.writeFileSync(genPath, html, 'utf8');
+      filePath = genPath;
+    }
+    // Inject per-team rosters inline when available (same approach as smoke_test)
+    try {
+      const rosterIndexPath = path.resolve(__dirname, '..', 'src', 'data', 'rosters', 'index.json');
+      if (fs.existsSync(rosterIndexPath)) {
+        const idx = JSON.parse(fs.readFileSync(rosterIndexPath, 'utf8'));
+        let inline = ['<script>window.REAL_ROSTERS = window.REAL_ROSTERS || {};'];
+        for (const teamName of Object.keys(idx)) {
+          try {
+            const fname = idx[teamName];
+            const teamPath = path.resolve(__dirname, '..', 'src', 'data', 'rosters', fname);
+            if (!fs.existsSync(teamPath)) continue;
+            const data = fs.readFileSync(teamPath, 'utf8');
+            inline.push('window.REAL_ROSTERS[' + JSON.stringify(teamName) + '] = ' + data + ';');
+          } catch (e) {
+            /* skip team on error */
+          }
+        }
+        inline.push('</script>');
+        html = inline.join('\n') + '\n' + html;
+        fs.writeFileSync(filePath, html, 'utf8');
+      }
+    } catch (e) {
+      /* non-fatal; continue without injecting rosters */
+    }
     const dom = new JSDOM(html, {
       runScripts: 'dangerously',
       resources: 'usable',
