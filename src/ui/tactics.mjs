@@ -3,12 +3,12 @@ import { hexToRgb, getReadableTextColor } from './helpers.mjs';
 
 export function initTacticPanel() {
   const tacticList = document.getElementById('tacticList');
-  const tactics = (window.Elifoot && window.Elifoot.TACTICS) || window.TACTICS;
+  const tactics = (window.FootLab && window.FootLab.TACTICS) || window.TACTICS;
   if (!tacticList || !tactics) return;
   tacticList.innerHTML = '';
 
   // Compute team positional profile to determine which tactics are valid
-  const team = window.Elifoot && window.Elifoot.playerClub && window.Elifoot.playerClub.team;
+  const team = window.FootLab && window.FootLab.playerClub && window.FootLab.playerClub.team;
   const profile = { CB: 0, LB: 0, RB: 0, CM: 0, LW: 0, RW: 0, ST: 0, GK: 0 };
   if (team && Array.isArray(team.players)) {
     team.players.forEach((p) => {
@@ -57,9 +57,9 @@ export function initTacticPanel() {
     tacticItem.textContent = `${tactic.name}`;
     tacticItem.dataset.tactic = tactic.name;
 
-    if (window.Elifoot && window.Elifoot.playerClub && window.Elifoot.playerClub.team) {
-      const teamBg = window.Elifoot.playerClub.team.bgColor || '#2E7D32';
-      const teamSec = window.Elifoot.playerClub.team.color || '#ffffff';
+    if (window.FootLab && window.FootLab.playerClub && window.FootLab.playerClub.team) {
+      const teamBg = window.FootLab.playerClub.team.bgColor || '#2E7D32';
+      const teamSec = window.FootLab.playerClub.team.color || '#ffffff';
       const rgb = hexToRgb(teamBg) || [34, 125, 50];
       const alphaBg = `rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, 0.12)`;
       const borderColor = `rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, 0.28)`;
@@ -69,20 +69,28 @@ export function initTacticPanel() {
     }
 
     if (
-      window.Elifoot &&
-      window.Elifoot.playerClub &&
-      window.Elifoot.playerClub.team.tactic === tactic.name
+      window.FootLab &&
+      window.FootLab.playerClub &&
+      window.FootLab.playerClub.team.tactic === tactic.name
     ) {
       tacticItem.classList.add('active');
-      if (window.Elifoot && window.Elifoot.playerClub && window.Elifoot.playerClub.team) {
-        const teamBg2 = window.Elifoot.playerClub.team.bgColor || '#2E7D32';
+      if (window.FootLab && window.FootLab.playerClub && window.FootLab.playerClub.team) {
+        const teamBg2 = window.FootLab.playerClub.team.bgColor || '#2E7D32';
         const rgb2 = hexToRgb(teamBg2) || [34, 125, 50];
         tacticItem.style.backgroundColor = `rgba(${rgb2[0]}, ${rgb2[1]}, ${rgb2[2]}, 0.26)`;
         tacticItem.style.border = `2px solid rgba(${rgb2[0]}, ${rgb2[1]}, ${rgb2[2]}, 0.6)`;
         tacticItem.style.boxShadow = `0 12px 30px rgba(${rgb2[0]}, ${rgb2[1]}, ${rgb2[2]}, 0.22), inset 0 0 0 1px rgba(255,255,255,0.03)`;
         const outlineColor = getReadableTextColor(
           teamBg2,
-          window.Elifoot.playerClub.team.color || '#ffffff'
+          (window.FootLab &&
+            window.FootLab.playerClub &&
+            window.FootLab.playerClub.team &&
+            window.FootLab.playerClub.team.color) ||
+            (window.Elifoot &&
+              window.Elifoot.playerClub &&
+              window.Elifoot.playerClub.team &&
+              window.Elifoot.playerClub.team.color) ||
+            '#ffffff'
         );
         tacticItem.style.outline = `3px solid ${outlineColor}`;
         tacticItem.style.outlineOffset = '3px';
@@ -91,10 +99,19 @@ export function initTacticPanel() {
     }
 
     tacticItem.addEventListener('click', () => {
-      if (!window.Elifoot || !window.Elifoot.playerClub) return;
-      window.Elifoot.playerClub.team.tactic = tactic.name;
-      window.Elifoot.playerClub.team.tacticData = tactic;
-      const teamBg = window.Elifoot.playerClub.team.bgColor || '#2E7D32';
+      if (!window.FootLab || !window.FootLab.playerClub) return;
+      window.FootLab.playerClub.team.tactic = tactic.name;
+      window.FootLab.playerClub.team.tacticData = tactic;
+      const teamBg =
+        (window.FootLab &&
+          window.FootLab.playerClub &&
+          window.FootLab.playerClub.team &&
+          window.FootLab.playerClub.team.bgColor) ||
+        (window.Elifoot &&
+          window.Elifoot.playerClub &&
+          window.Elifoot.playerClub.team &&
+          window.Elifoot.playerClub.team.bgColor) ||
+        '#2E7D32';
       const rgb = hexToRgb(teamBg) || [34, 125, 50];
       document.querySelectorAll('.tactic-item').forEach((item) => {
         item.classList.remove('active');
@@ -104,8 +121,8 @@ export function initTacticPanel() {
           item.style.border = `2px solid rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, 0.6)`;
           item.style.boxShadow = `0 12px 30px rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, 0.26), inset 0 0 0 1px rgba(255,255,255,0.04)`;
           const outlineColor = getReadableTextColor(
-            window.Elifoot.playerClub.team.bgColor || teamBg,
-            window.Elifoot.playerClub.team.color || '#ffffff'
+            window.FootLab.playerClub.team.bgColor || teamBg,
+            window.FootLab.playerClub.team.color || '#ffffff'
           );
           item.style.outline = `3px solid ${outlineColor}`;
           item.style.outlineOffset = '3px';
@@ -120,7 +137,8 @@ export function initTacticPanel() {
           item.style.zIndex = '';
         }
       });
-      const renderFn = (window.Elifoot && window.Elifoot.renderHubContent) || window.renderHubContent;
+      const renderFn =
+        (window.FootLab && window.FootLab.renderHubContent) || window.renderHubContent;
       if (typeof renderFn === 'function') renderFn('menu-team');
     });
 
@@ -128,7 +146,7 @@ export function initTacticPanel() {
   });
 
   try {
-    const L = window.Elifoot && window.Elifoot.Logger ? window.Elifoot.Logger : console;
+    const L = window.FootLab && window.FootLab.Logger ? window.FootLab.Logger : console;
     L.info && L.info('Painel de táticas inicializado');
   } catch (_) {
     /* ignore */
@@ -140,8 +158,11 @@ if (typeof window !== 'undefined') {
   window.Tactics = window.Tactics || {};
   window.Tactics.initTacticPanel = window.Tactics.initTacticPanel || initTacticPanel;
   window.initTacticPanel = window.initTacticPanel || initTacticPanel;
-  window.Elifoot = window.Elifoot || {};
-  window.Elifoot.Tactics = window.Elifoot.Tactics || {};
-  window.Elifoot.Tactics.initTacticPanel = window.Elifoot.Tactics.initTacticPanel || initTacticPanel;
-  window.Elifoot.initTacticPanel = window.Elifoot.initTacticPanel || initTacticPanel;
+  window.FootLab = window.FootLab || {};
+  window.FootLab.Tactics = window.FootLab.Tactics || {};
+  window.FootLab.Tactics.initTacticPanel =
+    window.FootLab.Tactics.initTacticPanel || initTacticPanel;
+  window.FootLab.initTacticPanel = window.FootLab.initTacticPanel || initTacticPanel;
+  // Backwards compatibility: keep old global if external code expects it
+  window.Elifoot = window.Elifoot || window.FootLab;
 }

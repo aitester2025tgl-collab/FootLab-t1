@@ -18,8 +18,8 @@ const logger = require('./testLogger').getLogger();
 logger.info('Starting substitutions_test');
 
 // Provide minimal GameConfig
-window.Elifoot = window.Elifoot || {};
-window.Elifoot.GameConfig = window.Elifoot.GameConfig || {
+window.FootLab = window.FootLab || window.Elifoot || {};
+window.FootLab.GameConfig = window.FootLab.GameConfig || {
   rules: { maxSubs: 5, enforceGkOnlySwap: true },
 };
 
@@ -44,8 +44,12 @@ const match = {
   awayGoals: 0,
 };
 
-// Call the overlay to render
-window.Elifoot.Overlays.showHalfTimeSubsOverlay(club, match, () => {});
+// Call the overlay to render (use FootLab if available, fallback to Elifoot)
+(window.FootLab &&
+  window.FootLab.Overlays &&
+  typeof window.FootLab.Overlays.showHalfTimeSubsOverlay === 'function'
+  ? window.FootLab.Overlays.showHalfTimeSubsOverlay
+  : window.Elifoot.Overlays.showHalfTimeSubsOverlay)(club, match, () => {});
 
 // Wait for the overlay to be rendered (handlers are attached synchronously, but use a tiny timeout)
 setTimeout(() => {

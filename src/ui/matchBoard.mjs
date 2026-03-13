@@ -4,29 +4,39 @@ import { hexToRgb, luminance, getReadableTextColor } from './helpers.mjs';
 
 // Prefer central Finance if available at runtime
 function getFinance() {
-  return (window.Elifoot && window.Elifoot.Finance) || window.Finance;
+  const FootLab = window.FootLab || window.Elifoot || {};
+  return (FootLab && FootLab.Finance) || window.Finance;
 }
 
 function getLogger() {
-  return window.Elifoot && window.Elifoot.Logger ? window.Elifoot.Logger : console;
+  const FootLab = window.FootLab || window.Elifoot || {};
+  return FootLab && FootLab.Logger ? FootLab.Logger : console;
 }
 
 function renderInitialMatchBoard(allDivisions) {
-  const allMatches = (window.Elifoot && window.Elifoot.currentRoundMatches) || window.currentRoundMatches || [];
+  const FootLab = window.FootLab || window.Elifoot || {};
+  const allMatches = (FootLab && FootLab.currentRoundMatches) || window.currentRoundMatches || [];
   if (!allMatches || !allMatches.length) return;
   const Finance = getFinance();
 
   try {
-    const player = (window.Elifoot && window.Elifoot.playerClub) || window.playerClub;
-    const playerMatch = (allMatches || []).find((m) => m.homeClub === player || m.awayClub === player);
+    const player =
+      (window.FootLab && window.FootLab.playerClub) ||
+      (window.Elifoot && window.Elifoot.playerClub) ||
+      window.playerClub;
+    const playerMatch = (allMatches || []).find(
+      (m) => m.homeClub === player || m.awayClub === player
+    );
     const headerSpan = document.getElementById('playerTeamNameMatch');
     if (playerMatch && headerSpan) {
-      const home = playerMatch.homeClub && playerMatch.homeClub.team ? playerMatch.homeClub.team.name : 'Home';
-      const away = playerMatch.awayClub && playerMatch.awayClub.team ? playerMatch.awayClub.team.name : 'Away';
+      const home =
+        playerMatch.homeClub && playerMatch.homeClub.team ? playerMatch.homeClub.team.name : 'Home';
+      const away =
+        playerMatch.awayClub && playerMatch.awayClub.team ? playerMatch.awayClub.team.name : 'Away';
       headerSpan.textContent = `${home} × ${away}`;
     }
-    if (((window.Elifoot && window.Elifoot.GAME_NAME) || window.GAME_NAME) && typeof document !== 'undefined') {
-      const gameName = (window.Elifoot && window.Elifoot.GAME_NAME) || window.GAME_NAME;
+    if (((FootLab && FootLab.GAME_NAME) || window.GAME_NAME) && typeof document !== 'undefined') {
+      const gameName = (FootLab && FootLab.GAME_NAME) || window.GAME_NAME;
       document.title = `${gameName} — ${player && player.team ? player.team.name : ''}`;
     }
   } catch (err) {
@@ -61,13 +71,17 @@ function renderInitialMatchBoard(allDivisions) {
       let html = `<h3 class="division-title">${divisionNames[divisionNumber]}</h3>`;
 
       matches.forEach((match) => {
-        const homeBg = (match.homeClub && match.homeClub.team && match.homeClub.team.bgColor) || '#333';
-        const homeSec = (match.homeClub && match.homeClub.team && match.homeClub.team.color) || '#ffffff';
+        const homeBg =
+          (match.homeClub && match.homeClub.team && match.homeClub.team.bgColor) || '#333';
+        const homeSec =
+          (match.homeClub && match.homeClub.team && match.homeClub.team.color) || '#ffffff';
         const homeFg = getReadableTextColor(homeBg, homeSec);
         const homeBorder = homeSec;
 
-        const awayBg = (match.awayClub && match.awayClub.team && match.awayClub.team.bgColor) || '#333';
-        const awaySec = (match.awayClub && match.awayClub.team && match.awayClub.team.color) || '#ffffff';
+        const awayBg =
+          (match.awayClub && match.awayClub.team && match.awayClub.team.bgColor) || '#333';
+        const awaySec =
+          (match.awayClub && match.awayClub.team && match.awayClub.team.color) || '#ffffff';
         const awayFg = getReadableTextColor(awayBg, awaySec);
         const awayBorder = awaySec;
 
@@ -120,11 +134,16 @@ function renderInitialMatchBoard(allDivisions) {
 }
 
 function updateMatchBoardLine(matchIndex, matchResult) {
-  const DEBUG_MATCH_SIM = (window.Elifoot && window.Elifoot.DEBUG_MATCH_SIM) || window.DEBUG_MATCH_SIM;
+  const FootLab = window.FootLab || window.Elifoot || {};
+  const DEBUG_MATCH_SIM = (FootLab && FootLab.DEBUG_MATCH_SIM) || window.DEBUG_MATCH_SIM;
   if (DEBUG_MATCH_SIM) {
     try {
-      const L = window.Elifoot && window.Elifoot.Logger ? window.Elifoot.Logger : console;
-      L.debug && L.debug('DBG updateMatchBoardLine called', { matchIndex, hasGoals: Array.isArray(matchResult.goals) ? matchResult.goals.length : 0 });
+      const L = FootLab && FootLab.Logger ? FootLab.Logger : console;
+      L.debug &&
+        L.debug('DBG updateMatchBoardLine called', {
+          matchIndex,
+          hasGoals: Array.isArray(matchResult.goals) ? matchResult.goals.length : 0,
+        });
     } catch (e) {
       /* ignore */
     }
@@ -148,7 +167,10 @@ function updateMatchBoardLine(matchIndex, matchResult) {
   if (homeGoalsEl) homeGoalsEl.textContent = matchResult.homeGoals;
   if (awayGoalsEl) awayGoalsEl.textContent = matchResult.awayGoals;
 
-  const lastGoal = Array.isArray(matchResult.goals) && matchResult.goals.length ? matchResult.goals[matchResult.goals.length - 1] : null;
+  const lastGoal =
+    Array.isArray(matchResult.goals) && matchResult.goals.length
+      ? matchResult.goals[matchResult.goals.length - 1]
+      : null;
   if (lastGoal && lastGoalEl) {
     const isHome = lastGoal.team === 'home';
     const team = isHome ? matchResult.homeClub.team : matchResult.awayClub.team;
@@ -190,8 +212,14 @@ function adjustMatchBoardSizing() {
 
   const viewportH = window.innerHeight || document.documentElement.clientHeight;
   const boardRect = board.getBoundingClientRect();
-  const progressH = (document.getElementById('progress-container') && document.getElementById('progress-container').offsetHeight) || 0;
-  const footerH = (document.getElementById('hub-footer-status') && document.getElementById('hub-footer-status').offsetHeight) || 0;
+  const progressH =
+    (document.getElementById('progress-container') &&
+      document.getElementById('progress-container').offsetHeight) ||
+    0;
+  const footerH =
+    (document.getElementById('hub-footer-status') &&
+      document.getElementById('hub-footer-status').offsetHeight) ||
+    0;
   const reserved = progressH + footerH + 80;
   const availableForBoard = Math.max(100, viewportH - boardRect.top - reserved);
 
@@ -221,12 +249,15 @@ function attachGlobals() {
   window.renderInitialMatchBoard = renderInitialMatchBoard;
   window.updateMatchBoardLine = updateMatchBoardLine;
 
-  window.Elifoot = window.Elifoot || {};
-  window.Elifoot.MatchBoard = window.Elifoot.MatchBoard || {};
-  window.Elifoot.MatchBoard.renderInitialMatchBoard = renderInitialMatchBoard;
-  window.Elifoot.MatchBoard.updateMatchBoardLine = updateMatchBoardLine;
-  window.Elifoot.renderInitialMatchBoard = renderInitialMatchBoard;
-  window.Elifoot.updateMatchBoardLine = updateMatchBoardLine;
+  window.FootLab = window.FootLab || window.Elifoot || {};
+  window.FootLab.MatchBoard = window.FootLab.MatchBoard || {};
+  window.FootLab.MatchBoard.renderInitialMatchBoard = renderInitialMatchBoard;
+  window.FootLab.MatchBoard.updateMatchBoardLine = updateMatchBoardLine;
+  window.FootLab.renderInitialMatchBoard = renderInitialMatchBoard;
+  window.FootLab.updateMatchBoardLine = updateMatchBoardLine;
+
+  // keep compatibility alias
+  window.Elifoot = window.Elifoot || window.FootLab;
 }
 
 attachGlobals();

@@ -3,6 +3,7 @@ import { getReadableTextColor } from './helpers.mjs';
 
 export function renderFinance(club) {
   try {
+    const FootLab = window.FootLab || window.Elifoot || window;
     const content = document.getElementById('hub-main-content');
     if (!content) return;
     const c = club || window.playerClub;
@@ -59,8 +60,10 @@ export function renderFinance(club) {
           const cc = calcCostForPercent(pct);
           costDisp.textContent = `${cc.seatsAdded} lugares → custo aprox. ${formatMoney(cc.total)} (${cc.costPerSeat}€/lugar)`;
           const estAttendance =
-            window.Finance && typeof window.Finance.computeMatchAttendance === 'function'
-              ? window.Finance.computeMatchAttendance({ homeClub: c, awayClub: {} }).attendance
+            FootLab &&
+            FootLab.Finance &&
+            typeof FootLab.Finance.computeMatchAttendance === 'function'
+              ? FootLab.Finance.computeMatchAttendance({ homeClub: c, awayClub: {} }).attendance
               : Math.min(Number(c.stadiumCapacity || 10000), 10000);
           estDisp.textContent = estAttendance
             ? `Estimativa por jogo: ${estAttendance} espectadores → receita ~ ${formatMoney(Math.round(estAttendance * Number(priceIn.value || c.ticketPrice || 20)))} `
@@ -92,17 +95,34 @@ export function renderFinance(club) {
               allClubs: window.allClubs,
               currentRoundMatches: window.currentRoundMatches,
             };
-            if (window.Elifoot && window.Elifoot.Persistence && typeof window.Elifoot.Persistence.saveSnapshot === 'function') {
-              try { window.Elifoot.Persistence.saveSnapshot(snap); } catch (_) { /* ignore */ }
+            if (
+              FootLab &&
+              FootLab.Persistence &&
+              typeof FootLab.Persistence.saveSnapshot === 'function'
+            ) {
+              try {
+                FootLab.Persistence.saveSnapshot(snap);
+              } catch (_) {
+                /* ignore */
+              }
             } else {
-              try { localStorage.setItem('elifoot_save_snapshot', JSON.stringify(snap)); } catch (e) { /* ignore */ }
+              try {
+                localStorage.setItem('footlab_t1_save_snapshot', JSON.stringify(snap));
+              } catch (_) {}
+              try {
+                localStorage.setItem('elifoot_save_snapshot', JSON.stringify(snap));
+              } catch (_) {}
             }
-          } catch (e) { /* ignore */ }
+          } catch (e) {
+            /* ignore */
+          }
 
           capDisp.textContent = newCap.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
           budDisp.textContent = formatMoney(c.budget || 0);
           updateCostDisplay();
-          alert(`Expansão aplicada: +${ccalc.seatsAdded} lugares (novo total ${newCap}). Custo: ${formatMoney(ccalc.total)}.`);
+          alert(
+            `Expansão aplicada: +${ccalc.seatsAdded} lugares (novo total ${newCap}). Custo: ${formatMoney(ccalc.total)}.`
+          );
         });
 
         setTicket.addEventListener('click', () => {
@@ -116,26 +136,54 @@ export function renderFinance(club) {
               allClubs: window.allClubs,
               currentRoundMatches: window.currentRoundMatches,
             };
-            if (window.Elifoot && window.Elifoot.Persistence && typeof window.Elifoot.Persistence.saveSnapshot === 'function') {
-              try { window.Elifoot.Persistence.saveSnapshot(snap); } catch (_) { /* ignore */ }
+            if (
+              FootLab &&
+              FootLab.Persistence &&
+              typeof FootLab.Persistence.saveSnapshot === 'function'
+            ) {
+              try {
+                FootLab.Persistence.saveSnapshot(snap);
+              } catch (_) {
+                /* ignore */
+              }
             } else {
-              try { localStorage.setItem('elifoot_save_snapshot', JSON.stringify(snap)); } catch (e) { /* ignore */ }
+              try {
+                localStorage.setItem('footlab_t1_save_snapshot', JSON.stringify(snap));
+              } catch (_) {}
+              try {
+                localStorage.setItem('elifoot_save_snapshot', JSON.stringify(snap));
+              } catch (_) {}
             }
-          } catch (e) { /* ignore */ }
+          } catch (e) {
+            /* ignore */
+          }
           alert('Preço do bilhete atualizado para ' + formatMoney(price));
           updateCostDisplay();
         });
-      } catch (e) { /* ignore */ }
+      } catch (e) {
+        /* ignore */
+      }
     }, 10);
   } catch (e) {
-    try { const L = (window.Elifoot && window.Elifoot.Logger) || console; L.warn && L.warn('renderFinance failed', e); } catch (_) { /* ignore */ }
+    try {
+      const L =
+        (window.FootLab && window.FootLab.Logger) ||
+        (window.Elifoot && window.Elifoot.Logger) ||
+        console;
+      L.warn && L.warn('renderFinance failed', e);
+    } catch (_) {
+      /* ignore */
+    }
   }
 }
 
 // Attach to global namespace for backward compat
 if (typeof window !== 'undefined') {
-  window.Elifoot = window.Elifoot || {};
-  window.Elifoot.Hub = window.Elifoot.Hub || {};
-  window.Elifoot.Hub.renderFinance = window.Elifoot.Hub.renderFinance || renderFinance;
+  window.FootLab = window.FootLab || window.Elifoot || {};
+  window.FootLab.Hub = window.FootLab.Hub || {};
+  window.FootLab.Hub.renderFinance = window.FootLab.Hub.renderFinance || renderFinance;
   window.renderFinance = window.renderFinance || renderFinance;
+
+  // compatibility alias
+  window.Elifoot = window.Elifoot || window.FootLab;
 }

@@ -1,13 +1,14 @@
-// ui/hub.js - hub rendering functions extracted from ui.js
-/* global formatMoney, renderHubContent, generateRounds, currentJornada, playerClub, allDivisions, allClubs, currentRoundMatches */
-/* exported renderHubContent, bgColor, fgColor, showPlayed, homeAway, nameTextShadow, strokeRgb3 */
-// ui/hub.js - hub extracted from ui.js
+/* ui/hub.js - hub rendering functions extracted from ui.js */
 (function () {
-  // prefer canonical namespace when available
-  const E = window.Elifoot || window;
+  // prefer canonical namespace when available (FootLab is preferred, keep Elifoot alias)
+  const E = window.FootLab || window.Elifoot || window;
   // logger helper (use central logger when available, fall back to console)
   function getLogger() {
-    return window.Elifoot && window.Elifoot.Logger ? window.Elifoot.Logger : console;
+    return (
+      (window.FootLab && window.FootLab.Logger) ||
+      (window.Elifoot && window.Elifoot.Logger) ||
+      console
+    );
   }
   // small helpers: delegate to shared ColorUtils when available
   function hexToRgb(hex) {
@@ -88,24 +89,12 @@
 
     try {
       const L = getLogger();
-      L.debug && L.debug('playerClub.team:', E.playerClub.team);
-    } catch (_) {
-      /* ignore */
-    }
-    try {
-      const L = getLogger();
-      L.debug &&
-        L.debug('playerClub.team.players:', E.playerClub.team ? E.playerClub.team.players : 'N/A');
-    } catch (_) {
-      /* ignore */
-    }
-    try {
-      const L = getLogger();
-      L.debug &&
-        L.debug(
-          'Número de jogadores:',
-          E.playerClub.team && E.playerClub.team.players ? E.playerClub.team.players.length : 0
-        );
+      const teamName = (E.playerClub && E.playerClub.team && E.playerClub.team.name) || 'N/A';
+      const count =
+        E.playerClub && E.playerClub.team && Array.isArray(E.playerClub.team.players)
+          ? E.playerClub.team.players.length
+          : 0;
+      L.debug && L.debug('Inicializando Hub UI for', teamName, 'players:', count);
     } catch (_) {
       /* ignore */
     }
@@ -194,12 +183,66 @@
       tacticPanel.style.borderColor = 'rgba(0,0,0,0.2)';
     }
 
+    // Populate header and footer team/coach displays if data is available
+    try {
+      const coachEl = document.getElementById('coachNameDisplay');
+      const hubTeamEl = document.getElementById('playerTeamNameHub');
+      const footerTeamEl = document.getElementById('playerTeamNameFooter');
+      if (coachEl) {
+        // Determine coach name robustly.
+        // Avoid using `window.coachName` directly because an element with id="coachName"
+        // can shadow that global (becoming an HTMLInputElement). Prefer the explicit
+        // `coachName` variable, then the input's value, then club data.
+        let name = '';
+        try {
+          if (typeof coachName !== 'undefined' && coachName) {
+            name = String(coachName).trim();
+          } else {
+            const coachInput = document.getElementById('coachName');
+            if (coachInput && typeof coachInput.value === 'string') {
+              name = coachInput.value.trim();
+            } else if (E && E.playerClub && E.playerClub.coach) {
+              name = String(E.playerClub.coach).trim();
+            } else if (window.coachName && typeof window.coachName === 'string') {
+              name = String(window.coachName).trim();
+            } else if (
+              window.coachName &&
+              window.coachName.value &&
+              typeof window.coachName.value === 'string'
+            ) {
+              name = window.coachName.value.trim();
+            }
+          }
+        } catch (e) {
+          name = '';
+        }
+        coachEl.textContent = name || '';
+      }
+      if (hubTeamEl && E.playerClub && E.playerClub.team && E.playerClub.team.name)
+        hubTeamEl.textContent = E.playerClub.team.name;
+      if (footerTeamEl && E.playerClub && E.playerClub.team && E.playerClub.team.name)
+        footerTeamEl.textContent = E.playerClub.team.name;
+    } catch (e) {
+      /* ignore */
+    }
+
     // Adicionar listener ao botão de simulação
     const simulateBtn = document.getElementById('simulateBtnHub');
     if (
       simulateBtn &&
       ((E && typeof E.simulateDay === 'function') || typeof window.simulateDay === 'function')
     ) {
+      // Force inline style to ensure the simulate button appears centered at the
+      // bottom of the viewport and is visually prominent, avoiding possible
+      // stylesheet overrides or layout containers that prevent fixed positioning.
+      try {
+        simulateBtn.style.cssText =
+          (simulateBtn.style.cssText || '') +
+          'position:fixed;left:50%;transform:translateX(-50%);bottom:18px;padding:14px 28px;border-radius:28px;background:linear-gradient(90deg,#ff6b6b,#ff3b30);color:#fff;font-weight:800;border:none;box-shadow:0 12px 40px rgba(0,0,0,0.35);z-index:9999;cursor:pointer;';
+      } catch (_) {
+        /* ignore */
+      }
+
       simulateBtn.addEventListener('click', (e) => {
         // prefer centralized simulate function if present
         const simFn = (E && E.simulateDay) || window.simulateDay;
@@ -213,12 +256,21 @@
           return;
         }
         // Mark that offers popup should appear on the next entry to the team menu
-        // (prevents showing the popup on ordinary navigation into team menus)
+        // (this prevents showing the popup on ordinary navigation into team menus)
         try {
           window._offersPendingOnNextTeamEntry = true;
         } catch (_) {
           /* ignore */
         }
+        // Only treat trusted user events as user-initiated. Programmatic
+        // clicks (element.click() or dispatched events) will have
+        // `isTrusted === false` and therefore will NOT set the transient
+        // authorization flag.
+        try {
+          if (typeof window !== 'undefined' && e && e.isTrusted) {
+            window.__userInitiatedSim = true;
+          }
+        } catch (_) {}
         try {
           simFn();
         } catch (e) {
@@ -228,6 +280,12 @@
           } catch (_) {
             /* ignore */
           }
+        } finally {
+          try {
+            setTimeout(() => {
+              if (typeof window !== 'undefined') window.__userInitiatedSim = false;
+            }, 500);
+          } catch (_) {}
         }
       });
       try {
@@ -325,12 +383,16 @@
         E.playerClub.team.color || '#008000'
       );
       defaultBtn.style.boxShadow = '0 6px 18px rgba(0,0,0,0.16)';
+      // Ensure compact classes are applied immediately so left column/menu sizing
+      // matches the compact design even if renderHubContent isn't called synchronously.
       try {
         const hubMenu = document.getElementById('hub-menu');
         const leftCol = document.getElementById('left-column');
         if (hubMenu) hubMenu.classList.add('compact-buttons');
         if (leftCol) leftCol.classList.add('compact');
-      } catch (e) {}
+      } catch (e) {
+        /* ignore */
+      }
       renderHubContent('menu-team');
       try {
         if (typeof window.updateBudgetDisplays === 'function')
@@ -356,6 +418,24 @@
     const content = document.getElementById('hub-main-content');
     if (!content) return;
 
+    // When the team menu is active we prefer a more compact set of
+    // left-side buttons so the left column doesn't feel oversized.
+    // Add/remove a CSS marker class to let styles handle the sizing.
+    try {
+      const hubMenu = document.getElementById('hub-menu');
+      const leftCol = document.getElementById('left-column');
+      if (hubMenu) {
+        if (menuId === 'menu-team') hubMenu.classList.add('compact-buttons');
+        else hubMenu.classList.remove('compact-buttons');
+      }
+      if (leftCol) {
+        if (menuId === 'menu-team') leftCol.classList.add('compact');
+        else leftCol.classList.remove('compact');
+      }
+    } catch (e) {
+      /* ignore */
+    }
+
     content.innerHTML = '';
 
     switch (menuId) {
@@ -369,7 +449,9 @@
               ? E.Persistence.loadSnapshot()
               : (function () {
                   try {
-                    const raw = localStorage.getItem('elifoot_save_snapshot');
+                    const raw =
+                      localStorage.getItem('footlab_t1_save_snapshot') ||
+                      localStorage.getItem('elifoot_save_snapshot');
                     return raw ? JSON.parse(raw) : null;
                   } catch (e) {
                     return null;
@@ -416,10 +498,11 @@
                   }
                 } else {
                   try {
+                    localStorage.setItem('footlab_t1_save_snapshot', JSON.stringify(snap));
+                  } catch (_) {}
+                  try {
                     localStorage.setItem('elifoot_save_snapshot', JSON.stringify(snap));
-                  } catch (e) {
-                    throw e;
-                  }
+                  } catch (_) {}
                 }
                 alert('Jogo gravado com sucesso.');
               } catch (e) {
@@ -544,7 +627,12 @@
                   }
                 } else {
                   try {
-                    localStorage.setItem('elifoot_save_snapshot', JSON.stringify(snap));
+                    try {
+                      localStorage.setItem('footlab_t1_save_snapshot', JSON.stringify(snap));
+                    } catch (_) {}
+                    try {
+                      localStorage.setItem('elifoot_save_snapshot', JSON.stringify(snap));
+                    } catch (_) {}
                   } catch (e) {
                     try {
                       const L = getLogger();
@@ -593,7 +681,12 @@
                   }
                 } else {
                   try {
-                    localStorage.setItem('elifoot_save_snapshot', JSON.stringify(snap));
+                    try {
+                      localStorage.setItem('footlab_t1_save_snapshot', JSON.stringify(snap));
+                    } catch (_) {}
+                    try {
+                      localStorage.setItem('elifoot_save_snapshot', JSON.stringify(snap));
+                    } catch (_) {}
                   } catch (e) {
                     try {
                       const L = getLogger();
@@ -715,13 +808,17 @@
     });
 
     const groupLabels = { GK: 'Guarda-redes', DEF: 'Defesas', MID: 'Médios', ATT: 'Avançados' };
-    let html = `<div class="players-cards" style="color:${teamFg};">`;
     const playerNameColor = teamFg;
+    let html = `<div class="players-cards" style="color:${teamFg};">`;
+    html += `<div class="roster-lanes">`;
     ['GK', 'DEF', 'MID', 'ATT'].forEach((k) => {
-      const list = groups[k];
-      if (!list || list.length === 0) return;
-      html += `<div class="player-group"><h4 style="margin:6px 0 8px 0;">${groupLabels[k]} (${list.length})</h4><div class="cards-wrap">`;
-      list.forEach((p) => {
+      const list = groups[k] || [];
+      // Render a single group title once for the position
+      html += `<div class="player-group" data-pos="${k}">`;
+      html += `<h4 class="lane-title">${groupLabels[k]} (${list.length})</h4>`;
+      // Render all player boxes into a single wrapping container; CSS will force 5 per visual row
+      html += `<div class="lane-slots" data-pos="${k}">`;
+      (list || []).forEach((p) => {
         const skill = p.skill || 0;
         const barColor =
           skill >= 80 ? '#4CAF50' : skill >= 70 ? '#8BC34A' : skill >= 60 ? '#FFC107' : '#F44336';
@@ -734,21 +831,23 @@
               : 0;
         const endsMarker = Number(contractLeft) === 0 ? '*' : '';
         const displayPos = p._normPos || p.position || p.pos || '';
-        html += `<div class="hub-box player-box" data-player-id="${p.id}" style="height:${rowHeight}px">
+        html += `<div class="hub-box player-box" data-player-id="${p.id}">
                   <div class="player-header-row">
                     <div class="player-pos">${displayPos}</div>
                     <div class="player-name" style="color:${playerNameColor};">${p.name}</div>
                   </div>
                   <div class="skill-bar"><div class="skill-fill" style="width:${skill}%;background:${barColor};"></div></div>
-                  <div style="display:flex;justify-content:space-between;align-items:center;font-size:0.92em;">
+                  <div class="player-meta" style="display:flex;justify-content:space-between;align-items:center;font-size:0.92em;">
                     <div style="font-weight:700;color:rgba(255,255,255,0.9);">${skill}</div>
                     <div class="player-salary" data-player-id="${p.id}">${formatMoney(salary)}${endsMarker ? ' ' + endsMarker : ''}</div>
                   </div>
                 </div>`;
       });
-      html += `</div></div>`;
+      html += `</div>`; // .lane-slots
+      html += `</div>`; // .player-group
     });
-    html += `</div>`;
+    html += `</div>`; // .roster-lanes
+    html += `</div>`; // .players-cards
     content.innerHTML = `<div class="hub-box team-roster-grid" style="color:${teamFg};"><h2 class="team-roster-title">PLANTEL (${sortedPlayers.length} jogadores)</h2>${html}</div>`;
 
     // Attach negotiation handlers to salary cells and full player rows so the user can propose offers
@@ -815,6 +914,15 @@
         });
         const freshRows = content.querySelectorAll('.player-box');
         freshRows.forEach((r) => {
+          try {
+            r.setAttribute('role', 'button');
+            r.setAttribute('tabindex', '0');
+            const pidAttr = r.getAttribute('data-player-id') || '';
+            r.setAttribute('aria-label', pidAttr ? `Player ${pidAttr}` : 'Player');
+          } catch (e) {
+            /* ignore */
+          }
+
           r.addEventListener('click', (ev) => {
             // if user clicked directly on the salary cell, that handler will run first; avoid double-handling
             if (ev.target && ev.target.classList && ev.target.classList.contains('player-salary'))
@@ -827,6 +935,13 @@
             if (!player) return;
             // Show action menu: Renew (only if contract ending) and Sell
             showPlayerActionMenu(player, club);
+          });
+
+          r.addEventListener('keydown', (ev) => {
+            if (ev.key === 'Enter' || ev.key === ' ') {
+              ev.preventDefault();
+              r.click();
+            }
           });
         });
       } catch (e) {
@@ -1239,7 +1354,9 @@
               ? E.Persistence.loadSnapshot()
               : (function () {
                   try {
-                    const raw = localStorage.getItem('elifoot_save_snapshot');
+                    const raw =
+                      localStorage.getItem('footlab_t1_save_snapshot') ||
+                      localStorage.getItem('elifoot_save_snapshot');
                     return raw ? JSON.parse(raw) : null;
                   } catch (e) {
                     return null;
@@ -1279,7 +1396,9 @@
               ? E.Persistence.loadSnapshot()
               : (function () {
                   try {
-                    const raw = localStorage.getItem('elifoot_save_snapshot');
+                    const raw =
+                      localStorage.getItem('footlab_t1_save_snapshot') ||
+                      localStorage.getItem('elifoot_save_snapshot');
                     return raw ? JSON.parse(raw) : null;
                   } catch (e) {
                     return null;
@@ -1857,7 +1976,9 @@
     // Movements tab (transfer history)
     html += `<div data-tab="movements" class="trans-tab" style="display:none;">`;
     try {
-      const history = Array.isArray(window.TRANSFER_HISTORY) ? window.TRANSFER_HISTORY.slice().reverse() : [];
+      const history = Array.isArray(window.TRANSFER_HISTORY)
+        ? window.TRANSFER_HISTORY.slice().reverse()
+        : [];
       if (history.length === 0) {
         html += `<div style="opacity:0.85;padding:8px">Nenhum movimento registado.</div>`;
       } else {
@@ -1885,16 +2006,24 @@
     // My Players tab (transfers involving current team)
     html += `<div data-tab="my" class="trans-tab" style="display:none;">`;
     try {
-      const history = Array.isArray(window.TRANSFER_HISTORY) ? window.TRANSFER_HISTORY.slice().reverse() : [];
+      const history = Array.isArray(window.TRANSFER_HISTORY)
+        ? window.TRANSFER_HISTORY.slice().reverse()
+        : [];
       const buyer = window.playerClub || {};
       const buyerName = (buyer.team && buyer.team.name) || buyer.name || '';
       const mine = history.filter((h) => {
         try {
           if (!buyerName) return false;
-          return String(h.from || '').trim() === String(buyerName).trim() || String(h.to || '').trim() === String(buyerName).trim();
-        } catch (_) { return false; }
+          return (
+            String(h.from || '').trim() === String(buyerName).trim() ||
+            String(h.to || '').trim() === String(buyerName).trim()
+          );
+        } catch (_) {
+          return false;
+        }
       });
-      if (mine.length === 0) html += `<div style="opacity:0.85;padding:8px">Nenhum movimento para a sua equipa.</div>`;
+      if (mine.length === 0)
+        html += `<div style="opacity:0.85;padding:8px">Nenhum movimento para a sua equipa.</div>`;
       else {
         mine.forEach((h) => {
           const player = h.player || '—';
@@ -2123,9 +2252,17 @@
           if (typeof prompt === 'function' && typeof process !== 'undefined') {
             const pl = (window.PENDING_RELEASES || [])[currentIdx];
             if (pl) {
-              const want = typeof confirm === 'function' ? confirm(`${pl.name}\nSkill: ${pl.skill || 0}\nTaxa a pagar agora: ${formatMoney(pl.leavingFee || 0)}\nDeseja pagar a taxa e abrir o diálogo de contrato?`) : true;
+              const want =
+                typeof confirm === 'function'
+                  ? confirm(
+                      `${pl.name}\nSkill: ${pl.skill || 0}\nTaxa a pagar agora: ${formatMoney(pl.leavingFee || 0)}\nDeseja pagar a taxa e abrir o diálogo de contrato?`
+                    )
+                  : true;
               if (want) {
-                const salaryStr = prompt('Introduza salário mensal proposto:', String(Math.max(1, pl.previousSalary || 500)));
+                const salaryStr = prompt(
+                  'Introduza salário mensal proposto:',
+                  String(Math.max(1, pl.previousSalary || 500))
+                );
                 if (salaryStr !== null) {
                   const inp = document.getElementById('offersSalaryInput');
                   if (inp) inp.value = salaryStr;
@@ -2140,16 +2277,24 @@
         }
 
         const doPropose = () => {
-          try { const L = getLogger(); L.debug && L.debug('DO_PROPOSE invoked'); } catch(_){ }
+          try {
+            const L = getLogger();
+            L.debug && L.debug('DO_PROPOSE invoked');
+          } catch (_) {}
           const pl = (window.PENDING_RELEASES || [])[currentIdx];
-          try { const L = getLogger(); L.debug && L.debug('DO_PROPOSE player:', pl && pl.name); } catch(_){ }
+          try {
+            const L = getLogger();
+            L.debug && L.debug('DO_PROPOSE player:', pl && pl.name);
+          } catch (_) {}
           const msg = document.getElementById('offersMessage');
           if (!pl) {
             if (msg) msg.textContent = 'Jogador não encontrado.';
             return;
           }
           const inp = document.getElementById('offersSalaryInput');
-          const salaryVal = inp ? Math.max(1, Math.round(Number(inp.value) || 0)) : Math.max(1, pl.previousSalary || 500);
+          const salaryVal = inp
+            ? Math.max(1, Math.round(Number(inp.value) || 0))
+            : Math.max(1, pl.previousSalary || 500);
           const minC = Math.max(0, Number(pl.minContract || pl.minMonthly || pl.minSalary || 0));
           const salary = Math.max(minC || 1, salaryVal);
           const years = 1;
@@ -2203,7 +2348,12 @@
             }
             const playerToAdd = realPlayer || Object.assign({}, pl);
             // final guard: ensure salary respects player's minimum expectation
-            const finalMin = Math.max(0, Number(playerToAdd.minContract || playerToAdd.minMonthly || playerToAdd.minSalary || 0));
+            const finalMin = Math.max(
+              0,
+              Number(
+                playerToAdd.minContract || playerToAdd.minMonthly || playerToAdd.minSalary || 0
+              )
+            );
             playerToAdd.salary = Math.max(finalMin || 1, salary);
             playerToAdd.contractYears = years;
             playerToAdd.contractYearsLeft = years;
@@ -2212,8 +2362,10 @@
 
             // remove and re-render
             window.PENDING_RELEASES.splice(currentIdx, 1);
-            if (typeof window.updateBudgetDisplays === 'function') window.updateBudgetDisplays(buyer);
-            if (msg) msg.textContent = `${pl.name} assinado com sucesso por ${buyer.team.name}. Taxa paga: ${formatMoney(fee)}.`;
+            if (typeof window.updateBudgetDisplays === 'function')
+              window.updateBudgetDisplays(buyer);
+            if (msg)
+              msg.textContent = `${pl.name} assinado com sucesso por ${buyer.team.name}. Taxa paga: ${formatMoney(fee)}.`;
             // if there are still pending, clamp index and re-render, else close
             if ((window.PENDING_RELEASES || []).length > 0) {
               renderIdx(currentIdx);
@@ -2262,15 +2414,18 @@
   window.Hub._migrated = true;
 
   // Also export into canonical namespace for migrated modules (keep backwards compat)
-  window.Elifoot = window.Elifoot || {};
-  window.Elifoot.Hub = window.Elifoot.Hub || {};
-  window.Elifoot.Hub.initHubUI = initHubUI;
-  window.Elifoot.Hub.renderHubContent = renderHubContent;
-  window.Elifoot.Hub.renderTeamRoster = renderTeamRoster;
-  window.Elifoot.Hub.createFloatingOpponentBox = createFloatingOpponentBox;
-  window.Elifoot.Hub.buildNextOpponentHtml = buildNextOpponentHtml;
-  window.Elifoot.Hub.renderAllDivisionsTables = renderAllDivisionsTables;
-  window.Elifoot.Hub.renderLeagueTable = renderLeagueTable;
+  window.FootLab = window.FootLab || window.Elifoot || {};
+  window.FootLab.Hub = window.FootLab.Hub || {};
+  window.FootLab.Hub.initHubUI = initHubUI;
+  window.FootLab.Hub.renderHubContent = renderHubContent;
+  window.FootLab.Hub.renderTeamRoster = renderTeamRoster;
+  window.FootLab.Hub.createFloatingOpponentBox = createFloatingOpponentBox;
+  window.FootLab.Hub.buildNextOpponentHtml = buildNextOpponentHtml;
+  window.FootLab.Hub.renderAllDivisionsTables = renderAllDivisionsTables;
+  window.FootLab.Hub.renderLeagueTable = renderLeagueTable;
+
+  // compatibility alias
+  window.Elifoot = window.Elifoot || window.FootLab;
 
   // Backwards compatibility: global functions used elsewhere
   window.initHubUI = initHubUI;

@@ -2,13 +2,16 @@
 
 /* exported positions */
 /* eslint-disable-next-line no-unused-vars */
-const positions = ['GK', 'DF', 'MF', 'FW'];
+/* eslint-disable-next-line no-unused-vars */
+const positions = (typeof GameConstants !== 'undefined' && GameConstants.POSITIONS) || ['GK', 'DF', 'MF', 'FW'];
 
 // Local logger for this module (prefer centralized logger when available)
 const PlayersLogger =
-  typeof window !== 'undefined' && window.Elifoot && window.Elifoot.Logger
-    ? window.Elifoot.Logger
-    : console;
+  typeof window !== 'undefined' && window.FootLab && window.FootLab.Logger
+    ? window.FootLab.Logger
+    : typeof window !== 'undefined' && window.Elifoot && window.Elifoot.Logger
+      ? window.Elifoot.Logger
+      : console;
 
 // Generate a single player. If skillCap is provided, skill will be generated up to that cap
 function generatePlayer(id, position = null, skillCap = 100) {
@@ -16,9 +19,11 @@ function generatePlayer(id, position = null, skillCap = 100) {
   // callers become aware that `window.REAL_ROSTERS` should be used instead.
   try {
     const _logger =
-      typeof window !== 'undefined' && window.Elifoot && window.Elifoot.Logger
-        ? window.Elifoot.Logger
-        : console;
+      typeof window !== 'undefined' && window.FootLab && window.FootLab.Logger
+        ? window.FootLab.Logger
+        : typeof window !== 'undefined' && window.Elifoot && window.Elifoot.Logger
+          ? window.Elifoot.Logger
+          : console;
     _logger.warn(
       'generatePlayer: player generation disabled. Use window.REAL_ROSTERS as the authoritative player source.'
     );
@@ -42,9 +47,11 @@ function generatePlayers(total, skillCap = 100) {
   // Player generation disabled. Return an empty array and log a warning.
   try {
     const _logger =
-      typeof window !== 'undefined' && window.Elifoot && window.Elifoot.Logger
-        ? window.Elifoot.Logger
-        : console;
+      typeof window !== 'undefined' && window.FootLab && window.FootLab.Logger
+        ? window.FootLab.Logger
+        : typeof window !== 'undefined' && window.Elifoot && window.Elifoot.Logger
+          ? window.Elifoot.Logger
+          : console;
     _logger.warn(
       'generatePlayers: player generation disabled. Use window.REAL_ROSTERS for real rosters.'
     );
@@ -66,7 +73,7 @@ function computeTeamSkillCap(club, allDivisions) {
     const posIndex = rankIndex >= 0 ? rankIndex : size - 1;
 
     // Base caps and minimum caps per division (adjustable)
-    const divConf = {
+    const divConf = (typeof GameConstants !== 'undefined' && GameConstants.DIVISION_SKILL_CAPS) || {
       1: { base: 95, min: 75 },
       2: { base: 80, min: 60 },
       3: { base: 65, min: 45 },
@@ -127,7 +134,7 @@ if (typeof window !== 'undefined') {
 // Options: pctOneYear (0..1) default 0.35
 function assignRandomShortContracts(allDivisions, options) {
   options = options || {};
-  const pctOneYear = typeof options.pctOneYear === 'number' ? options.pctOneYear : 0.35;
+  const pctOneYear = typeof options.pctOneYear === 'number' ? options.pctOneYear : (typeof GameConstants !== 'undefined' && GameConstants.CONTRACT_CONFIG && GameConstants.CONTRACT_CONFIG.pctOneYear) || 0.35;
   if (!Array.isArray(allDivisions)) return;
   allDivisions.forEach((div) => {
     if (!Array.isArray(div)) return;
@@ -156,13 +163,15 @@ if (typeof window !== 'undefined') {
 function computeMinContractFromSkill(skill) {
   // Simple linear formula: base 300€/month + skill*25 => skill 80 -> 2300€/month
   const sk = Math.max(0, Math.min(100, Number(skill || 40)));
-  return Math.max(300, Math.round(sk * 25));
+  const minSalary = (typeof GameConstants !== 'undefined' && GameConstants.CONTRACT_CONFIG && GameConstants.CONTRACT_CONFIG.minSalary) || 300;
+  const multiplier = (typeof GameConstants !== 'undefined' && GameConstants.CONTRACT_CONFIG && GameConstants.CONTRACT_CONFIG.salaryMultiplier) || 25;
+  return Math.max(minSalary, Math.round(sk * multiplier));
 }
 
 function generateFreeAgents(allDivisions, options) {
   options = options || {};
-  const perPlayerProb = typeof options.probability === 'number' ? options.probability : 0.06; // ~6% chance per player
-  const maxPerClub = typeof options.maxPerClub === 'number' ? options.maxPerClub : 2;
+  const perPlayerProb = typeof options.probability === 'number' ? options.probability : (typeof GameConstants !== 'undefined' && GameConstants.TRANSFER_MARKET && GameConstants.TRANSFER_MARKET.freeAgentProb) || 0.06;
+  const maxPerClub = typeof options.maxPerClub === 'number' ? options.maxPerClub : (typeof GameConstants !== 'undefined' && GameConstants.TRANSFER_MARKET && GameConstants.TRANSFER_MARKET.maxFreeAgentsPerClub) || 2;
   window.FREE_TRANSFERS = window.FREE_TRANSFERS || [];
   if (!Array.isArray(allDivisions)) return window.FREE_TRANSFERS;
   allDivisions.forEach((div) => {
@@ -215,8 +224,8 @@ function generateFreeAgents(allDivisions, options) {
 // the player should be moved to `window.FREE_TRANSFERS` (use processPendingReleases()).
 function selectPlayersForRelease(allDivisions, options) {
   options = options || {};
-  const perPlayerProb = typeof options.probability === 'number' ? options.probability : 0.02;
-  const maxPerClub = typeof options.maxPerClub === 'number' ? options.maxPerClub : 1;
+  const perPlayerProb = typeof options.probability === 'number' ? options.probability : (typeof GameConstants !== 'undefined' && GameConstants.TRANSFER_MARKET && GameConstants.TRANSFER_MARKET.pendingReleaseProb) || 0.02;
+  const maxPerClub = typeof options.maxPerClub === 'number' ? options.maxPerClub : (typeof GameConstants !== 'undefined' && GameConstants.TRANSFER_MARKET && GameConstants.TRANSFER_MARKET.maxPendingPerClub) || 1;
   window.PENDING_RELEASES = window.PENDING_RELEASES || [];
   if (!Array.isArray(allDivisions)) return window.PENDING_RELEASES;
   allDivisions.forEach((div) => {
@@ -262,8 +271,8 @@ function selectPlayersForRelease(allDivisions, options) {
 // - maxPerClub: maximum players per club to mark as leaving (default 2)
 function selectExpiringPlayersToLeave(allDivisions, options) {
   options = options || {};
-  const prob = typeof options.probability === 'number' ? options.probability : 0.35;
-  const maxPerClub = typeof options.maxPerClub === 'number' ? options.maxPerClub : 2;
+  const prob = typeof options.probability === 'number' ? options.probability : (typeof GameConstants !== 'undefined' && GameConstants.TRANSFER_MARKET && GameConstants.TRANSFER_MARKET.expiringLeaveProb) || 0.35;
+  const maxPerClub = typeof options.maxPerClub === 'number' ? options.maxPerClub : (typeof GameConstants !== 'undefined' && GameConstants.TRANSFER_MARKET && GameConstants.TRANSFER_MARKET.maxExpiringPerClub) || 2;
   window.PENDING_RELEASES = window.PENDING_RELEASES || [];
   if (!Array.isArray(allDivisions)) return window.PENDING_RELEASES;
   allDivisions.forEach((div) => {
@@ -349,7 +358,8 @@ function processPendingReleases() {
           const buyerBudget = Number(c.budget || 0);
           // compute minOffer from player's explicit minContract when present
           const inferredMin = Math.max(1, Math.round(Number(p.previousSalary || 0) * 0.9));
-          const minOfferFromPlayer = typeof p.minContract === 'number' ? Number(p.minContract) : inferredMin;
+          const minOfferFromPlayer =
+            typeof p.minContract === 'number' ? Number(p.minContract) : inferredMin;
           if (buyerBudget < fee + minOfferFromPlayer) continue;
           // try to find real player object in seller (if still present)
           let realPlayer = null;
@@ -386,13 +396,16 @@ function processPendingReleases() {
               let buyerAvgSkill = 50;
               try {
                 if (c && c.team && Array.isArray(c.team.players) && c.team.players.length) {
-                  const sum = c.team.players.reduce((acc, pp) => acc + (Number(pp && pp.skill) || 0), 0);
+                  const sum = c.team.players.reduce(
+                    (acc, pp) => acc + (Number(pp && pp.skill) || 0),
+                    0
+                  );
                   buyerAvgSkill = Math.round(sum / c.team.players.length) || 50;
                 }
               } catch (e) {
                 buyerAvgSkill = 50;
               }
-              const skillDelta = Math.max(0, (Number(p.skill || 0) - Number(buyerAvgSkill || 0)));
+              const skillDelta = Math.max(0, Number(p.skill || 0) - Number(buyerAvgSkill || 0));
               const desirability = Math.min(3, skillDelta / 10); // +10 skill -> +1.0, clamp to avoid runaway
 
               prob = Math.max(
@@ -481,7 +494,8 @@ function processPendingReleases() {
             }
             // ensure the accepted salary still respects player's minimum expectation
             try {
-              const expectedMin = typeof p.minContract === 'number' ? Number(p.minContract) : inferredMin;
+              const expectedMin =
+                typeof p.minContract === 'number' ? Number(p.minContract) : inferredMin;
               if (offerSalary < expectedMin) {
                 // treat as rejected — negotiation reported accept but offered salary was too low
                 if (
@@ -491,11 +505,14 @@ function processPendingReleases() {
                   typeof PlayersLogger.debug === 'function'
                 ) {
                   try {
-                    PlayersLogger.debug('Negotiation accepted but offer below minContract — rejecting', {
-                      player: p && (p.name || p.id),
-                      offerSalary,
-                      expectedMin,
-                    });
+                    PlayersLogger.debug(
+                      'Negotiation accepted but offer below minContract — rejecting',
+                      {
+                        player: p && (p.name || p.id),
+                        offerSalary,
+                        expectedMin,
+                      }
+                    );
                   } catch (e) {
                     /* ignore */
                   }
@@ -540,13 +557,20 @@ function processPendingReleases() {
                 window.TRANSFER_HISTORY = window.TRANSFER_HISTORY || [];
                 window.TRANSFER_HISTORY.push({
                   player: playerToAdd.name || playerToAdd.id,
-                  from: p.originalClubRef && (p.originalClubRef.team ? p.originalClubRef.team.name : p.originalClubRef.name) || p.previousClubName || '',
+                  from:
+                    (p.originalClubRef &&
+                      (p.originalClubRef.team
+                        ? p.originalClubRef.team.name
+                        : p.originalClubRef.name)) ||
+                    p.previousClubName ||
+                    '',
                   to: (c && c.team && c.team.name) || c.name || '',
                   fee: fee,
                   salary: offerSalary,
                   type: 'purchase',
                   time: Date.now(),
-                  jornada: typeof window.currentJornada !== 'undefined' ? window.currentJornada : null,
+                  jornada:
+                    typeof window.currentJornada !== 'undefined' ? window.currentJornada : null,
                 });
               } catch (e) {
                 /* ignore history errors */
@@ -590,7 +614,11 @@ function processPendingReleases() {
       window.TRANSFER_HISTORY = window.TRANSFER_HISTORY || [];
       window.TRANSFER_HISTORY.push({
         player: p.name || p.id,
-        from: p.originalClubRef && (p.originalClubRef.team ? p.originalClubRef.team.name : p.originalClubRef.name) || p.previousClubName || '',
+        from:
+          (p.originalClubRef &&
+            (p.originalClubRef.team ? p.originalClubRef.team.name : p.originalClubRef.name)) ||
+          p.previousClubName ||
+          '',
         to: 'FREE',
         fee: 0,
         salary: p.minContract || 0,
@@ -632,8 +660,8 @@ function computePlayerMarketValue(playerOrSkill, division) {
   const div = Number(division || 4);
   const divFactor = div === 1 ? 1.6 : div === 2 ? 1.25 : div === 3 ? 0.9 : 0.6;
   // base value + scaled skill (values in monthly*12-ish units). Tunable constants.
-  const base = 5000; // base market value
-  const skillAdj = Math.round(skill * 200); // skill multiplier
+  const base = (typeof GameConstants !== 'undefined' && GameConstants.TRANSFER_MARKET && GameConstants.TRANSFER_MARKET.baseMarketValue) || 5000;
+  const skillAdj = Math.round(skill * ((typeof GameConstants !== 'undefined' && GameConstants.TRANSFER_MARKET && GameConstants.TRANSFER_MARKET.skillValueMultiplier) || 200));
   const raw = Math.round((base + skillAdj) * divFactor);
   return Math.max(0, raw);
 }
@@ -653,7 +681,7 @@ if (typeof window !== 'undefined') {
 // Mark a percentage of players as being at the end of their contract this season
 // pctExpiring: fraction 0..1 (default 0.12 => ~12% of players across the league)
 function markSomeContractsExpiring(allDivisions, pctExpiring) {
-  pctExpiring = typeof pctExpiring === 'number' ? pctExpiring : 0.12;
+  pctExpiring = typeof pctExpiring === 'number' ? pctExpiring : (typeof GameConstants !== 'undefined' && GameConstants.CONTRACT_CONFIG && GameConstants.CONTRACT_CONFIG.pctExpiring) || 0.12;
   if (!Array.isArray(allDivisions)) return 0;
   let marked = 0;
   allDivisions.forEach((div) => {
@@ -693,7 +721,7 @@ if (typeof window !== 'undefined') {
 function seasonalSkillDrift(allDivisions) {
   if (!Array.isArray(allDivisions)) return;
   // division factor controls how strong the drift is per division (index 0 = div1)
-  const divisionFactor = [0.6, 0.4, 0.28, 0.18];
+  const divisionFactor = (typeof GameConstants !== 'undefined' && GameConstants.SEASONAL_DRIFT_FACTORS) || [0.6, 0.4, 0.28, 0.18];
 
   allDivisions.forEach((divisionClubs, divIdx) => {
     if (!Array.isArray(divisionClubs) || divisionClubs.length === 0) return;
@@ -746,3 +774,24 @@ function seasonalSkillDrift(allDivisions) {
 }
 
 if (typeof window !== 'undefined') window.seasonalSkillDrift = seasonalSkillDrift;
+
+// Ensure canonical namespace and expose key utilities under `window.FootLab`.
+try {
+  if (typeof window !== 'undefined') {
+    window.FootLab = window.FootLab || window.Elifoot || {};
+    window.FootLab.generatePlayer = window.FootLab.generatePlayer || generatePlayer;
+    window.FootLab.generatePlayers = window.FootLab.generatePlayers || generatePlayers;
+    window.FootLab.computeTeamSkillCap = window.FootLab.computeTeamSkillCap || computeTeamSkillCap;
+    window.FootLab.applySkillCaps = window.FootLab.applySkillCaps || applySkillCaps;
+    window.FootLab.assignRandomShortContracts =
+      window.FootLab.assignRandomShortContracts || assignRandomShortContracts;
+    window.FootLab.generateFreeAgents = window.FootLab.generateFreeAgents || generateFreeAgents;
+    window.FootLab.selectPlayersForRelease =
+      window.FootLab.selectPlayersForRelease || selectPlayersForRelease;
+    window.FootLab.seasonalSkillDrift = window.FootLab.seasonalSkillDrift || seasonalSkillDrift;
+    // compatibility alias
+    window.Elifoot = window.Elifoot || window.FootLab;
+  }
+} catch (e) {
+  /* ignore */
+}

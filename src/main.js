@@ -1,5 +1,6 @@
 /* global divisionsData, generateAllClubs, applySkillCaps, generateRounds, renderInitialMatchBoard, initHubUI, renderHubContent, seasonalSkillDrift, selectExpiringPlayersToLeave, selectPlayersForRelease, simulateDay, startGame, assignRandomShortContracts, markSomeContractsExpiring */
 /* exported isSimulating, populateTeamSelection, formatNumber, proceedToMatch, endSimulation */
+/* eslint-disable no-empty */
 // main.js - VERSÃO COMPLETA SEM toLocaleString
 
 let allDivisions = [];
@@ -15,7 +16,7 @@ let simIntervalId = null;
 
 // Global game name
 if (typeof window !== 'undefined') {
-  window.GAME_NAME = window.GAME_NAME || 'FootLab t1';
+  window.GAME_NAME = (typeof GameConstants !== 'undefined' && GameConstants.GAME_NAME) || 'FootLab t1';
   try {
     if (typeof document !== 'undefined') document.title = window.GAME_NAME;
   } catch (e) {
@@ -25,14 +26,17 @@ if (typeof window !== 'undefined') {
 
 // small local logger shim to prefer the centralized logger when available
 const MainLogger =
-  typeof window !== 'undefined' && window.Elifoot && window.Elifoot.Logger
-    ? window.Elifoot.Logger
+  typeof window !== 'undefined' && window.FootLab && window.FootLab.Logger
+    ? window.FootLab.Logger
     : console;
-// runtime helper that prefers a fresh window.Elifoot.Logger when available, then MainLogger, then console
+// runtime helper that prefers a fresh window.FootLab/Elifoot.Logger when available, then MainLogger, then console
 function getLogger() {
-  return typeof window !== 'undefined' && window.Elifoot && window.Elifoot.Logger
-    ? window.Elifoot.Logger
-    : MainLogger || console;
+  return (
+    (typeof window !== 'undefined' && window.FootLab && window.FootLab.Logger) ||
+    (typeof window !== 'undefined' && window.Elifoot && window.Elifoot.Logger) ||
+    MainLogger ||
+    console
+  );
 }
 
 // UI state for setup (informational only — selection removed)
@@ -162,15 +166,330 @@ if (!_startBtn) {
     /* ignore */
   }
 } else {
-  _startBtn.addEventListener('click', () => {
+  _startBtn.addEventListener('click', async () => {
     coachName = document.getElementById('coachName').value.trim();
     if (!coachName) {
       alert('Digite o nome do treinador!');
       return;
     }
 
+    // Ensure divisions data is ready (handle race where REAL_ROSTERS loads after teams.js)
+    try {
+      const waitFn =
+        (window && window.waitForDivisionsData) ||
+        (window && window.FootLab && window.FootLab.waitForDivisionsData);
+      if (typeof waitFn === 'function') {
+        await waitFn(3000);
+      }
+    } catch (err) {
+      try {
+        let ov = document.getElementById('fatal-rosters-overlay');
+        if (!ov) {
+          ov = document.createElement('div');
+          ov.id = 'fatal-rosters-overlay';
+          Object.assign(ov.style, {
+            position: 'fixed',
+            left: '0',
+            top: '0',
+            right: '0',
+            bottom: '0',
+            background: 'rgba(0,0,0,0.92)',
+            color: '#fff',
+            zIndex: 999999,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '20px',
+          });
+          const inner = document.createElement('div');
+          inner.style.maxWidth = '820px';
+          inner.style.background = '#7a0000';
+          inner.style.padding = '22px';
+          inner.style.borderRadius = '8px';
+          inner.style.boxShadow = '0 10px 40px rgba(0,0,0,0.6)';
+          inner.innerHTML =
+            '<h2 style="margin-top:0">Falha ao carregar rosters</h2>' +
+            '<p>O carregamento do ficheiro de rosters demorou demasiado tempo ou falhou. Verifique que <code>archive/data/real_rosters_2025_26.js</code> existe e reinicie a aplicação.</p>' +
+            '<div style="margin-top:12px;text-align:right"><button id="fatal-reload-2" style="padding:8px 12px;border-radius:6px;background:#eee;color:#000;border:0;cursor:pointer">Recarregar</button></div>';
+          ov.appendChild(inner);
+          document.body.appendChild(ov);
+          document.getElementById('fatal-reload-2').onclick = function () {
+            try {
+              location.reload();
+            } catch (_) { }
+          };
+        }
+      } catch (e) {
+        try {
+          alert('Falha ao carregar rosters: ' + String(err));
+        } catch (_) { }
+      }
+      return;
+    }
+
     if (typeof generateAllClubs === 'function') {
-      allClubs = generateAllClubs();
+      // Strong check: if the runtime requires archived rosters, block startup
+      // with an explicit overlay/error when archived data is missing or incomplete.
+      try {
+        const requireArchived =
+          (window.FootLab && window.FootLab.RequireArchivedRosters) ||
+          (window.FootLab &&
+            window.FootLab.GameConfig &&
+            window.FootLab.GameConfig.requireArchivedRosters);
+        const realCount =
+          typeof window !== 'undefined' && window.REAL_ROSTERS
+            ? Object.keys(window.REAL_ROSTERS).length
+            : 0;
+        if (requireArchived && (!realCount || realCount < 72)) {
+          // show a blocking overlay explaining what's missing and how to proceed
+          try {
+            let ov = document.getElementById('fatal-rosters-overlay');
+            if (!ov) {
+              ov = document.createElement('div');
+              ov.id = 'fatal-rosters-overlay';
+              Object.assign(ov.style, {
+                position: 'fixed',
+                left: '0',
+                top: '0',
+                right: '0',
+                bottom: '0',
+                background: 'rgba(0,0,0,0.86)',
+                color: '#fff',
+                zIndex: 99999,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                padding: '20px',
+              });
+              const inner = document.createElement('div');
+              inner.style.maxWidth = '760px';
+              inner.style.background = '#7a0000';
+              inner.style.padding = '22px';
+              inner.style.borderRadius = '8px';
+              inner.style.boxShadow = '0 10px 40px rgba(0,0,0,0.6)';
+              inner.innerHTML =
+                '<h2 style="margin-top:0">Erro crítico: rosters arquivados em falta</h2>' +
+                '<p>O modo actual exige o ficheiro de rosters arquivados <code>archive/data/real_rosters_2025_26.js</code>, mas o ficheiro não foi encontrado ou está incompleto.</p>' +
+                '<p>Coloque o ficheiro em <code>archive/data/real_rosters_2025_26.js</code> e reinicie a aplicação. O jogo não pode continuar sem rosters válidos.</p>' +
+                '<div style="margin-top:12px;text-align:right">' +
+                '<button id="fatal-rosters-close" style="padding:8px 12px;border-radius:6px;background:#eee;color:#000;border:0;cursor:pointer">Fechar</button>' +
+                '</div>';
+              ov.appendChild(inner);
+              document.body.appendChild(ov);
+              document.getElementById('fatal-rosters-close').onclick = function () {
+                // Keep overlay visible — user must fix the data and restart the app.
+              };
+            }
+          } catch (e) {
+            try {
+              alert('Archived rosters required but not found.');
+            } catch (_) { }
+          }
+          return; // block startup until user acts
+        }
+      } catch (e) {
+        /* ignore detection errors and continue */
+      }
+
+      // Quick diagnostic: if divisionsData exists but contains zero teams,
+      // show a blocking overlay and surface the problem to DevTools/console.
+      try {
+        const totalTeams = (window.divisionsData || []).reduce(
+          (acc, d) => acc + ((d && d.teams && d.teams.length) || 0),
+          0
+        );
+        if (totalTeams === 0) {
+          const msg =
+            'No teams available: divisionsData present but contains 0 teams. Likely REAL_ROSTERS failed to load.';
+          try {
+            console.error('TEMP_DEBUG:', msg, {
+              divisionsData: window.divisionsData,
+              realRostersPresent: !!window.REAL_ROSTERS,
+              realRostersCount: window.REAL_ROSTERS ? Object.keys(window.REAL_ROSTERS).length : 0,
+            });
+          } catch (_) { }
+
+          let ov = document.getElementById('fatal-rosters-overlay');
+          if (!ov) {
+            ov = document.createElement('div');
+            ov.id = 'fatal-rosters-overlay';
+            Object.assign(ov.style, {
+              position: 'fixed',
+              left: '0',
+              top: '0',
+              right: '0',
+              bottom: '0',
+              background: 'rgba(0,0,0,0.92)',
+              color: '#fff',
+              zIndex: 999999,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: '20px',
+            });
+            const inner = document.createElement('div');
+            inner.style.maxWidth = '820px';
+            inner.style.background = '#7a0000';
+            inner.style.padding = '22px';
+            inner.style.borderRadius = '8px';
+            inner.style.boxShadow = '0 10px 40px rgba(0,0,0,0.6)';
+            inner.innerHTML =
+              '<h2 style="margin-top:0">Dados em falta: equipas não carregadas</h2>' +
+              `<p>${msg}</p>` +
+              '<p>Verifique que <code>archive/data/real_rosters_2025_26.js</code> existe e que a aplicação carrega o ficheiro.</p>' +
+              '<div style="margin-top:12px;text-align:right"><button id="fatal-open-dev" style="margin-right:8px;padding:8px 12px;border-radius:6px;background:#ffd166;color:#000;border:0;cursor:pointer">Abrir DevTools</button><button id="fatal-reload" style="padding:8px 12px;border-radius:6px;background:#eee;color:#000;border:0;cursor:pointer">Recarregar</button></div>';
+            ov.appendChild(inner);
+            document.body.appendChild(ov);
+            document.getElementById('fatal-open-dev').onclick = function () {
+              try {
+                if (window && window.require) {
+                  const { remote } = window.require('electron');
+                  remote.getCurrentWindow().webContents.openDevTools();
+                } else if (window && window.FootLab && window.FootLab.openDevTools) {
+                  window.FootLab.openDevTools();
+                }
+              } catch (e) {
+                console.error('openDevTools failed', e);
+              }
+            };
+            document.getElementById('fatal-reload').onclick = function () {
+              try {
+                location.reload();
+              } catch (_) { }
+            };
+            // auto-open DevTools removed to avoid intrusive developer windows
+            // (manual 'Abrir DevTools' button remains available in the overlay)
+          }
+          return; // block startup
+        }
+      } catch (diagErr) {
+        try {
+          console.error('TEMP_DEBUG: diagnostic check failed', diagErr);
+        } catch (_) { }
+      }
+      try {
+        allClubs = generateAllClubs();
+      } catch (err) {
+        // Show a blocking overlay with diagnostics so users can see exact problems
+        try {
+          let oval = document.getElementById('startup-error-overlay');
+          if (!oval) {
+            oval = document.createElement('div');
+            oval.id = 'startup-error-overlay';
+            Object.assign(oval.style, {
+              position: 'fixed',
+              left: '0',
+              top: '0',
+              right: '0',
+              bottom: '0',
+              background: 'rgba(0,0,0,0.9)',
+              color: '#fff',
+              zIndex: 999999,
+              overflow: 'auto',
+              padding: '24px',
+              fontFamily: 'sans-serif',
+            });
+
+            const inner = document.createElement('div');
+            inner.style.maxWidth = '980px';
+            inner.style.margin = '0 auto';
+            inner.style.background = '#1b1b1b';
+            inner.style.padding = '18px';
+            inner.style.borderRadius = '8px';
+            inner.style.boxShadow = '0 8px 40px rgba(0,0,0,0.6)';
+
+            const title = document.createElement('h2');
+            title.textContent = 'Erro crítico ao iniciar: dados de roster inválidos';
+            title.style.marginTop = '0';
+            inner.appendChild(title);
+
+            const msg = document.createElement('pre');
+            msg.style.whiteSpace = 'pre-wrap';
+            msg.style.background = '#111';
+            msg.style.padding = '12px';
+            msg.style.borderRadius = '6px';
+            msg.style.maxHeight = '40vh';
+            msg.style.overflow = 'auto';
+            msg.textContent = (err && err.message) || String(err);
+            inner.appendChild(msg);
+
+            // If available, call validateRosterConstraints to list problems
+            try {
+              const vc = (window && window.validateRosterConstraints) || null;
+              if (typeof vc === 'function') {
+                const report = vc({ expectedTeams: 72, minPlayers: 18 });
+                if (report && Array.isArray(report.problems) && report.problems.length) {
+                  const pdiv = document.createElement('div');
+                  pdiv.style.marginTop = '12px';
+                  pdiv.innerHTML = '<strong>Problems detected:</strong>';
+                  const ul = document.createElement('ul');
+                  report.problems.forEach((p) => {
+                    const li = document.createElement('li');
+                    li.textContent = p;
+                    ul.appendChild(li);
+                  });
+                  pdiv.appendChild(ul);
+                  inner.appendChild(pdiv);
+                }
+              }
+            } catch (e) {
+              /* ignore */
+            }
+
+            const controls = document.createElement('div');
+            controls.style.marginTop = '14px';
+            controls.style.textAlign = 'right';
+
+            const reloadBtn = document.createElement('button');
+            reloadBtn.textContent = 'Recarregar (Reload)';
+            Object.assign(reloadBtn.style, {
+              marginRight: '8px',
+              padding: '8px 12px',
+              borderRadius: '6px',
+            });
+            reloadBtn.onclick = function () {
+              try {
+                location.reload();
+              } catch (_) {
+                /* ignore */
+              }
+            };
+            controls.appendChild(reloadBtn);
+
+            const devBtn = document.createElement('button');
+            devBtn.textContent = 'Abrir DevTools';
+            Object.assign(devBtn.style, { padding: '8px 12px', borderRadius: '6px' });
+            devBtn.onclick = function () {
+              try {
+                if (window && window.require) {
+                  const { remote } = window.require('electron');
+                  remote.getCurrentWindow().webContents.openDevTools();
+                } else if (window && window.FootLab && window.FootLab.openDevTools) {
+                  window.FootLab.openDevTools();
+                }
+              } catch (e) {
+                try {
+                  console && console.error && console.error('openDevTools failed', e);
+                } catch (_) { }
+              }
+            };
+            controls.appendChild(devBtn);
+
+            inner.appendChild(controls);
+            oval.appendChild(inner);
+            document.body.appendChild(oval);
+            // TEMP DEBUG auto-open removed — keep console output but do not
+            // force-open DevTools. Use the 'Abrir DevTools' button above when
+            // manual inspection is required.
+          }
+        } catch (e) {
+          try {
+            console && console.error && console.error('startup overlay failed', e);
+          } catch (_) { }
+        }
+        // stop startup
+        return;
+      }
       allDivisions = [[], [], [], []];
 
       // 1. Distribuir clubes pelas divisões
@@ -219,12 +538,14 @@ if (!_startBtn) {
       playerClub = pickedClub;
 
       // CRÍTICO: Exportar para o escopo global ANTES de chamar initHubUI
-      // keep backwards-compatible globals and also namespace under window.Elifoot
+      // keep backwards-compatible globals and also namespace under window.FootLab (and alias Elifoot)
       window.playerClub = playerClub;
       window.allDivisions = allDivisions;
-      window.Elifoot = window.Elifoot || {};
-      window.Elifoot.playerClub = playerClub;
-      window.Elifoot.allDivisions = allDivisions;
+      window.FootLab = window.FootLab || window.Elifoot || {};
+      window.FootLab.playerClub = playerClub;
+      window.FootLab.allDivisions = allDivisions;
+      // compatibility alias
+      window.Elifoot = window.Elifoot || window.FootLab;
 
       try {
         const L = getLogger();
@@ -286,14 +607,17 @@ if (!_startBtn) {
         currentRoundMatches = firstRoundMatches;
         // export the generated round to globals/namespace for other modules and tests
         window.currentRoundMatches = currentRoundMatches;
-        window.Elifoot = window.Elifoot || {};
-        window.Elifoot.currentRoundMatches = currentRoundMatches;
+        window.FootLab = window.FootLab || window.Elifoot || {};
+        window.FootLab.currentRoundMatches = currentRoundMatches;
+        // compatibility alias
+        window.Elifoot = window.Elifoot || window.FootLab;
 
         // Prepare starting lineups and substitutes for each match
         if (Array.isArray(currentRoundMatches)) {
           const _assign =
             typeof window !== 'undefined' &&
             (window.assignStartingLineups ||
+              (window.FootLab && window.FootLab.assignStartingLineups) ||
               (window.Elifoot && window.Elifoot.assignStartingLineups));
           if (typeof _assign === 'function') _assign(currentRoundMatches);
         }
@@ -402,6 +726,7 @@ if (!_startBtn) {
           const _updateClubStats =
             typeof window !== 'undefined' &&
             (window.updateClubStatsAfterMatches ||
+              (window.FootLab && window.FootLab.updateClubStatsAfterMatches) ||
               (window.Elifoot && window.Elifoot.updateClubStatsAfterMatches));
           if (typeof _updateClubStats === 'function') {
             _updateClubStats(currentRoundMatches);
@@ -453,6 +778,7 @@ if (!_startBtn) {
               const _updateClubStats =
                 typeof window !== 'undefined' &&
                 (window.updateClubStatsAfterMatches ||
+                  (window.FootLab && window.FootLab.updateClubStatsAfterMatches) ||
                   (window.Elifoot && window.Elifoot.updateClubStatsAfterMatches));
               if (typeof _updateClubStats === 'function') {
                 _updateClubStats(currentRoundMatches);
@@ -622,6 +948,7 @@ if (!_startBtn) {
             const _assign =
               typeof window !== 'undefined' &&
               (window.assignStartingLineups ||
+                (window.FootLab && window.FootLab.assignStartingLineups) ||
                 (window.Elifoot && window.Elifoot.assignStartingLineups));
             if (typeof _assign === 'function') _assign(currentRoundMatches);
             try {
@@ -647,18 +974,23 @@ if (!_startBtn) {
               matches: currentRoundMatches,
             };
             if (
-              window.Elifoot &&
-              window.Elifoot.Persistence &&
-              typeof window.Elifoot.Persistence.saveDebugSnapshot === 'function'
+              (window.FootLab || window.Elifoot) &&
+              (window.FootLab || window.Elifoot).Persistence &&
+              typeof (window.FootLab || window.Elifoot).Persistence.saveDebugSnapshot === 'function'
             ) {
               try {
-                window.Elifoot.Persistence.saveDebugSnapshot(dbg);
+                (window.FootLab || window.Elifoot).Persistence.saveDebugSnapshot(dbg);
               } catch (e) {
                 /* ignore */
               }
             } else {
               try {
-                localStorage.setItem('elifoot_debug_snapshot', JSON.stringify(dbg));
+                try {
+                  localStorage.setItem('footlab_t1_debug_snapshot', JSON.stringify(dbg));
+                } catch (_) { }
+                try {
+                  localStorage.setItem('elifoot_debug_snapshot', JSON.stringify(dbg));
+                } catch (_) { }
               } catch (e) {
                 try {
                   const L = getLogger();
@@ -686,18 +1018,23 @@ if (!_startBtn) {
               currentRoundMatches: currentRoundMatches,
             };
             if (
-              window.Elifoot &&
-              window.Elifoot.Persistence &&
-              typeof window.Elifoot.Persistence.saveSnapshot === 'function'
+              (window.FootLab || window.Elifoot) &&
+              (window.FootLab || window.Elifoot).Persistence &&
+              typeof (window.FootLab || window.Elifoot).Persistence.saveSnapshot === 'function'
             ) {
               try {
-                window.Elifoot.Persistence.saveSnapshot(snap);
+                (window.FootLab || window.Elifoot).Persistence.saveSnapshot(snap);
               } catch (e) {
                 /* ignore */
               }
             } else {
               try {
-                localStorage.setItem('elifoot_save_snapshot', JSON.stringify(snap));
+                try {
+                  localStorage.setItem('footlab_t1_save_snapshot', JSON.stringify(snap));
+                } catch (_) { }
+                try {
+                  localStorage.setItem('elifoot_save_snapshot', JSON.stringify(snap));
+                } catch (_) { }
               } catch (err) {
                 try {
                   const L = getLogger();
@@ -837,18 +1174,20 @@ if (!_startBtn) {
       const loadSavedGame = function () {
         try {
           const snap =
-            window.Elifoot &&
-            window.Elifoot.Persistence &&
-            typeof window.Elifoot.Persistence.loadSnapshot === 'function'
-              ? window.Elifoot.Persistence.loadSnapshot()
+            (window.FootLab || window.Elifoot) &&
+              (window.FootLab || window.Elifoot).Persistence &&
+              typeof (window.FootLab || window.Elifoot).Persistence.loadSnapshot === 'function'
+              ? (window.FootLab || window.Elifoot).Persistence.loadSnapshot()
               : (function () {
-                  try {
-                    const raw = localStorage.getItem('elifoot_save_snapshot');
-                    return raw ? JSON.parse(raw) : null;
-                  } catch (e) {
-                    return null;
-                  }
-                })();
+                try {
+                  const raw =
+                    localStorage.getItem('footlab_t1_save_snapshot') ||
+                    localStorage.getItem('elifoot_save_snapshot');
+                  return raw ? JSON.parse(raw) : null;
+                } catch (e) {
+                  return null;
+                }
+              })();
           if (!snap) {
             alert('Nenhum jogo salvo encontrado.');
             return;
@@ -882,6 +1221,7 @@ if (!_startBtn) {
             const _assign =
               typeof window !== 'undefined' &&
               (window.assignStartingLineups ||
+                (window.FootLab && window.FootLab.assignStartingLineups) ||
                 (window.Elifoot && window.Elifoot.assignStartingLineups));
             if (typeof _assign === 'function') _assign(currentRoundMatches);
           } catch (e) {

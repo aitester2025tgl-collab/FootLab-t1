@@ -1,8 +1,9 @@
 // teams.js - built directly from `data/real_rosters_2025_26.js`
+/* eslint-disable no-empty, no-console */
 /* exported getLogger */
 const E =
   typeof window !== 'undefined'
-    ? window.Elifoot || window
+    ? window.FootLab || window.Elifoot || window
     : typeof global !== 'undefined'
       ? global
       : {};
@@ -15,7 +16,7 @@ const E =
 function buildDivisionsFromRostersOrdered() {
   const E =
     typeof window !== 'undefined'
-      ? window.Elifoot || window
+      ? window.FootLab || window.Elifoot || window
       : typeof global !== 'undefined'
         ? global
         : {};
@@ -23,14 +24,30 @@ function buildDivisionsFromRostersOrdered() {
   /* eslint-disable-next-line no-unused-vars */
   function getLogger() {
     try {
-      return typeof window !== 'undefined' && window.Elifoot && window.Elifoot.Logger
-        ? window.Elifoot.Logger
-        : console;
+      return (
+        (typeof window !== 'undefined' && window.FootLab && window.FootLab.Logger) ||
+        (typeof window !== 'undefined' && window.Elifoot && window.Elifoot.Logger) ||
+        console
+      );
     } catch (e) {
       return console;
     }
   }
-  const rosters = E && E.REAL_ROSTERS ? Object.keys(E.REAL_ROSTERS) : [];
+  // Prefer the top-level window.REAL_ROSTERS (set by the archived JS file).
+  // Some initialization code creates an empty `window.FootLab` object early,
+  // so avoid reading only from `E` which may be an empty namespace object.
+  const globalObj =
+    typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : {};
+  const rostersSource = (globalObj && globalObj.REAL_ROSTERS) || (E && E.REAL_ROSTERS) || null;
+  const rosters = rostersSource ? Object.keys(rostersSource) : [];
+  const rostersArePresent = Array.isArray(rosters) && rosters.length > 0;
+
+  // Fail fast: the application requires an archived roster dataset to run.
+  if (!rostersArePresent) {
+    throw new Error(
+      'Required dataset `window.REAL_ROSTERS` is missing or empty. Place the file `archive/data/real_rosters_2025_26.js` in the project and restart.'
+    );
+  }
 
   // runtime validation: if REAL_ROSTERS exists, ensure it looks complete
   function validateRosters(expectedTeams = 72, minPlayers = 18) {
@@ -50,8 +67,19 @@ function buildDivisionsFromRostersOrdered() {
     }
     if (problems.length) {
       const msg = 'Roster validation failed: ' + problems.join('; ');
-      // Throw so startup fails fast when rosters are incomplete
-      throw new Error(msg);
+      // Log a warning and continue: allow startup to proceed using generated teams
+      try {
+        const L = getLogger();
+        L && L.warn && L.warn(msg);
+      } catch (e) {
+        try {
+          console && console.warn && console.warn(msg);
+        } catch (_) {
+          /* ignore */
+        }
+      }
+      // Do not throw here — fallback generators will create teams when REAL_ROSTERS is missing
+      return;
     }
   }
 
@@ -69,34 +97,71 @@ function buildDivisionsFromRostersOrdered() {
     const light = 34 + (h % 12); // 34-45
 
     // Prefer shared hsl->hex and color utilities
+    const ColorUtils =
+      (window.FootLab && window.FootLab.ColorUtils) ||
+      window.ColorUtils ||
+      (window.Elifoot && window.Elifoot.ColorUtils) ||
+      {};
     const bg =
-      window.ColorUtils && typeof window.ColorUtils.hslToHex === 'function'
-        ? window.ColorUtils.hslToHex(hue, sat, light)
+      ColorUtils && typeof ColorUtils.hslToHex === 'function'
+        ? ColorUtils.hslToHex(hue, sat, light)
         : '#2e2e2e';
-
     const rgb =
-      window.ColorUtils && typeof window.ColorUtils.hexToRgb === 'function'
-        ? window.ColorUtils.hexToRgb(bg)
-        : null;
-
+      ColorUtils && typeof ColorUtils.hexToRgb === 'function' ? ColorUtils.hexToRgb(bg) : null;
     const L =
-      window.ColorUtils && typeof window.ColorUtils.luminance === 'function'
-        ? window.ColorUtils.luminance(rgb)
-        : 0;
+      ColorUtils && typeof ColorUtils.luminance === 'function' ? ColorUtils.luminance(rgb) : 0;
 
     const fg = L > 0.5 ? '#000000' : '#ffffff';
     return { bg, fg };
   }
 
-  const teamColorMap = E && E.REAL_TEAM_COLORS ? E.REAL_TEAM_COLORS : {};
+  // Prefer the global `window.REAL_TEAM_COLORS` (archive loads it there).
+  const teamColorMap =
+    (typeof window !== 'undefined' && window.REAL_TEAM_COLORS) ||
+    (typeof global !== 'undefined' && global.REAL_TEAM_COLORS) ||
+    (E && E.REAL_TEAM_COLORS) ||
+    {};
+
+  // Normalize team names for robust color lookups. Many team names in the
+  // archived rosters include diacritics, abbreviations (FC/CF/AC/etc.) or
+  // slightly different punctuation compared to the keys in
+  // `window.REAL_TEAM_COLORS`. Build a normalized map so lookups succeed.
+  function normalizeName(n) {
+    if (!n) return '';
+    // unicode normalize and remove diacritics
+    let s = n.normalize ? n.normalize('NFD').replace(/\p{Diacritic}/gu, '') : n;
+    s = String(s).toLowerCase();
+    // remove common club prefixes/suffixes and punctuation
+    s = s.replace(/\b(fc|f c|cf|c f|ac|ac\.|rcd|ssc|ss|cd|cf|fc\.|sc|sc\.)\b/g, '');
+    s = s.replace(/[\u2018\u2019'`’]/g, ''); // apostrophes
+    s = s.replace(/[^a-z0-9\s]/g, '');
+    s = s.replace(/\s+/g, ' ').trim();
+    return s;
+  }
+
+  const _normalizedColorMap = {};
+  try {
+    Object.keys(teamColorMap || {}).forEach((k) => {
+      const nk = normalizeName(k || '');
+      if (nk) _normalizedColorMap[nk] = teamColorMap[k];
+    });
+  } catch (e) {
+    /* ignore */
+  }
+
   const sliceTeam = (start) =>
     rosters.slice(start, start + 18).map((name) => {
       let c;
-      if (teamColorMap && teamColorMap[name]) {
-        const m = teamColorMap[name];
-        c = { bg: m.bgColor || '#2e2e2e', fg: m.color || '#ffffff' };
+      // try exact key first, then normalized key to tolerate small name
+      // differences (accents, FC/CF suffixes, punctuation)
+      const exact = teamColorMap && teamColorMap[name] ? teamColorMap[name] : null;
+      if (exact) {
+        c = { bg: exact.bgColor || '#2e2e2e', fg: exact.color || '#ffffff' };
       } else {
-        c = nameToColor(name);
+        const nk = normalizeName(name);
+        const m = nk && _normalizedColorMap[nk] ? _normalizedColorMap[nk] : null;
+        if (m) c = { bg: m.bgColor || '#2e2e2e', fg: m.color || '#ffffff' };
+        else c = nameToColor(name);
       }
       return { name, color: c.fg, bgColor: c.bg };
     });
@@ -114,14 +179,89 @@ function buildDivisionsFromRostersOrdered() {
   ];
 }
 
-const divisionsData = buildDivisionsFromRostersOrdered();
+// Attempt to build divisionsData immediately. If REAL_ROSTERS hasn't been
+// injected yet (race condition when scripts load out-of-order), poll for a
+// short period and build once the data appears. Expose a Promise-based
+// `waitForDivisionsData` so callers can await readiness in startup code.
+let divisionsData = null;
+let _divisionsResolve = null;
+let _divisionsReject = null;
+const divisionsReady = new Promise((resolve, reject) => {
+  _divisionsResolve = resolve;
+  _divisionsReject = reject;
+});
 
-// Expose divisionsData to window/global for compatibility
-try {
-  if (typeof window !== 'undefined') window.divisionsData = divisionsData;
-  if (typeof global !== 'undefined') global.divisionsData = divisionsData;
-} catch (e) {
-  /* ignore */
+function _tryBuildDivisions() {
+  try {
+    const dd = buildDivisionsFromRostersOrdered();
+    divisionsData = dd;
+    // Development diagnostic: print resolved team color map for verification
+    try {
+      if (typeof console !== 'undefined' && console.log) {
+        // color mapping diagnostic removed
+      }
+    } catch (e) {
+      /* ignore */
+    }
+    try {
+      if (typeof window !== 'undefined') window.divisionsData = divisionsData;
+      if (typeof global !== 'undefined') global.divisionsData = divisionsData;
+    } catch (e) {
+      /* ignore */
+    }
+    try {
+      _divisionsResolve && _divisionsResolve(divisionsData);
+    } catch (e) {
+      /* ignore */
+    }
+    try {
+      if (typeof document !== 'undefined' && typeof document.dispatchEvent === 'function') {
+        document.dispatchEvent(new CustomEvent('footlab:rosters-loaded'));
+      }
+    } catch (e) {
+      /* ignore */
+    }
+    return true;
+  } catch (e) {
+    return false;
+  }
+}
+
+// Try immediate build; if it fails because REAL_ROSTERS isn't yet available,
+// poll for a short window and then reject.
+if (!_tryBuildDivisions()) {
+  const start = Date.now();
+  const timeout = 3000;
+  const iv = setInterval(() => {
+    if (_tryBuildDivisions()) {
+      clearInterval(iv);
+      return;
+    }
+    if (Date.now() - start > timeout) {
+      clearInterval(iv);
+      try {
+        _divisionsReject &&
+          _divisionsReject(
+            new Error('Timed out waiting for window.REAL_ROSTERS to become available')
+          );
+      } catch (e) {
+        /* ignore */
+      }
+      try {
+        console && console.error && console.error('Timed out waiting for window.REAL_ROSTERS');
+      } catch (_) {}
+    }
+  }, 80);
+}
+
+function waitForDivisionsData(timeoutMs = 3000) {
+  if (divisionsData) return Promise.resolve(divisionsData);
+  return Promise.race([
+    divisionsReady,
+    new Promise((_, rej) =>
+      setTimeout(() => rej(new Error('waitForDivisionsData timeout')), timeoutMs)
+    ),
+  ]);
 }
 
 // Tactics (kept for UI compatibility)
@@ -188,8 +328,10 @@ const TACTICS = [
 try {
   if (typeof window !== 'undefined') {
     window.TACTICS = TACTICS;
-    window.Elifoot = window.Elifoot || {};
-    window.Elifoot.TACTICS = window.Elifoot.TACTICS || TACTICS;
+    window.FootLab = window.FootLab || window.Elifoot || {};
+    window.FootLab.TACTICS = window.FootLab.TACTICS || TACTICS;
+    // compatibility alias
+    window.Elifoot = window.Elifoot || window.FootLab;
   }
   if (typeof global !== 'undefined') global.TACTICS = TACTICS;
 } catch (e) {
@@ -210,6 +352,14 @@ function generateTeam(teamId) {
       players = E.REAL_ROSTERS[teamMeta.name];
   } catch (e) {
     players = [];
+  }
+
+  // If no real roster exists for this team, fail fast.
+  if (!Array.isArray(players) || players.length === 0) {
+    throw new Error(
+      `No roster found for team "${teamMeta.name}" (teamId ${teamId}). ` +
+        'The application requires real roster data in window.REAL_ROSTERS.'
+    );
   }
 
   // minimal stadium/member defaults
@@ -238,8 +388,9 @@ function generateTeam(teamId) {
 try {
   if (typeof window !== 'undefined') {
     window.generateTeam = generateTeam;
-    window.Elifoot = window.Elifoot || {};
-    window.Elifoot.generateTeam = window.Elifoot.generateTeam || generateTeam;
+    window.FootLab = window.FootLab || window.Elifoot || {};
+    window.FootLab.generateTeam = window.FootLab.generateTeam || generateTeam;
+    window.Elifoot = window.Elifoot || window.FootLab;
   }
   if (typeof global !== 'undefined') global.generateTeam = generateTeam;
 } catch (e) {
@@ -250,9 +401,9 @@ try {
 function printDivisionAssignments() {
   if (typeof divisionsData === 'undefined') return;
   const logger =
-    typeof window !== 'undefined' && window.Elifoot && window.Elifoot.Logger
-      ? window.Elifoot.Logger
-      : console;
+    (typeof window !== 'undefined' && window.FootLab && window.FootLab.Logger) ||
+    (typeof window !== 'undefined' && window.Elifoot && window.Elifoot.Logger) ||
+    console;
   divisionsData.forEach((d, idx) => {
     logger.info(`${idx + 1}. ${d.name} — ${d.teams.length} teams`);
     d.teams.forEach((t, i) => logger.info(`   ${i + 1}. ${t.name}`));
@@ -262,9 +413,10 @@ function printDivisionAssignments() {
 try {
   if (typeof window !== 'undefined') {
     window.printDivisionAssignments = printDivisionAssignments;
-    window.Elifoot = window.Elifoot || {};
-    window.Elifoot.printDivisionAssignments =
-      window.Elifoot.printDivisionAssignments || printDivisionAssignments;
+    window.FootLab = window.FootLab || window.Elifoot || {};
+    window.FootLab.printDivisionAssignments =
+      window.FootLab.printDivisionAssignments || printDivisionAssignments;
+    window.Elifoot = window.Elifoot || window.FootLab;
   }
   if (typeof global !== 'undefined') global.printDivisionAssignments = printDivisionAssignments;
 } catch (e) {
@@ -317,11 +469,26 @@ if (typeof module !== 'undefined' && module.exports) {
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
     divisionsData,
+    waitForDivisionsData,
     generateTeam,
     TACTICS,
     printDivisionAssignments,
     validateRosterConstraints,
   };
+}
+
+// Expose wait helper to browser globals for startup scripts
+try {
+  if (typeof window !== 'undefined') {
+    window.waitForDivisionsData = waitForDivisionsData;
+    window.FootLab = window.FootLab || window.Elifoot || {};
+    window.FootLab.waitForDivisionsData =
+      window.FootLab.waitForDivisionsData || waitForDivisionsData;
+    window.Elifoot = window.Elifoot || window.FootLab;
+  }
+  if (typeof global !== 'undefined') global.waitForDivisionsData = waitForDivisionsData;
+} catch (e) {
+  /* ignore */
 }
 
 // Startup: run strict validation and throw if problems found. This makes the

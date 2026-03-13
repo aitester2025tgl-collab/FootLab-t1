@@ -17,8 +17,13 @@
 
   function getLogger() {
     try {
-      if (typeof window !== 'undefined' && window.Elifoot && window.Elifoot.Logger)
-        return window.Elifoot.Logger;
+      if (
+        typeof window !== 'undefined' &&
+        (window.FootLab || window.Elifoot) &&
+        (window.FootLab || window.Elifoot).Logger
+      )
+        return (window.FootLab || window.Elifoot).Logger;
+      // eslint-disable-next-line no-empty
     } catch (e) {
       /* ignore */
     }
@@ -27,10 +32,12 @@
         // prefer local core logger when running under node/tests
         try {
           return require('./logger');
+          // eslint-disable-next-line no-empty
         } catch (e) {
           /* ignore */
         }
       }
+      // eslint-disable-next-line no-empty
     } catch (e) {
       /* ignore */
     }
@@ -42,16 +49,20 @@
     saveSnapshot(snap, opts) {
       try {
         const cfg =
-          typeof window !== 'undefined' && window.Elifoot && window.Elifoot.Config
-            ? window.Elifoot.Config
+          typeof window !== 'undefined' &&
+          (window.FootLab || window.Elifoot) &&
+          (window.FootLab || window.Elifoot).Config
+            ? (window.FootLab || window.Elifoot).Config
             : {};
         const maxBytes = (opts && opts.maxBytes) || cfg.maxSnapshotSizeBytes || DEFAULT_MAX_BYTES;
         const envelope = { version: SNAPSHOT_VERSION, created: Date.now(), payload: snap };
         const raw = JSON.stringify(envelope);
         const size = getByteSize(raw);
         const logger =
-          typeof window !== 'undefined' && window.Elifoot && window.Elifoot.Logger
-            ? window.Elifoot.Logger
+          typeof window !== 'undefined' &&
+          (window.FootLab || window.Elifoot) &&
+          (window.FootLab || window.Elifoot).Logger
+            ? (window.FootLab || window.Elifoot).Logger
             : console;
         if (size > maxBytes) {
           try {
@@ -63,8 +74,9 @@
                 maxBytes,
                 ')'
               );
+            // eslint-disable-next-line no-empty
           } catch (_) {
-            /* ignore */
+            void 0;
           }
           // best-effort: save debug snapshot instead so we don't lose data for inspection
           try {
@@ -74,17 +86,28 @@
               maxBytes,
               snapshotMeta: { currentJornada: snap && snap.currentJornada },
             });
+            // eslint-disable-next-line no-empty
           } catch (_) {
             /* ignore */
           }
           return false;
         }
-        if (typeof localStorage !== 'undefined') localStorage.setItem('elifoot_save_snapshot', raw);
+        if (typeof localStorage !== 'undefined') {
+          try {
+            localStorage.setItem('footlab_t1_save_snapshot', raw);
+            // eslint-disable-next-line no-empty
+          } catch (_) {}
+          try {
+            localStorage.setItem('elifoot_save_snapshot', raw);
+            // eslint-disable-next-line no-empty
+          } catch (_) {}
+        }
         return true;
       } catch (e) {
         try {
           const lg = getLogger();
           lg.warn && lg.warn('Persistence.saveSnapshot failed', e);
+          // eslint-disable-next-line no-empty
         } catch (_) {
           /* ignore */
         }
@@ -95,7 +118,9 @@
     loadSnapshot() {
       try {
         if (typeof localStorage === 'undefined') return null;
-        const raw = localStorage.getItem('elifoot_save_snapshot');
+        const raw =
+          localStorage.getItem('footlab_t1_save_snapshot') ||
+          localStorage.getItem('elifoot_save_snapshot');
         if (!raw) return null;
         const envelope = JSON.parse(raw);
         if (!envelope || typeof envelope !== 'object') return null;
@@ -112,9 +137,19 @@
             const legacy = envelope;
             const wrapped = { version: SNAPSHOT_VERSION, created: Date.now(), payload: legacy };
             try {
-              localStorage.setItem('elifoot_save_snapshot', JSON.stringify(wrapped));
+              try {
+                localStorage.setItem('footlab_t1_save_snapshot', JSON.stringify(wrapped));
+              } catch (_) {
+                void 0;
+              }
+              try {
+                localStorage.setItem('elifoot_save_snapshot', JSON.stringify(wrapped));
+              } catch (_) {
+                void 0;
+              }
+              // small no-op to explicitly ignore storage write failures
             } catch (e) {
-              /* best-effort */
+              void 0;
             }
             return wrapped.payload || null;
           } catch (e) {
@@ -126,8 +161,9 @@
             const lg = getLogger();
             lg.warn &&
               lg.warn('Persistence.loadSnapshot: snapshot version mismatch', envelope.version);
+            // eslint-disable-next-line no-empty
           } catch (_) {
-            /* ignore */
+            void 0;
           }
           // incompatible version - return null for now
           return null;
@@ -138,7 +174,7 @@
           const lg = getLogger();
           lg.warn && lg.warn('Persistence.loadSnapshot failed', e);
         } catch (_) {
-          /* ignore */
+          void 0;
         }
         return null;
       }
@@ -146,19 +182,42 @@
 
     saveDebugSnapshot(dbg) {
       try {
-        if (typeof localStorage !== 'undefined')
-          localStorage.setItem('elifoot_debug_snapshot', JSON.stringify(dbg));
+        if (typeof localStorage !== 'undefined') {
+          try {
+            localStorage.setItem('footlab_t1_debug_snapshot', JSON.stringify(dbg));
+            // eslint-disable-next-line no-empty
+          } catch (_) {
+            void 0;
+          }
+          try {
+            localStorage.setItem('elifoot_debug_snapshot', JSON.stringify(dbg));
+            // small no-op to explicitly ignore storage write failures
+          } catch (_) {
+            void 0;
+          }
+        }
+        // small no-op
       } catch (e) {
-        /* ignore */
+        void 0;
       }
     },
 
     saveSeasonResults(obj) {
       try {
-        if (typeof localStorage !== 'undefined')
-          localStorage.setItem('elifoot_last_season_results', JSON.stringify(obj));
+        if (typeof localStorage !== 'undefined') {
+          try {
+            localStorage.setItem('footlab_t1_last_season_results', JSON.stringify(obj));
+          } catch (_) {
+            void 0;
+          }
+          try {
+            localStorage.setItem('elifoot_last_season_results', JSON.stringify(obj));
+          } catch (_) {
+            void 0;
+          }
+        }
       } catch (e) {
-        /* ignore */
+        void 0;
       }
     },
 
@@ -174,15 +233,17 @@
       try {
         if (typeof localStorage !== 'undefined') localStorage.setItem(key, value);
       } catch (e) {
-        /* ignore */
+        void 0;
       }
     },
   };
 
   // export to window.Elifoot and CommonJS for tests
   if (typeof window !== 'undefined') {
-    window.Elifoot = window.Elifoot || {};
-    window.Elifoot.Persistence = window.Elifoot.Persistence || Persistence;
+    window.FootLab = window.FootLab || window.Elifoot || {};
+    window.FootLab.Persistence = window.FootLab.Persistence || Persistence;
+    // compatibility alias
+    window.Elifoot = window.Elifoot || window.FootLab;
   }
   if (typeof module !== 'undefined' && module.exports) module.exports = Persistence;
 })();

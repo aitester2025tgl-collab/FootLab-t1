@@ -7,9 +7,11 @@
 
 // local helper to prefer centralized logger when available
 function getLogger() {
-  return typeof window !== 'undefined' && window.Elifoot && window.Elifoot.Logger
-    ? window.Elifoot.Logger
-    : console;
+  return typeof window !== 'undefined' && window.FootLab && window.FootLab.Logger
+    ? window.FootLab.Logger
+    : typeof window !== 'undefined' && window.Elifoot && window.Elifoot.Logger
+      ? window.Elifoot.Logger
+      : console;
 }
 
 function generateRounds(clubs) {
@@ -265,6 +267,19 @@ function advanceMatchDay(matches, minute) {
           updates.push({ match });
         }
       }
+    }
+
+    // Expose core match helpers on the canonical namespace for compatibility
+    try {
+      if (typeof window !== 'undefined') {
+        window.FootLab = window.FootLab || window.Elifoot || {};
+        window.FootLab.generateRounds = window.FootLab.generateRounds || generateRounds;
+        window.FootLab.advanceMatchDay = window.FootLab.advanceMatchDay || advanceMatchDay;
+        // compatibility alias
+        window.Elifoot = window.Elifoot || window.FootLab;
+      }
+    } catch (e) {
+      /* ignore */
     }
 
     // Cards simulation: yellows are more common, reds rare. Use on-field players arrays.

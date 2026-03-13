@@ -8,9 +8,14 @@ export function renderTransfers() {
     if (!content) return;
     const market = window.transferMarket || window.availableTransfers || window.transferList || [];
     const rawFreeAgents = window.FREE_TRANSFERS || window.freeAgents || [];
-    const freeAgents = Array.isArray(rawFreeAgents) ? rawFreeAgents.filter((p) => !isPlayerInAnyClub(p)) : [];
+    const freeAgents = Array.isArray(rawFreeAgents)
+      ? rawFreeAgents.filter((p) => !isPlayerInAnyClub(p))
+      : [];
 
-    if ((!Array.isArray(market) || market.length === 0) && (!Array.isArray(freeAgents) || freeAgents.length === 0)) {
+    if (
+      (!Array.isArray(market) || market.length === 0) &&
+      (!Array.isArray(freeAgents) || freeAgents.length === 0)
+    ) {
       content.innerHTML = '<h2>Transferências</h2><p>Nenhum jogador disponível no mercado.</p>';
       return;
     }
@@ -27,7 +32,8 @@ export function renderTransfers() {
           const pos = p.position || p.pos || '-';
           const name = p.name || p.playerName || '—';
           const clubObj = p.club || p.originalClubRef || null;
-          const club = (clubObj && (clubObj.team ? clubObj.team.name : clubObj.name)) || p.clubName || 'Livre';
+          const club =
+            (clubObj && (clubObj.team ? clubObj.team.name : clubObj.name)) || p.clubName || 'Livre';
           const price = p.price || p.minPrice || p.value || 0;
           let isOwn = false;
           if (buyer && clubObj) {
@@ -35,7 +41,9 @@ export function renderTransfers() {
               if (clubObj === buyer) isOwn = true;
               else if (clubObj.team && buyer.team && clubObj.team === buyer.team) isOwn = true;
               else {
-                const pName = clubObj.team ? clubObj.team.name : clubObj.name || clubObj.clubName || '';
+                const pName = clubObj.team
+                  ? clubObj.team.name
+                  : clubObj.name || clubObj.clubName || '';
                 const bName = buyer.team ? buyer.team.name : buyer.name || buyer.clubName || '';
                 if (pName && bName && String(pName).trim() === String(bName).trim()) isOwn = true;
               }
@@ -50,8 +58,17 @@ export function renderTransfers() {
           const disabledAttr = isOwn ? 'disabled' : '';
           html += `<div style="display:flex;align-items:center;justify-content:space-between;padding:6px 8px;background:rgba(0,0,0,0.04);border-radius:6px;">
                     <div style="display:flex;gap:10px;align-items:center;"><div style="width:36px;font-weight:700;text-align:center">${pos}</div><div style="font-weight:600">${name}</div><div style="opacity:0.8;margin-left:8px">${club}</div></div>
-                    <div style="display:flex;gap:8px;align-items:center;"><div style="font-weight:700;color:#FFEB3B">${formatMoney(price)}</div><button data-player-name="${name}" class="buy-market-btn" title="${btnTitle}" ${disabledAttr} style="${btnStyle}">${isOwn ? 'Não disponível' : 'Comprar'}</button></div>
-                </div>`;
+                    <div style="display:flex;gap:8px;align-items:center;"><div style="font-weight:700;color:#FFEB3B">${formatMoney(price)}</div><button data-player-name="${name}" class="buy-market-btn" title="${btnTitle}" ${disabledAttr} style="${btnStyle}">${isOwn ? 'Não disponível' : 'Comprar'}</button></div>`;
+          try {
+            const L =
+              (window.FootLab && window.FootLab.Logger) ||
+              (window.Elifoot && window.Elifoot.Logger) ||
+              console;
+            L.warn && L.warn('attach transfer handlers failed', e);
+          } catch (e) {
+            const L = (window.FootLab && window.FootLab.Logger) || console;
+            L.warn && L.warn('attach transfer handlers failed', e);
+          }
         } catch (e) {
           const name = (p && (p.name || p.playerName)) || '—';
           html += `<div style="padding:6px 8px;background:rgba(0,0,0,0.02);border-radius:6px;"><div style="font-weight:600">${name}</div></div>`;
@@ -67,7 +84,11 @@ export function renderTransfers() {
       freeAgents.forEach((p, idx) => {
         const pos = p.position || p.pos || '-';
         const name = p.name || p.playerName || '—';
-        const prev = p.previousClubName || (p.club && (p.club.team ? p.club.team.name : p.club.name)) || p.clubName || '—';
+        const prev =
+          p.previousClubName ||
+          (p.club && (p.club.team ? p.club.team.name : p.club.name)) ||
+          p.clubName ||
+          '—';
         const minContract = p.minContract || p.minMonthly || p.minSalary || 0;
         const skill = typeof p.skill === 'number' ? p.skill : p._skill || 0;
         html += `<div style="display:flex;align-items:center;justify-content:space-between;padding:6px 8px;background:rgba(0,0,0,0.03);border-radius:6px;">
@@ -83,7 +104,9 @@ export function renderTransfers() {
     // Movements tab (transfer history)
     html += `<div data-tab="movements" class="trans-tab" style="display:none;">`;
     try {
-      const history = Array.isArray(window.TRANSFER_HISTORY) ? window.TRANSFER_HISTORY.slice().reverse() : [];
+      const history = Array.isArray(window.TRANSFER_HISTORY)
+        ? window.TRANSFER_HISTORY.slice().reverse()
+        : [];
       if (history.length === 0) {
         html += `<div style="opacity:0.85;padding:8px">Nenhum movimento registado.</div>`;
       } else {
@@ -111,16 +134,24 @@ export function renderTransfers() {
     // My Players tab (transfers involving the current team)
     html += `<div data-tab="my" class="trans-tab" style="display:none;">`;
     try {
-      const history = Array.isArray(window.TRANSFER_HISTORY) ? window.TRANSFER_HISTORY.slice().reverse() : [];
+      const history = Array.isArray(window.TRANSFER_HISTORY)
+        ? window.TRANSFER_HISTORY.slice().reverse()
+        : [];
       const buyer = window.playerClub || {};
       const buyerName = (buyer.team && buyer.team.name) || buyer.name || '';
       const mine = history.filter((h) => {
         try {
           if (!buyerName) return false;
-          return String(h.from || '').trim() === String(buyerName).trim() || String(h.to || '').trim() === String(buyerName).trim();
-        } catch (_) { return false; }
+          return (
+            String(h.from || '').trim() === String(buyerName).trim() ||
+            String(h.to || '').trim() === String(buyerName).trim()
+          );
+        } catch (_) {
+          return false;
+        }
       });
-      if (mine.length === 0) html += `<div style="opacity:0.85;padding:8px">Nenhum movimento para a sua equipa.</div>`;
+      if (mine.length === 0)
+        html += `<div style="opacity:0.85;padding:8px">Nenhum movimento para a sua equipa.</div>`;
       else {
         mine.forEach((h) => {
           const player = h.player || '—';
@@ -183,14 +214,20 @@ export function renderTransfers() {
               return;
             }
             const name = b.getAttribute('data-player-name');
-            alert('Comprar do mercado: ' + name + '. Implementar fluxo de transferência dependendo do tipo de listagem.');
+            alert(
+              'Comprar do mercado: ' +
+                name +
+                '. Implementar fluxo de transferência dependendo do tipo de listagem.'
+            );
           });
         });
 
         content.querySelectorAll('.buy-free-btn').forEach((b) => {
           b.addEventListener('click', () => {
             const idx = Number(b.getAttribute('data-free-idx'));
-            const freeList = Array.isArray(rawFreeAgents) ? rawFreeAgents.filter((p) => !isPlayerInAnyClub(p)) : [];
+            const freeList = Array.isArray(rawFreeAgents)
+              ? rawFreeAgents.filter((p) => !isPlayerInAnyClub(p))
+              : [];
             const pl = freeList[idx];
             if (!pl) return alert('Jogador livre não encontrado');
             showBuyFreePlayerMenu(pl, rawFreeAgents, idx);
@@ -198,14 +235,21 @@ export function renderTransfers() {
         });
       } catch (e) {
         try {
-          const L = (window.Elifoot && window.Elifoot.Logger) || console; L.warn && L.warn('attach transfer handlers failed', e);
-        } catch (_) {
-          /* ignore */
+          const L = (window.Elifoot && window.Elifoot.Logger) || console;
+          L.warn && L.warn('attach transfer handlers failed', e);
+        } catch (e) {
+          const L = (window.FootLab && window.FootLab.Logger) || console;
+          L.warn && L.warn('attach transfer handlers failed', e);
         }
       }
     }, 10);
   } catch (e) {
-    try { const L = (window.Elifoot && window.Elifoot.Logger) || console; L.warn && L.warn('renderTransfers failed', e); } catch (_) { /* ignore */ }
+    try {
+      const L = (window.FootLab && window.FootLab.Logger) || console;
+      L.warn && L.warn('renderTransfers failed', e);
+    } catch (_) {
+      /* ignore */
+    }
   }
 }
 
@@ -235,7 +279,11 @@ export function showBuyFreePlayerMenu(pl, rawFreeAgents, idxInFiltered) {
     box.className = 'subs-panel transfer-overlay-root';
     const skill = pl.skill || 0;
     const minC = Math.max(0, Number(pl.minContract || pl.minMonthly || pl.minSalary || 0));
-    const prev = pl.previousClubName || (pl.club && (pl.club.team ? pl.club.team.name : pl.club.name)) || pl.clubName || '—';
+    const prev =
+      pl.previousClubName ||
+      (pl.club && (pl.club.team ? pl.club.team.name : pl.club.name)) ||
+      pl.clubName ||
+      '—';
     const html = `
           <h3 class="transfer-title">Assinar jogador livre</h3>
           <div style="margin-top:8px;font-weight:700;color:var(--hub-fg, #111)">${pl.name} <span style="font-weight:500;opacity:0.85">(${pl.position || ''})</span></div>
@@ -255,38 +303,62 @@ export function showBuyFreePlayerMenu(pl, rawFreeAgents, idxInFiltered) {
       const cancel = document.getElementById('buyFreeCancelBtn');
       const confirm = document.getElementById('buyFreeConfirmBtn');
       const salaryIn = document.getElementById('buyFreeSalaryInput');
-      if (cancel) cancel.addEventListener('click', () => { try { if (overlay && overlay.parentNode) overlay.parentNode.removeChild(overlay); } catch (e) { /* ignore */ } });
-      if (confirm) confirm.addEventListener('click', () => {
-        const salary = Math.max(minC, Math.round(Number(salaryIn.value || minC || 500)));
-        const buyer = window.playerClub;
-        if (!buyer) return alert('Nenhum clube comprador definido (playerClub).');
-        const ridx = rawFreeAgents.findIndex((pp) => (pp.id && pl.id && pp.id === pl.id) || (pp.name && pp.name === pl.name));
-        if (ridx >= 0) rawFreeAgents.splice(ridx, 1);
-        const playerToAdd = Object.assign({}, pl);
-        playerToAdd.salary = salary;
-        playerToAdd.contractYears = 1;
-        playerToAdd.contractYearsLeft = 1;
-        buyer.team.players = buyer.team.players || [];
-        buyer.team.players.push(playerToAdd);
-        if (overlay && overlay.parentNode) overlay.parentNode.removeChild(overlay);
-        alert(`${pl.name} assinado por ${buyer.team.name} por ${formatMoney(salary)} /mês (1 ano).`);
-        // re-render transfers and roster if available
-        try { if (typeof renderTransfers === 'function') renderTransfers(); } catch (_) {}
-        try { if (typeof renderTeamRoster === 'function') renderTeamRoster(buyer); } catch (_) {}
-      });
+      if (cancel)
+        cancel.addEventListener('click', () => {
+          try {
+            if (overlay && overlay.parentNode) overlay.parentNode.removeChild(overlay);
+          } catch (e) {
+            /* ignore */
+          }
+        });
+      if (confirm)
+        confirm.addEventListener('click', () => {
+          const salary = Math.max(minC, Math.round(Number(salaryIn.value || minC || 500)));
+          const buyer = window.playerClub;
+          if (!buyer) return alert('Nenhum clube comprador definido (playerClub).');
+          const ridx = rawFreeAgents.findIndex(
+            (pp) => (pp.id && pl.id && pp.id === pl.id) || (pp.name && pp.name === pl.name)
+          );
+          if (ridx >= 0) rawFreeAgents.splice(ridx, 1);
+          const playerToAdd = Object.assign({}, pl);
+          playerToAdd.salary = salary;
+          playerToAdd.contractYears = 1;
+          playerToAdd.contractYearsLeft = 1;
+          buyer.team.players = buyer.team.players || [];
+          buyer.team.players.push(playerToAdd);
+          if (overlay && overlay.parentNode) overlay.parentNode.removeChild(overlay);
+          alert(
+            `${pl.name} assinado por ${buyer.team.name} por ${formatMoney(salary)} /mês (1 ano).`
+          );
+          // re-render transfers and roster if available
+          try {
+            if (typeof renderTransfers === 'function') renderTransfers();
+          } catch (_) {}
+          try {
+            if (typeof renderTeamRoster === 'function') renderTeamRoster(buyer);
+          } catch (_) {}
+        });
     }, 10);
   } catch (e) {
-    try { const L = (window.Elifoot && window.Elifoot.Logger) || console; L.warn && L.warn('showBuyFreePlayerMenu failed', e); } catch (_) { /* ignore */ }
+    try {
+      const L = (window.FootLab && window.FootLab.Logger) || console;
+      L.warn && L.warn('showBuyFreePlayerMenu failed', e);
+    } catch (_) {
+      /* ignore */
+    }
   }
 }
 
 // Attach to global namespace for backwards compat
 if (typeof window !== 'undefined') {
-  window.Elifoot = window.Elifoot || {};
-  window.Elifoot.Hub = window.Elifoot.Hub || {};
-  window.Elifoot.Hub.renderTransfers = window.Elifoot.Hub.renderTransfers || renderTransfers;
-  window.Elifoot.Hub.showBuyFreePlayerMenu = window.Elifoot.Hub.showBuyFreePlayerMenu || showBuyFreePlayerMenu;
+  window.FootLab = window.FootLab || {};
+  window.FootLab.Hub = window.FootLab.Hub || {};
+  window.FootLab.Hub.renderTransfers = window.FootLab.Hub.renderTransfers || renderTransfers;
+  window.FootLab.Hub.showBuyFreePlayerMenu =
+    window.FootLab.Hub.showBuyFreePlayerMenu || showBuyFreePlayerMenu;
   // also export globals used elsewhere
   window.renderTransfers = window.renderTransfers || renderTransfers;
   window.showBuyFreePlayerMenu = window.showBuyFreePlayerMenu || showBuyFreePlayerMenu;
+  // Backwards compatibility: keep old global object available
+  window.Elifoot = window.Elifoot || window.FootLab;
 }

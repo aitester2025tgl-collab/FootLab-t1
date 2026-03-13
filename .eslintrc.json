@@ -14,5 +14,22 @@
     "no-console": ["warn", { "allow": ["warn", "error"] }],
     "no-unused-vars": ["warn", { "args": "none", "ignoreRestSiblings": true }],
     "prettier/prettier": ["warn"]
-  }
+  },
+  "overrides": [
+    {
+      "files": ["src/legacy_ui/**"],
+      "rules": {
+        "no-empty": "off",
+        "no-undef": "off"
+        ,"no-unused-vars": "off"
+      }
+    },
+    {
+      "files": ["tools/**", "dev/**"],
+      "rules": {
+        "no-empty": "off",
+        "no-console": "off"
+      }
+    }
+  ]
 }

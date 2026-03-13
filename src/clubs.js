@@ -1,9 +1,12 @@
 // clubs.js - Versão FINALMENTE Corrigida e Completa
-/* global divisionsData, generateTeam */
+/* global divisionsData */
+// clubs.js - Strict clubs generator (no synthetic player generation)
 
 // small helper to prefer centralized logger when available
 function _getLogger() {
   try {
+    if (typeof window !== 'undefined' && window.FootLab && window.FootLab.Logger)
+      return window.FootLab.Logger;
     if (typeof window !== 'undefined' && window.Elifoot && window.Elifoot.Logger)
       return window.Elifoot.Logger;
   } catch (e) {
@@ -40,187 +43,150 @@ function createClub(team, division) {
 }
 
 /**
- * Gera clubes para uma divisão, aplica as cores e ajusta a skill dos jogadores.
+ * Gera clubes para uma divisão a partir de `window.REAL_ROSTERS`.
+ * Não gera jogadores sintéticos; se um time não tiver roster válido, lança erro.
  * @param {number} divisionNumber - 1 a 4.
  * @returns {Array<Object>} Lista de objetos Club.
  */
 function generateDivisionClubs(divisionNumber) {
   const clubs = [];
-
-  // divisionsData é uma variável global de teams.js
   const divisionData = divisionsData[divisionNumber - 1];
   if (!divisionData || !divisionData.teams) {
     const _logger = _getLogger();
-    _logger.error(
-      `Divisão ${divisionNumber} não encontrada em teams.js. Clubs.js: generateDivisionClubs.`
-    );
+    _logger.error(`Divisão ${divisionNumber} não encontrada em teams.js.`);
     return clubs;
   }
 
-  let teamId = 1; // Contador interno
+  // build a robust normalization map for roster keys (remove diacritics, punctuation)
+  const normalize = (s) =>
+    String(s || '')
+      .normalize('NFD')
+      .replace(/\p{Diacritic}/gu, '')
+      .toLowerCase()
+      .replace(/[^a-z0-9]/g, '');
+  const rosterKeyMap = {};
+  try {
+    if (window.REAL_ROSTERS)
+      Object.keys(window.REAL_ROSTERS).forEach((k) => {
+        try {
+          rosterKeyMap[normalize(k)] = k;
+        } catch (__) {
+          rosterKeyMap[String(k).toLowerCase()] = k;
+        }
+      });
+  } catch (e) {
+    /* ignore */
+  }
 
+  let teamId = 1;
   divisionData.teams.forEach((teamData) => {
-    // Prefer using a provided real roster for this team if available. This prevents
-    // generating synthetic players for divisions where we've already imported real rosters
-    // (e.g., the second division in the user's dataset).
-    const normalize = (s) =>
-      String(s || '')
-        .toLowerCase()
-        .replace(/[^a-z0-9]/g, '');
-    let rosterKeyMap = {};
-    try {
-      if (window.REAL_ROSTERS && Object.keys(window.REAL_ROSTERS).length) {
-        Object.keys(window.REAL_ROSTERS).forEach((k) => (rosterKeyMap[normalize(k)] = k));
-      }
-    } catch (e) {
-      rosterKeyMap = {};
+    const tnorm = normalize(teamData.name);
+    let key = rosterKeyMap[tnorm] || null;
+    if (!key) {
+      // fuzzy attempts: try normalized keys first
+      const candidates = Object.keys(rosterKeyMap || {});
+      key = candidates.find((nk) => nk === tnorm || nk.includes(tnorm) || tnorm.includes(nk));
+      if (key) key = rosterKeyMap[key];
+    }
+    if (!key) {
+      // final attempt: try direct substring search against original keys
+      key =
+        Object.keys(window.REAL_ROSTERS || {}).find((k) => {
+          if (!k) return false;
+          const kn = String(k || '').toLowerCase();
+          const tn = String(teamData.name || '').toLowerCase();
+          return kn === tn || kn.includes(tn) || tn.includes(kn);
+        }) || null;
     }
 
-    const targetNorm = normalize(teamData.name);
-    let teamKey = rosterKeyMap[targetNorm] || null;
-    if (!teamKey) {
-      // try fuzzy match
+    const roster = key ? window.REAL_ROSTERS && window.REAL_ROSTERS[key] : null;
+    if (!Array.isArray(roster) || roster.length === 0) {
+      const _logger = _getLogger();
+      const msg = `Missing roster for team "${teamData.name}" (division ${divisionNumber}).`;
+      // TEMP DEBUG: Log detailed diagnostic to console before throwing
       try {
-        teamKey = Object.keys(window.REAL_ROSTERS || {}).find((k) => {
-          if (!k) return false;
-          const kn = normalize(k);
-          if (kn === targetNorm) return true;
-          if (kn.includes(targetNorm)) return true;
-          if (targetNorm.includes(kn)) return true;
-          return false;
+        console.error('TEMP_DEBUG: missing roster', {
+          team: teamData.name,
+          division: divisionNumber,
+          rosterKeys: Object.keys(window.REAL_ROSTERS || {}).slice(0, 12),
+          rosterCount: Object.keys(window.REAL_ROSTERS || {}).length || 0,
         });
       } catch (e) {
-        teamKey = null;
+        try {
+          _logger && _logger.error && _logger.error('TEMP_DEBUG console error failed', e);
+        } catch (_) {
+          void 0;
+        }
       }
+      _logger.error && _logger.error(msg);
+      throw new Error(msg);
     }
 
-    let team = null;
-    if (teamKey && Array.isArray(window.REAL_ROSTERS[teamKey])) {
-      // Build a team object directly from the provided roster (do NOT generate extra players)
-      const roster = window.REAL_ROSTERS[teamKey];
-      const players = roster.map((r, idx) => ({
-        id: teamId * 1000 + idx,
-        name: r.name || `Player ${teamId * 1000 + idx}`,
-        position: r.position || 'CM',
-        skill: typeof r.skill === 'number' ? r.skill : 60,
-        salary:
-          typeof r.salary === 'number'
-            ? r.salary
-            : Math.round(
-                (divisionNumber === 1
-                  ? 8000
-                  : divisionNumber === 2
-                    ? 3000
-                    : divisionNumber === 3
-                      ? 1000
-                      : 500) * 0.6
-              ),
-        contractYears: typeof r.contractYears === 'number' ? r.contractYears : 1,
-        goals: r.goals || 0,
-      }));
+    const players = roster.map((r, idx) => ({
+      id: teamId * 1000 + idx,
+      name: r.name || `Player ${teamId * 1000 + idx}`,
+      position: r.position || 'CM',
+      skill: typeof r.skill === 'number' ? r.skill : 60,
+      salary:
+        typeof r.salary === 'number'
+          ? r.salary
+          : Math.round(
+              (divisionNumber === 1
+                ? 8000
+                : divisionNumber === 2
+                  ? 3000
+                  : divisionNumber === 3
+                    ? 1000
+                    : 500) * 0.6
+            ),
+      contractYears: typeof r.contractYears === 'number' ? r.contractYears : 1,
+      goals: r.goals || 0,
+    }));
 
-      // compute basic attributes based on division (same logic as the generator)
-      let stadiumCapacity, members, ticketPrice;
-      if (divisionNumber === 1) {
-        stadiumCapacity = 30000 + Math.floor(Math.random() * 40000);
-        members = 25000 + Math.floor(Math.random() * 50000);
-        ticketPrice = 30 + Math.floor(Math.random() * 20);
-      } else if (divisionNumber === 2) {
-        stadiumCapacity = 15000 + Math.floor(Math.random() * 30000);
-        members = 15000 + Math.floor(Math.random() * 15000);
-        ticketPrice = 25 + Math.floor(Math.random() * 10);
-      } else if (divisionNumber === 3) {
-        stadiumCapacity = 10000 + Math.floor(Math.random() * 10000);
-        members = 5000 + Math.floor(Math.random() * 10000);
-        ticketPrice = 18 + Math.floor(Math.random() * 7);
-      } else {
-        stadiumCapacity = 4000 + Math.floor(Math.random() * 6000);
-        members = 1000 + Math.floor(Math.random() * 4000);
-        ticketPrice = 12 + Math.floor(Math.random() * 5);
-      }
-
-      const totalSalary = players.reduce((acc, p) => acc + (p.salary || 0), 0);
-      team = {
-        id: teamId,
-        name: teamData.name,
-        color: teamData.color,
-        bgColor: teamData.bgColor,
-        players,
-        tactic: '4-4-2',
-        stadiumCapacity: stadiumCapacity,
-        members: members,
-        ticketPrice: ticketPrice,
-        totalSalaryCost: totalSalary,
-        currentLeaguePosition: 0,
-        leaguePoints: 0,
-      };
-      // ensure club-level expenses reflect monthly payroll so UI can display despesas
-      team.totalSalaryCost = totalSalary;
-      teamId++;
+    // basic computed attributes
+    let stadiumCapacity, members, ticketPrice;
+    if (divisionNumber === 1) {
+      stadiumCapacity = 30000 + Math.floor(Math.random() * 40000);
+      members = 25000 + Math.floor(Math.random() * 50000);
+      ticketPrice = 30 + Math.floor(Math.random() * 20);
+    } else if (divisionNumber === 2) {
+      stadiumCapacity = 15000 + Math.floor(Math.random() * 30000);
+      members = 15000 + Math.floor(Math.random() * 15000);
+      ticketPrice = 25 + Math.floor(Math.random() * 10);
+    } else if (divisionNumber === 3) {
+      stadiumCapacity = 10000 + Math.floor(Math.random() * 10000);
+      members = 5000 + Math.floor(Math.random() * 10000);
+      ticketPrice = 18 + Math.floor(Math.random() * 7);
     } else {
-      // fallback to the existing generator when no real roster is provided
-      if (typeof generateTeam !== 'function') {
-        const _logger = _getLogger();
-        _logger.error(
-          'Função generateTeam não encontrada em teams.js. Não é possível gerar jogadores.'
-        );
-        return;
-      }
-      team = generateTeam(teamId++);
-      // apply real names/colors from divisionsData
-      team.name = teamData.name;
-      team.color = teamData.color;
-      team.bgColor = teamData.bgColor;
-
-      // adjust player skills with division reduction
-      if (team.players && team.players.length > 0) {
-        team.players.forEach((p) => {
-          const reduction = (divisionNumber - 1) * 10;
-          p.skill = Math.max(50, p.skill - reduction);
-        });
-      }
+      stadiumCapacity = 4000 + Math.floor(Math.random() * 6000);
+      members = 1000 + Math.floor(Math.random() * 4000);
+      ticketPrice = 12 + Math.floor(Math.random() * 5);
     }
 
-    // Ajusta player skills com base na divisão
-    if (team.players && team.players.length > 0) {
-      team.players.forEach((p) => {
-        const reduction = (divisionNumber - 1) * 10;
-        p.skill = Math.max(50, p.skill - reduction);
-      });
-    } else {
-      const _logger = _getLogger();
-      _logger.error(`Equipa ${teamData.name} não tem jogadores!`);
-    }
+    const totalSalary = players.reduce((acc, p) => acc + (p.salary || 0), 0);
+    const team = {
+      id: teamId,
+      name: teamData.name,
+      color: teamData.color,
+      bgColor: teamData.bgColor,
+      players,
+      tactic: '4-4-2',
+      stadiumCapacity,
+      members,
+      ticketPrice,
+      totalSalaryCost: totalSalary,
+      currentLeaguePosition: 0,
+      leaguePoints: 0,
+    };
 
-    team.tactic = '4-4-2'; // Adicionar tática
-
+    // register club
     const club = createClub(team, divisionNumber);
-    // compute payroll from team players if not already present
-    try {
-      const totalS = (team.players || []).reduce((acc, p) => acc + (Number(p.salary) || 0), 0);
-      team.totalSalaryCost = team.totalSalaryCost || totalS;
-      club.expenses = Math.max(0, Number(team.totalSalaryCost || totalS));
-    } catch (e) {
-      club.expenses = club.expenses || 0;
-    }
-    // attach coach from REAL_COACHES if present and register with coach service
-    try {
-      const coachName = (window.REAL_COACHES && window.REAL_COACHES[team.name]) || null;
-      club.coach = coachName || null;
-      // keep a global registry of all clubs so coach service can consult club info
-      window.ALL_CLUBS = window.ALL_CLUBS || [];
-      window.ALL_CLUBS.push(club);
-      if (
-        coachName &&
-        window.COACH_SERVICE &&
-        typeof window.COACH_SERVICE.assignCoachToTeam === 'function'
-      ) {
-        window.COACH_SERVICE.assignCoachToTeam(coachName, team.name, club);
-      }
-    } catch (e) {
-      /* ignore registration errors */
-    }
+    club.expenses = Math.max(0, Number(totalSalary));
+    club.coach = (window.REAL_COACHES && window.REAL_COACHES[team.name]) || null;
+    window.ALL_CLUBS = window.ALL_CLUBS || [];
+    window.ALL_CLUBS.push(club);
 
+    teamId++;
     clubs.push(club);
   });
 
@@ -229,7 +195,7 @@ function generateDivisionClubs(divisionNumber) {
 
 // Validate all rosters before starting the simulation.
 // Ensures every team in divisionsData has a matching real roster entry with
-// at least `minPlayers` players. Throws an Error listing missing/short rosters.
+// at least `minPlayers` players. Throws an Error listing problems.
 function validateAllRosters(minPlayers = 18) {
   const normalize = (s) =>
     String(s || '')
@@ -249,15 +215,11 @@ function validateAllRosters(minPlayers = 18) {
       const tnorm = normalize(teamData.name);
       let key = rosterMap[tnorm] || null;
       if (!key) {
-        // fuzzy attempts: find containing or contained keys
         key =
           Object.keys(window.REAL_ROSTERS || {}).find((k) => {
             if (!k) return false;
             const kn = normalize(k);
-            if (kn === tnorm) return true;
-            if (kn.includes(tnorm)) return true;
-            if (tnorm.includes(kn)) return true;
-            return false;
+            return kn === tnorm || kn.includes(tnorm) || tnorm.includes(kn);
           }) || null;
       }
 
@@ -282,47 +244,45 @@ function validateAllRosters(minPlayers = 18) {
     const msg =
       `Roster validation failed: ${missing.length} teams missing or under ${minPlayers} players:\n` +
       lines.join('\n');
-    // Log full details then throw so startup stops
     const lg = _getLogger();
-    lg.error(msg);
+    try {
+      lg.error && lg.error(msg);
+    } catch (e) {
+      try {
+        console && console.error && console.error(msg);
+      } catch (_) {
+        /* ignore */
+      }
+    }
     throw new Error(msg);
   }
 }
 
 /**
- * Função principal chamada pelo main.js para gerar TODOS os clubes de todas as divisões.
- * Exportada globalmente para ser usada pelo main.js.
+ * Gera todos os clubes (4 divisões) chamando generateDivisionClubs.
  */
 function generateAllClubs() {
   const allClubs = [];
-  // Validate that every team in divisionsData has a real roster loaded.
-  // If any team is missing or has fewer than 18 players, throw an error so the
-  // game doesn't start with incomplete squads.
   validateAllRosters(18);
-  // If coach service exists, suppress hire events while we assign initial coaches
-  try {
-    if (window.COACH_SERVICE && typeof window.COACH_SERVICE.setSuppressEvents === 'function')
-      window.COACH_SERVICE.setSuppressEvents(true);
-  } catch (e) {
-    /* ignore */
-  }
 
-  // Assumindo 4 divisões
   for (let i = 1; i <= 4; i++) {
     const divisionClubs = generateDivisionClubs(i);
     allClubs.push(...divisionClubs);
   }
 
-  // re-enable hire events after initial assignment
-  try {
-    if (window.COACH_SERVICE && typeof window.COACH_SERVICE.setSuppressEvents === 'function')
-      window.COACH_SERVICE.setSuppressEvents(false);
-  } catch (e) {
-    /* ignore */
-  }
-
   return allClubs;
 }
 
-// CRÍTICO: EXPORTA A FUNÇÃO PARA O ESCOPO GLOBAL
-window.generateAllClubs = generateAllClubs;
+// Export global helpers and namespace
+try {
+  if (typeof window !== 'undefined') {
+    window.generateAllClubs = generateAllClubs;
+    window.FootLab = window.FootLab || window.Elifoot || {};
+    window.FootLab.generateAllClubs = window.FootLab.generateAllClubs || generateAllClubs;
+    window.FootLab.generateDivisionClubs =
+      window.FootLab.generateDivisionClubs || generateDivisionClubs;
+    window.Elifoot = window.Elifoot || window.FootLab;
+  }
+} catch (e) {
+  /* ignore */
+}

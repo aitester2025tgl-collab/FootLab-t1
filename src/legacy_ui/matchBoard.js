@@ -5,4 +5,3 @@
 function _deprecated_stub() {
   // If any other legacy code still expects these globals, they should be provided by the new module.
 }
-

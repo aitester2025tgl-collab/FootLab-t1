@@ -86,7 +86,8 @@ window.Offers.showPendingReleasesPopup(() => {
 setTimeout(() => {
   try {
     // The UI now uses an inline propose button inside the overlay; click that instead
-    const doBtn = document.getElementById('offersDoProposeBtn') || document.querySelector('.offer-propose-btn');
+    const doBtn =
+      document.getElementById('offersDoProposeBtn') || document.querySelector('.offer-propose-btn');
     if (doBtn) doBtn.dispatchEvent(new window.MouseEvent('click', { bubbles: true }));
   } catch (e) {
     console.error('error clicking proposeBtn', e);

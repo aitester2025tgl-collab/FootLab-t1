@@ -6,31 +6,9 @@ const path = require('path');
 
 (async () => {
   try {
-    // index.html usually lives at project root; if missing, synthesize a minimal
-    // HTML that loads core runtime scripts from `src/` so smoke tests can proceed.
-    let filePath = path.resolve(__dirname, '..', 'index.html');
-    let html;
-    if (fs.existsSync(filePath)) {
-      html = fs.readFileSync(filePath, 'utf8');
-    } else {
-      // build a generated index that loads a minimal set of runtime scripts
-      const jsFiles = ['teams.js', 'clubs.js', 'matches.js', 'core/simulation.js', 'players.js'];
-      const generatedDir = path.resolve(__dirname, '..', 'tmp', 'generated_index');
-      if (!fs.existsSync(generatedDir)) fs.mkdirSync(generatedDir, { recursive: true });
-      const genPath = path.join(generatedDir, 'index.html');
-      const scriptTags = jsFiles
-        .map((p) => {
-          const abs = path.resolve(__dirname, '..', 'src', p);
-          if (!fs.existsSync(abs)) return null;
-          return `<script src="${require('url').pathToFileURL(abs).href}"></script>`;
-        })
-        .filter(Boolean)
-        .join('\n');
-      html = `<!doctype html><html><head><meta charset="utf-8"></head><body>\n${scriptTags}\n</body></html>`;
-      fs.writeFileSync(genPath, html, 'utf8');
-      // use the generated file path as the canonical filePath for url resolution
-      filePath = genPath;
-    }
+    // index.html remains at project root; smoke_test.js now lives in `src/`, so go up one level
+    const filePath = path.resolve(__dirname, '..', 'index.html');
+    let html = fs.readFileSync(filePath, 'utf8');
 
     // If per-team rosters exist under data/rosters, inject them inline into
     // the test HTML so jsdom page scripts can access window.REAL_ROSTERS

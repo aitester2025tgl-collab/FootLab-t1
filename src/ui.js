@@ -1,4 +1,5 @@
 // ui.js — lightweight compatibility shim
+/* eslint-disable no-empty */
 // Purpose: expose legacy global functions but delegate heavy work to extracted modules
 // (ui/hub.js, ui/matchBoard.js, ui/overlays.js, ui/tactics.js). Keep this file small.
 
@@ -88,11 +89,35 @@
       if (typeof cb === 'function') cb();
       return;
     }
-    overlay.style.display = 'flex';
+    // Defensive: ensure overlay is a direct child of document.body so it
+    // cannot push page content when shown. Also force fixed positioning
+    // and a very large z-index to appear above other elements.
+    try {
+      if (overlay.parentElement !== document.body) document.body.appendChild(overlay);
+    } catch (e) {}
+    try {
+      overlay.style.setProperty('position', 'fixed', 'important');
+      overlay.style.setProperty('left', '0', 'important');
+      overlay.style.setProperty('top', '0', 'important');
+      overlay.style.setProperty('width', '100vw', 'important');
+      overlay.style.setProperty('height', '100vh', 'important');
+      overlay.style.setProperty('z-index', '2147483647', 'important');
+      overlay.style.setProperty('display', 'flex', 'important');
+      overlay.style.setProperty('justify-content', 'center', 'important');
+      overlay.style.setProperty('align-items', 'center', 'important');
+      overlay.style.setProperty(
+        'background',
+        'var(--subs-overlay-bg, rgba(0,0,0,0.66))',
+        'important'
+      );
+    } catch (e) {}
     overlay.setAttribute('aria-hidden', 'false');
+    // hide after a short timeout if caller didn't manage lifecycle
     setTimeout(() => {
-      overlay.style.display = 'none';
-      overlay.setAttribute('aria-hidden', 'true');
+      try {
+        overlay.style.setProperty('display', 'none', 'important');
+        overlay.setAttribute('aria-hidden', 'true');
+      } catch (e) {}
       if (typeof cb === 'function') cb();
     }, 800);
   }

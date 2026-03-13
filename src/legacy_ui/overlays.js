@@ -3,10 +3,14 @@
 // ui/overlays.js - intro and halftime overlays extracted from ui.js
 (function () {
   // prefer canonical namespace when available
-  const E = window.Elifoot || window;
+  const E = window.FootLab || window.Elifoot || window;
   // logger helper (use central logger when available, fall back to console)
   function getLogger() {
-    return window.Elifoot && window.Elifoot.Logger ? window.Elifoot.Logger : console;
+    return (
+      (window.FootLab && window.FootLab.Logger) ||
+      (window.Elifoot && window.Elifoot.Logger) ||
+      console
+    );
   }
   // use shared color helpers when available
   function hexToRgb(hex) {
@@ -168,6 +172,27 @@
       if (typeof cb === 'function') cb();
       return;
     }
+    // Defensive: ensure overlay is attached to document.body and forced
+    // to fixed positioning so it does not participate in page flow.
+    try {
+      if (overlay.parentElement !== document.body) document.body.appendChild(overlay);
+    } catch (e) {}
+    try {
+      overlay.style.setProperty('position', 'fixed', 'important');
+      overlay.style.setProperty('left', '0', 'important');
+      overlay.style.setProperty('top', '0', 'important');
+      overlay.style.setProperty('width', '100vw', 'important');
+      overlay.style.setProperty('height', '100vh', 'important');
+      overlay.style.setProperty('z-index', '2147483647', 'important');
+      overlay.style.setProperty('display', 'flex', 'important');
+      overlay.style.setProperty('justify-content', 'center', 'important');
+      overlay.style.setProperty('align-items', 'center', 'important');
+      overlay.style.setProperty(
+        'background',
+        'var(--subs-overlay-bg, rgba(0,0,0,0.66))',
+        'important'
+      );
+    } catch (e) {}
     const isHome = match.homeClub === club;
     const starters = isHome ? match.homePlayers || [] : match.awayPlayers || [];
     const subs = isHome ? match.homeSubs || [] : match.awaySubs || [];
@@ -501,6 +526,10 @@
 
               // enforce max substitutions UI state after applying
               const MAX_SUBS =
+                (window.FootLab &&
+                  window.FootLab.GameConfig &&
+                  window.FootLab.GameConfig.rules &&
+                  window.FootLab.GameConfig.rules.maxSubs) ||
                 (window.Elifoot &&
                   window.Elifoot.GameConfig &&
                   window.Elifoot.GameConfig.rules &&
@@ -681,16 +710,16 @@
 
   // expose season summary overlay
   // ensure canonical namespace exists and export overlays there; keep legacy window.Overlays for compatibility
-  window.Elifoot = window.Elifoot || {};
-  window.Elifoot.Overlays = window.Elifoot.Overlays || {};
-  window.Elifoot.Overlays.showSeasonSummary = showSeasonSummaryOverlay;
+  window.FootLab = window.FootLab || {};
+  window.FootLab.Overlays = window.FootLab.Overlays || {};
+  window.FootLab.Overlays.showSeasonSummary = showSeasonSummaryOverlay;
 
   // expose functions into the canonical namespace and keep legacy pointer
-  window.Elifoot = window.Elifoot || {};
-  window.Elifoot.Overlays = window.Elifoot.Overlays || {};
-  window.Elifoot.Overlays.setIntroColors = setIntroColors;
-  window.Elifoot.Overlays.showIntroOverlay = showIntroOverlay;
-  window.Elifoot.Overlays.showHalfTimeSubsOverlay = showHalfTimeSubsOverlay;
+  window.FootLab = window.FootLab || {};
+  window.FootLab.Overlays = window.FootLab.Overlays || {};
+  window.FootLab.Overlays.setIntroColors = setIntroColors;
+  window.FootLab.Overlays.showIntroOverlay = showIntroOverlay;
+  window.FootLab.Overlays.showHalfTimeSubsOverlay = showHalfTimeSubsOverlay;
   // legacy pointer for old callers
-  window.Overlays = window.Overlays || window.Elifoot.Overlays;
+  window.Overlays = window.Overlays || window.FootLab.Overlays;
 })();

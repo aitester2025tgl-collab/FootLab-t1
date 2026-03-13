@@ -5,7 +5,9 @@
   // Only run in browser-like environments
   if (typeof window === 'undefined') return;
 
-  window.Elifoot = window.Elifoot || {};
+  // Prefer `FootLab` as the canonical runtime namespace. Keep `Elifoot` as a compatibility alias.
+  window.FootLab = window.FootLab || window.Elifoot || {};
+  window.Elifoot = window.Elifoot || window.FootLab;
 
   // Keys that historically lived on `window` and should be centralized
   const keys = [
@@ -55,13 +57,13 @@
   ];
   namespaces.forEach((name) => {
     try {
-      window.Elifoot[name] = window.Elifoot[name] || window[name] || {};
+      window.FootLab[name] = window.FootLab[name] || window[name] || {};
       Object.defineProperty(window, name, {
         get() {
-          return window.Elifoot[name];
+          return window.FootLab[name];
         },
         set(v) {
-          window.Elifoot[name] = v;
+          window.FootLab[name] = v;
         },
         configurable: true,
       });
@@ -72,7 +74,8 @@
 
   // Export for Node tests that require this file
   try {
-    if (typeof module !== 'undefined' && module.exports) module.exports = window.Elifoot;
+    if (typeof module !== 'undefined' && module.exports)
+      module.exports = window.FootLab || window.Elifoot;
   } catch (e) {
     /* ignore */
   }

@@ -2,7 +2,11 @@
 export function hexToRgb(hex) {
   if (!hex) return [46, 46, 46];
   let h = String(hex).replace('#', '');
-  if (h.length === 3) h = h.split('').map((c) => c + c).join('');
+  if (h.length === 3)
+    h = h
+      .split('')
+      .map((c) => c + c)
+      .join('');
   const v = parseInt(h, 16);
   if (isNaN(v)) return [46, 46, 46];
   return [(v >> 16) & 255, (v >> 8) & 255, v & 255];
@@ -51,7 +55,9 @@ export function getReadableTextColor(bg, pref) {
 
 export function normalizePosition(pos) {
   if (!pos) return '';
-  const p = String(pos || '').toUpperCase().trim();
+  const p = String(pos || '')
+    .toUpperCase()
+    .trim();
   if (p === 'GK' || p === 'GOALKEEPER') return 'GK';
   if (/^(CB|CENTERBACK|CENTREBACK|CEN|CTR|DC|DF)$/.test(p)) return 'CB';
   if (/^(LB|LWB|LEFTBACK|LEFTBACKWARD)$/.test(p)) return 'LB';
@@ -71,7 +77,10 @@ export function normalizePosition(pos) {
 export function avgSkill(club) {
   if (!club || !club.team || !Array.isArray(club.team.players) || club.team.players.length === 0)
     return 0;
-  const sum = club.team.players.reduce((s, p) => s + (p && typeof p.skill === 'number' ? p.skill : 0), 0);
+  const sum = club.team.players.reduce(
+    (s, p) => s + (p && typeof p.skill === 'number' ? p.skill : 0),
+    0
+  );
   return Math.round(sum / club.team.players.length);
 }
 
@@ -83,7 +92,8 @@ export function isPlayerInAnyClub(player) {
       if (
         c.team.players.find(
           (p) =>
-            (p && p.id && player.id && p.id === player.id) || (p && p.name && p.name === player.name)
+            (p && p.id && player.id && p.id === player.id) ||
+            (p && p.name && p.name === player.name)
         )
       )
         return true;
@@ -96,11 +106,14 @@ export function isPlayerInAnyClub(player) {
 
 // Attach helpers to global ColorUtils for legacy code that checks E.ColorUtils
 if (typeof window !== 'undefined') {
-  window.Elifoot = window.Elifoot || {};
-  window.Elifoot.ColorUtils = window.Elifoot.ColorUtils || {};
+  window.FootLab = window.FootLab || window.Elifoot || {};
+  window.FootLab.ColorUtils = window.FootLab.ColorUtils || {};
   // only set if missing to avoid overwriting existing implementations
-  if (!window.Elifoot.ColorUtils.hexToRgb) window.Elifoot.ColorUtils.hexToRgb = hexToRgb;
-  if (!window.Elifoot.ColorUtils.luminance) window.Elifoot.ColorUtils.luminance = luminance;
-  if (!window.Elifoot.ColorUtils.getReadableTextColor)
-    window.Elifoot.ColorUtils.getReadableTextColor = getReadableTextColor;
+  if (!window.FootLab.ColorUtils.hexToRgb) window.FootLab.ColorUtils.hexToRgb = hexToRgb;
+  if (!window.FootLab.ColorUtils.luminance) window.FootLab.ColorUtils.luminance = luminance;
+  if (!window.FootLab.ColorUtils.getReadableTextColor)
+    window.FootLab.ColorUtils.getReadableTextColor = getReadableTextColor;
+
+  // compatibility alias
+  window.Elifoot = window.Elifoot || window.FootLab;
 }

@@ -5,16 +5,11 @@
   'use strict';
 
   const LEVELS = { DEBUG: 10, INFO: 20, WARN: 30, ERROR: 40 };
+  const FootLab = (typeof window !== 'undefined' && (window.FootLab || window.Elifoot)) || {};
   let currentLevel =
-    typeof window !== 'undefined' &&
-    window.Elifoot &&
-    window.Elifoot.Config &&
-    window.Elifoot.Config.LOG_LEVEL
-      ? window.Elifoot.Config.LOG_LEVEL
-      : typeof window !== 'undefined' &&
-          window.Elifoot &&
-          window.Elifoot.Config &&
-          window.Elifoot.Config.DEBUG
+    FootLab && FootLab.Config && FootLab.Config.LOG_LEVEL
+      ? FootLab.Config.LOG_LEVEL
+      : FootLab && FootLab.Config && FootLab.Config.DEBUG
         ? LEVELS.DEBUG
         : LEVELS.INFO;
 
@@ -64,8 +59,10 @@
   };
 
   if (typeof window !== 'undefined') {
-    window.Elifoot = window.Elifoot || {};
-    window.Elifoot.Logger = window.Elifoot.Logger || logger;
+    window.FootLab = window.FootLab || window.Elifoot || {};
+    window.FootLab.Logger = window.FootLab.Logger || logger;
+    // compatibility alias
+    window.Elifoot = window.Elifoot || window.FootLab;
   }
 
   if (typeof module !== 'undefined' && module.exports) module.exports = logger;

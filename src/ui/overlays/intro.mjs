@@ -1,7 +1,7 @@
 import { hexToRgb, luminance, getReadableTextColor, normalizePosition } from '../helpers.mjs';
 
 function getLogger() {
-  return (window.Elifoot && window.Elifoot.Logger) || console;
+  return (window.FootLab && window.FootLab.Logger) || console;
 }
 
 export function setIntroColors(club) {
@@ -25,7 +25,7 @@ export function setIntroColors(club) {
 
 export function showIntroOverlay(club, cb) {
   try {
-    const E = window.Elifoot || window;
+    const E = window.FootLab || window;
     const overlay = document.getElementById('intro-overlay');
     if (!overlay) {
       if (typeof cb === 'function') cb();
@@ -72,7 +72,9 @@ export function showIntroOverlay(club, cb) {
     content.innerHTML = `${header}<div class="subs-columns">${startersHtml}${subsHtml}</div>`;
     overlay.innerHTML = '';
     overlay.appendChild(content);
-    requestAnimationFrame(() => { overlay.style.opacity = '1'; });
+    requestAnimationFrame(() => {
+      overlay.style.opacity = '1';
+    });
     setTimeout(() => {
       overlay.style.opacity = '0';
       setTimeout(() => {
@@ -82,15 +84,21 @@ export function showIntroOverlay(club, cb) {
       }, 360);
     }, 2200);
   } catch (e) {
-    try { const L = getLogger(); L.warn && L.warn('showIntroOverlay failed', e); } catch (_) {}
+    try {
+      const L = getLogger();
+      L.warn && L.warn('showIntroOverlay failed', e);
+    } catch (_) {}
     if (typeof cb === 'function') cb();
   }
 }
 
 // Attach to globals for compatibility
 if (typeof window !== 'undefined') {
-  window.Elifoot = window.Elifoot || {};
-  window.Elifoot.Overlays = window.Elifoot.Overlays || {};
-  window.Elifoot.Overlays.setIntroColors = window.Elifoot.Overlays.setIntroColors || setIntroColors;
-  window.Elifoot.Overlays.showIntroOverlay = window.Elifoot.Overlays.showIntroOverlay || showIntroOverlay;
+  window.FootLab = window.FootLab || {};
+  window.FootLab.Overlays = window.FootLab.Overlays || {};
+  window.FootLab.Overlays.setIntroColors = window.FootLab.Overlays.setIntroColors || setIntroColors;
+  window.FootLab.Overlays.showIntroOverlay =
+    window.FootLab.Overlays.showIntroOverlay || showIntroOverlay;
+  // Backwards compat
+  window.Elifoot = window.Elifoot || window.FootLab;
 }

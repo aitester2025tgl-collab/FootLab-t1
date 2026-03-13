@@ -4,14 +4,20 @@
   // prefer centralized logger when present (declare at IIFE root so catch blocks can use it)
   function getLogger() {
     try {
-      return window.Elifoot && window.Elifoot.Logger ? window.Elifoot.Logger : console;
+      return (
+        (window.FootLab && window.FootLab.Logger) ||
+        (window.Elifoot && window.Elifoot.Logger) ||
+        console
+      );
     } catch (e) {
       return console;
     }
   }
   try {
-    window.Elifoot = window.Elifoot || {};
-    const NS = (window.Elifoot.Lineups = window.Elifoot.Lineups || {});
+    window.FootLab = window.FootLab || window.Elifoot || {};
+    const NS = (window.FootLab.Lineups = window.FootLab.Lineups || {});
+    // compatibility alias
+    window.Elifoot = window.Elifoot || window.FootLab;
 
     const parseFormation = function (tacticName) {
       try {

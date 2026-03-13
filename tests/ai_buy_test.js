@@ -33,21 +33,28 @@ const path = require('path');
     if (fs.existsSync(rootHtml)) {
       filePath = rootHtml;
     } else {
-      // No root index.html available: synthesize a minimal test HTML that loads
-      // `src/players.js` directly so `processPendingReleases` becomes available.
-      const playersPath = path.resolve(__dirname, '..', 'src', 'players.js');
-      if (!fs.existsSync(playersPath)) {
-        throw new Error('Neither root index.html nor src/players.js found; cannot run ai_buy_test.');
+      // Fallback: locate the latest archived legacy_root_files_*.zip and extract it
+      // This keeps the repo root clean while allowing tests to run unchanged.
+      const archivesDir = path.resolve(__dirname, '..', 'archive', 'archives');
+      const zipFiles = fs.existsSync(archivesDir)
+        ? fs.readdirSync(archivesDir).filter((f) => f.startsWith('legacy_root_files') && f.endsWith('.zip'))
+        : [];
+      if (!zipFiles || zipFiles.length === 0) throw new Error('No legacy_root_files archive found');
+      zipFiles.sort();
+      const latest = zipFiles[zipFiles.length - 1];
+      extractDir = path.resolve(__dirname, '..', 'tmp', 'legacy_root_files');
+      try {
+        if (!fs.existsSync(extractDir)) fs.mkdirSync(extractDir, { recursive: true });
+        const cp = require('child_process');
+        // Use PowerShell Expand-Archive for cross-process extraction on Windows
+        const archivePath = path.join(archivesDir, latest);
+        const cmd = `Expand-Archive -Force -LiteralPath '${archivePath}' -DestinationPath '${extractDir}'`;
+        cp.execFileSync('powershell', ['-NoProfile', '-Command', cmd], { stdio: 'ignore' });
+        filePath = path.join(extractDir, 'index.html');
+        if (!fs.existsSync(filePath)) throw new Error('index.html not found inside archive');
+      } catch (e) {
+        throw new Error('Failed to extract legacy index.html: ' + (e && e.message));
       }
-      extractDir = path.resolve(__dirname, '..', 'tmp', 'generated_index');
-      if (!fs.existsSync(extractDir)) fs.mkdirSync(extractDir, { recursive: true });
-      filePath = path.join(extractDir, 'index.html');
-      const playersUrl = require('url').pathToFileURL(playersPath).href;
-      const htmlContent = `<!doctype html><html><head><meta charset="utf-8"></head><body>\n` +
-        `<script>window.REAL_ROSTERS = window.REAL_ROSTERS || {};</script>\n` +
-        `<script src="${playersUrl}"></script>\n` +
-        `</body></html>`;
-      fs.writeFileSync(filePath, htmlContent, 'utf8');
     }
     const html = fs.readFileSync(filePath, 'utf8');
     const dom = new JSDOM(html, {

@@ -39,8 +39,13 @@ function makeConsoleWrapper() {
 function getLogger() {
   // Browser runtime: prefer window.Elifoot.Logger
   try {
-    if (typeof window !== 'undefined' && window && window.Elifoot && window.Elifoot.Logger)
-      return window.Elifoot.Logger;
+    if (
+      typeof window !== 'undefined' &&
+      window &&
+      (window.FootLab || window.Elifoot) &&
+      (window.FootLab || window.Elifoot).Logger
+    )
+      return (window.FootLab || window.Elifoot).Logger;
   } catch (e) {
     /* ignore */
   }

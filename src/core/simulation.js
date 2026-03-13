@@ -1,4 +1,5 @@
 /* global renderInitialMatchBoard, showIntroOverlay, showHalfTimeSubsOverlay, advanceMatchDay, updateDayProgress, updateMatchBoardLine, renderHubContent, generateRounds, seasonalSkillDrift, selectExpiringPlayersToLeave, selectPlayersForRelease, computePlayerMarketValue, Persistence */
+/* eslint-disable no-empty */
 /* exported Persistence */
 // core/simulation.js
 // Moved simulation-related functions from main.js to keep main.js smaller.
@@ -7,10 +8,18 @@
 
   // local helper to prefer centralized logger when available
   function getLogger() {
-    return typeof window !== 'undefined' && window.Elifoot && window.Elifoot.Logger
-      ? window.Elifoot.Logger
-      : console;
+    return typeof window !== 'undefined' && window.FootLab && window.FootLab.Logger
+      ? window.FootLab.Logger
+      : typeof window !== 'undefined' && window.Elifoot && window.Elifoot.Logger
+        ? window.Elifoot.Logger
+        : console;
   }
+
+  // Prefer a centralized Persistence API when available (FootLab preferred, but fall back to legacy Elifoot)
+  const PersistenceAPI =
+    (typeof window !== 'undefined' && window.FootLab && window.FootLab.Persistence) ||
+    (typeof window !== 'undefined' && window.Elifoot && window.Elifoot.Persistence) ||
+    null;
 
   // simulation state (module-scope so repeated calls are guarded)
   let isSimulating = false;
@@ -107,23 +116,20 @@
         allClubs: window.allClubs,
         currentRoundMatches: matches,
       };
-      // Prefer the centralized Persistence API when available
-      if (
-        window.Elifoot &&
-        window.Elifoot.Persistence &&
-        typeof window.Elifoot.Persistence.saveSnapshot === 'function'
-      ) {
-        try {
-          window.Elifoot.Persistence.saveSnapshot(snap);
-        } catch (e) {
-          /* best-effort */
+      // Prefer the centralized Persistence API when available (FootLab first, Elifoot fallback)
+      try {
+        if (PersistenceAPI && typeof PersistenceAPI.saveSnapshot === 'function') {
+          PersistenceAPI.saveSnapshot(snap);
+        } else {
+          try {
+            localStorage.setItem('footlab_t1_save_snapshot', JSON.stringify(snap));
+          } catch (_) {}
+          try {
+            localStorage.setItem('elifoot_save_snapshot', JSON.stringify(snap));
+          } catch (_) {}
         }
-      } else {
-        try {
-          localStorage.setItem('elifoot_save_snapshot', JSON.stringify(snap));
-        } catch (e) {
-          /* ignore in non-browser env */
-        }
+      } catch (e) {
+        /* ignore persistence errors */
       }
     } catch (err) {
       try {
@@ -137,7 +143,10 @@
 
   function assignStartingLineups(matches) {
     if (!Array.isArray(matches)) return;
-    const Lineups = (window.Elifoot && window.Elifoot.Lineups) || {};
+    const Lineups =
+      (window.FootLab && window.FootLab.Lineups) ||
+      (window.Elifoot && window.Elifoot.Lineups) ||
+      {};
     function buildFallback(teamObj) {
       const players = Array.isArray(teamObj && teamObj.players) ? teamObj.players.slice() : [];
       let gkIndex = players.findIndex(
@@ -215,6 +224,21 @@
   }
 
   function simulateDay() {
+    // Guard: only allow simulation to start if it was initiated by a
+    // user action (clicked the simulate button) or an explicit opt-in flag
+    // (`window.__allowProgrammaticSim`), otherwise ignore to prevent
+    // unwanted programmatic starts (e.g. automated clicks).
+    try {
+      const win = typeof window !== 'undefined' ? window : null;
+      const allowed = (win && win.__userInitiatedSim) || (win && win.__allowProgrammaticSim);
+      if (!allowed) {
+        const L = getLogger();
+        L.info && L.info('simulateDay blocked: not user-initiated');
+        return;
+      }
+    } catch (e) {
+      /* ignore guard errors and proceed */
+    }
     // original implementation moved here for clarity
     // actual simulate implementation relies on the functions below and will be exposed as window.simulateDay by this module
 
@@ -235,6 +259,7 @@
           ? window.Elifoot.Logger
           : console;
       L.info && L.info('Iniciando simulação (Jornada', window.currentJornada, ')...');
+      // diagnostic removed: call-stack logging suppressed in production
     } catch (_) {
       /* ignore */
     }
@@ -275,20 +300,62 @@
       }
     }
 
-    if (typeof showIntroOverlay === 'function') {
-      try {
-        showIntroOverlay(window.playerClub, proceedToMatch);
-      } catch (e) {
-        proceedToMatch();
-      }
-    } else proceedToMatch();
-
+    // Compute timing configuration before starting the loop so we can
+    // schedule the interval with the correct per-minute tick duration.
     const HALF_MS =
       (window.GameConfig && window.GameConfig.timing && window.GameConfig.timing.halfDurationMs) ||
       20000;
     const MIN_TICK =
       (window.GameConfig && window.GameConfig.timing && window.GameConfig.timing.minTickMs) || 20;
     const perMinuteMs = Math.max(MIN_TICK, Math.round(HALF_MS / 45));
+
+    // Show intro overlay (team/kit) if available, then proceed to match.
+    // Start the main simulation loop only after the match screen is visible
+    // and after a short delay so the user has time to see the menu.
+    const START_DELAY_MS =
+      (window.GameConfig && window.GameConfig.timing && window.GameConfig.timing.startDelayMs) ||
+      700;
+    if (typeof showIntroOverlay === 'function') {
+      try {
+        showIntroOverlay(window.playerClub, () => {
+          try {
+            proceedToMatch();
+          } catch (e) {
+            /* ignore */
+          }
+          // give the UI a moment to settle before starting ticks
+          try {
+            const L = getLogger();
+            L.info &&
+              L.info('Scheduling simulation interval in', START_DELAY_MS, 'ms, tick=', perMinuteMs);
+            setTimeout(() => {
+              const L2 = getLogger();
+              L2.info && L2.info('Starting simulation interval, tick=', perMinuteMs);
+              simIntervalId = setInterval(simulationTick, perMinuteMs);
+            }, START_DELAY_MS);
+          } catch (e) {
+            const L3 = getLogger();
+            L3.info && L3.info('Starting simulation interval (fallback) tick=', perMinuteMs);
+            simIntervalId = setInterval(simulationTick, perMinuteMs);
+          }
+        });
+      } catch (e) {
+        proceedToMatch();
+        const L = getLogger();
+        L.info &&
+          L.info('Scheduling simulation interval in', START_DELAY_MS, 'ms, tick=', perMinuteMs);
+        setTimeout(() => {
+          const L2 = getLogger();
+          L2.info && L2.info('Starting simulation interval, tick=', perMinuteMs);
+          simIntervalId = setInterval(simulationTick, perMinuteMs);
+        }, START_DELAY_MS);
+      }
+    } else {
+      proceedToMatch();
+      setTimeout(() => {
+        simIntervalId = setInterval(simulationTick, perMinuteMs);
+      }, START_DELAY_MS);
+    }
 
     let minute = 0;
     function simulationTick() {
@@ -350,7 +417,7 @@
       }
     }
 
-    simIntervalId = setInterval(simulationTick, perMinuteMs);
+    // Note: simIntervalId is started above after intro/match render and delay.
   }
 
   function endSimulation() {
@@ -620,22 +687,19 @@
             allClubs: window.allClubs,
             currentRoundMatches: window.currentRoundMatches,
           };
-          if (
-            window.Elifoot &&
-            window.Elifoot.Persistence &&
-            typeof window.Elifoot.Persistence.saveSnapshot === 'function'
-          ) {
+          if (PersistenceAPI && typeof PersistenceAPI.saveSnapshot === 'function') {
             try {
-              window.Elifoot.Persistence.saveSnapshot(snap);
+              PersistenceAPI.saveSnapshot(snap);
             } catch (e) {
               /* ignore */
             }
           } else {
             try {
+              localStorage.setItem('footlab_t1_save_snapshot', JSON.stringify(snap));
+            } catch (_) {}
+            try {
               localStorage.setItem('elifoot_save_snapshot', JSON.stringify(snap));
-            } catch (e) {
-              /* ignore */
-            }
+            } catch (_) {}
           }
         } catch (e) {
           /* ignore */
