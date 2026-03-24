@@ -79,7 +79,7 @@ export function renderTeamRoster(club) {
         html += `<div class="hub-box player-box" data-player-id="${p.id}">
                   <div class="player-header-row">
                     <div class="player-pos">${displayPos}</div>
-                    <div class="player-name" style="color:${playerNameColor};">${p.name}</div>
+                    <div class="player-name">${p.name}</div>
                   </div>
                   <div class="skill-bar"><div class="skill-fill" style="width:${skill}%;background:${barColor};"></div></div>
                   <div style="display:flex;justify-content:space-between;align-items:center;font-size:0.92em;">

@@ -3,111 +3,27 @@ const { JSDOM } = require('jsdom');
 const fs = require('fs');
 const path = require('path');
 
+// Mock the browser environment
+const dom = new JSDOM('<!DOCTYPE html><html><body></body></html>', {
+  url: 'http://localhost',
+  runScripts: 'dangerously',
+  resources: 'usable',
+});
+global.window = dom.window;
+global.document = dom.window.document;
+
+// Load the game's core files
+require('../src/players.js');
+require('../src/config/gameConfig.js');
+
 (async () => {
-  let extractDir = null;
-
-  function safeExit(code) {
-    try {
-      if (extractDir && fs.existsSync(extractDir)) {
-        try {
-          fs.rmSync(extractDir, { recursive: true, force: true });
-        } catch (e) {
-          try {
-            // fallback for older Node: use rmdirSync
-            fs.rmdirSync(extractDir, { recursive: true });
-          } catch (_) {
-            /* ignore cleanup errors */
-          }
-        }
-      }
-    } catch (e) {
-      /* ignore cleanup errors */
-    }
-    process.exit(code);
-  }
-
   try {
-    // Prefer repo root `index.html` when present (fast path for dev).
-    const rootHtml = path.resolve(__dirname, '..', 'index.html');
-    let filePath;
-    if (fs.existsSync(rootHtml)) {
-      filePath = rootHtml;
-    } else {
-      // Fallback: locate the latest archived legacy_root_files_*.zip and extract it
-      // This keeps the repo root clean while allowing tests to run unchanged.
-      const archivesDir = path.resolve(__dirname, '..', 'archive', 'archives');
-      const zipFiles = fs.existsSync(archivesDir)
-        ? fs.readdirSync(archivesDir).filter((f) => f.startsWith('legacy_root_files') && f.endsWith('.zip'))
-        : [];
-      if (!zipFiles || zipFiles.length === 0) throw new Error('No legacy_root_files archive found');
-      zipFiles.sort();
-      const latest = zipFiles[zipFiles.length - 1];
-      extractDir = path.resolve(__dirname, '..', 'tmp', 'legacy_root_files');
-      try {
-        if (!fs.existsSync(extractDir)) fs.mkdirSync(extractDir, { recursive: true });
-        const cp = require('child_process');
-        // Use PowerShell Expand-Archive for cross-process extraction on Windows
-        const archivePath = path.join(archivesDir, latest);
-        const cmd = `Expand-Archive -Force -LiteralPath '${archivePath}' -DestinationPath '${extractDir}'`;
-        cp.execFileSync('powershell', ['-NoProfile', '-Command', cmd], { stdio: 'ignore' });
-        filePath = path.join(extractDir, 'index.html');
-        if (!fs.existsSync(filePath)) throw new Error('index.html not found inside archive');
-      } catch (e) {
-        throw new Error('Failed to extract legacy index.html: ' + (e && e.message));
-      }
-    }
-    const html = fs.readFileSync(filePath, 'utf8');
-    const dom = new JSDOM(html, {
-      runScripts: 'dangerously',
-      resources: 'usable',
-      url: 'file://' + filePath,
-      beforeParse(window) {
-        window.alert = window.alert || function () {};
-        window.confirm =
-          window.confirm ||
-          function () {
-            return true;
-          };
-        window.prompt =
-          window.prompt ||
-          function () {
-            return null;
-          };
-        if (typeof window.localStorage === 'undefined') {
-          (function () {
-            let store = {};
-            window.localStorage = {
-              getItem(k) {
-                return Object.prototype.hasOwnProperty.call(store, k) ? store[k] : null;
-              },
-              setItem(k, v) {
-                store[k] = String(v);
-              },
-              removeItem(k) {
-                delete store[k];
-              },
-              clear() {
-                store = {};
-              },
-            };
-          })();
-        }
-      },
-    });
-
-    const { window } = dom;
-
-    await new Promise((resolve, reject) => {
-      window.addEventListener('load', () => setTimeout(resolve, 30));
-      setTimeout(() => reject(new Error('timeout waiting for load')), 5000);
-    });
-
     // Ensure processPendingReleases is available
     const processPendingReleases =
       window.processPendingReleases || (window.Elifoot && window.Elifoot.processPendingReleases);
     if (typeof processPendingReleases !== 'function') {
       console.error('processPendingReleases not available');
-      safeExit(2);
+      process.exit(2);
     }
 
     // TEST 1: min salary enforcement via Finance.negotiatePlayerContract stub
@@ -203,9 +119,9 @@ const path = require('path');
     }
 
     console.log('AI buy tests: PASS');
-    safeExit(0);
+    process.exit(0);
   } catch (err) {
     console.error('ai_buy_test failed:', err && err.stack ? err.stack : err);
-    safeExit(10);
+    process.exit(10);
   }
 })();

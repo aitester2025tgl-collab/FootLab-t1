@@ -60,25 +60,12 @@
     </div>
 
     <div id="screen-hub" style="display: none">
-      <div
-        id="hub-header"
-        style="
-          background: rgba(0, 0, 0, 0.4);
-          padding: 12px 20px;
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          border-bottom: 2px solid rgba(255, 255, 255, 0.15);
-        "
-      >
-        <div style="display: flex; gap: 24px; font-size: 1.05em">
+      <div id="hub-header">
+        <div id="hub-header-content">
           <div><strong>Treinador:</strong> <span id="coachNameDisplay"></span></div>
           <div><strong>Equipa:</strong> <span id="playerTeamNameHub"></span></div>
         </div>
-        <div
-          id="module-status-indicator"
-          style="margin-left: 18px; font-size: 0.85rem; color: #ffecb3"
-        ></div>
+        <div id="module-status-indicator"></div>
       </div>
 
       <div id="hub-content-wrapper">
@@ -92,7 +79,7 @@
               <button class="hub-menu-btn" id="menu-transfers">TRANSFERÊNCIAS</button>
               <button class="hub-menu-btn" id="menu-finance">FINANÇAS</button>
             </div>
-            <div class="hub-menu-footer" style="margin-top: 8px">
+            <div class="hub-menu-footer">
               <button class="hub-menu-btn" id="save-game">GRAVAR JOGO</button>
               <button class="hub-menu-btn" id="menu-load">CARREGAR JOGO</button>
             </div>
@@ -101,13 +88,13 @@
           <!-- Finance box moved from footer to left column -->
           <div id="club-finance-box" class="finance-item hub-box small">
             <div class="finance-title">FINANÇAS</div>
-            <div style="font-size: 0.92em">
+            <div>
               ORÇAMENTO: <span id="club-budget" class="finance-value">0 €</span>
             </div>
-            <div style="font-size: 0.92em">
+            <div>
               RECEITAS: <span id="club-revenue" class="finance-value">0 €</span>
             </div>
-            <div style="font-size: 0.92em">
+            <div>
               DESPESAS: <span id="club-expenses" class="finance-value">0 €</span>
             </div>
           </div>
@@ -128,16 +115,16 @@
           </div>
 
           <!-- Next opponent box (inline, non-floating) -->
-          <div id="next-opponent-box" class="hub-box" style="margin-top: 10px">
-            <div style="font-size: 0.85em; opacity: 0.9; font-weight: 700">ADVERSÁRIO</div>
-            <div id="nextOpponentDetails" style="margin-top: 6px; font-size: 0.9em">—</div>
+          <div id="next-opponent-box" class="hub-box">
+            <div class="opponent-label">ADVERSÁRIO</div>
+            <div id="nextOpponentDetails">—</div>
           </div>
         </div>
       </div>
 
       <div id="hub-footer-status">
         <div id="footer-status-left" class="footer-panel">
-          <div style="font-size: 0.9em; color: rgba(255, 255, 255, 0.85)">
+          <div>
             Finanças visíveis no painel lateral
           </div>
         </div>
@@ -164,7 +151,7 @@
     <!-- Half-time substitutions overlay (interactive) -->
     <div id="subs-overlay" style="display: none" aria-hidden="true"></div>
 
-    <div id="screen-match" style="display: none">
+    <div id="screen-match">
       <div id="player-team-match">Seu Jogo: <span id="playerTeamNameMatch"></span></div>
       <div id="match-board">
         <div id="division-1" class="division-board"></div>
@@ -175,12 +162,11 @@
       <div id="progress-container">
         <div class="progress-bar"><div class="progress" id="dayProgress"></div></div>
       </div>
-      <button id="finishSimBtn" style="display: none">Voltar para o Hub</button>
+      <button id="finishSimBtn">Voltar para o Hub</button>
     </div>
 
     <script src="src/constants.js"></script>
     <script src="src/players.js"></script>
-    <script src="archive/data/real_rosters_2025_26.js"></script>
     <script src="src/data/real_rosters_2025_26.js"></script>
     <script src="src/utils/colors.js"></script>
     <script src="src/data/team_colors.js"></script>
@@ -191,168 +177,9 @@
     <script src="src/logic/lineups.js"></script>
     <script src="src/matches.js"></script>
     <script src="src/services/finance.js"></script>
-    <script>
-      // Dynamically load ESM UI modules only when served over http/https
-      (function () {
-        var isFile = location.protocol === 'file:';
-        if (
-          isFile &&
-          !(navigator && navigator.userAgent && navigator.userAgent.indexOf('Electron') !== -1)
-        ) {
-          // show a prominent banner instructing the developer to run the dev server
-          // When running inside Electron (userAgent contains "Electron"), allow
-          // ESM modules to be loaded even from file:// so the native app features
-          // (matchBoard, tactics) work during development.
-          var id = 'file-protocol-warning';
-          if (!document.getElementById(id)) {
-            var wrap = document.createElement('div');
-            wrap.id = id;
-            wrap.style.position = 'fixed';
-            wrap.style.left = '0';
-            wrap.style.top = '0';
-            wrap.style.right = '0';
-            wrap.style.zIndex = '9999';
-            wrap.style.background = 'linear-gradient(90deg,#ff7043,#ffab40)';
-            wrap.style.color = '#111';
-            wrap.style.padding = '12px 16px';
-
-            wrap.innerHTML =
-              '<strong>Warning:</strong> the app was opened via <code>file://</code>. ES modules cannot be loaded from the file protocol, so tactics and match board modules are disabled.\n' +
-              '<span style="margin-left:12px">Run <code>npm run serve</code> and open <a id="__local_link" href="#">http://localhost:8080/</a></span>';
-
-            var btn = document.createElement('button');
-            btn.textContent = 'Check localhost:8080';
-            btn.style.marginLeft = '12px';
-            btn.onclick = function () {
-              var statusId = '__local_status';
-              var statusEl = document.getElementById(statusId);
-              if (!statusEl) {
-                statusEl = document.createElement('span');
-                statusEl.id = statusId;
-                statusEl.style.marginLeft = '12px';
-                statusEl.style.fontWeight = '700';
-                wrap.appendChild(statusEl);
-              }
-              statusEl.textContent = 'Checking http://localhost:8080/ ...';
-              var attempts = 0;
-              function tryCheck() {
-                attempts++;
-                fetch('http://localhost:8080/', { mode: 'cors' })
-                  .then(function (r) {
-                    if (r.ok) {
-                      window.location.href = 'http://localhost:8080/';
-                    } else {
-                      statusEl.textContent = 'Dev server responded with HTTP ' + r.status;
-                    }
-                  })
-                  .catch(function (e) {
-                    if (attempts < 6) {
-                      var wait = attempts * 1000;
-                      statusEl.textContent =
-                        'No server on localhost:8080 — retrying in ' + wait / 1000 + 's...';
-                      setTimeout(tryCheck, wait);
-                    } else {
-                      statusEl.textContent = 'No dev server detected. Start it with: npm run serve';
-                      alert(
-                        'No dev server detected at http://localhost:8080/. Start it with: npm run serve'
-                      );
-                    }
-                  });
-              }
-              tryCheck();
-            };
-
-            wrap.appendChild(btn);
-            document.body.appendChild(wrap);
-            var link = document.getElementById('__local_link');
-            if (link) link.href = 'http://localhost:8080/';
-          }
-          return;
-        }
-
-        // When served over http/https, inject the ESM UI modules normally.
-        (function () {
-          window.__moduleDiagnostics = window.__moduleDiagnostics || {
-            modules: {},
-            globalErrors: [],
-          };
-
-          function updateModuleStatusDisplay() {
-            try {
-              var el = document.getElementById('module-status-list');
-              if (!el) return;
-              var parts = [];
-              for (var k in window.__moduleDiagnostics.modules) {
-                var m = window.__moduleDiagnostics.modules[k];
-                if (m.status === 'loaded')
-                  parts.push(k + ' ✓ ' + (m.loadTime != null ? m.loadTime + 'ms' : ''));
-                else if (m.status === 'error') parts.push(k + ' ✕');
-                else parts.push(k + ' …');
-              }
-              if (window.__moduleDiagnostics.globalErrors.length)
-                parts.push('errors: ' + window.__moduleDiagnostics.globalErrors.length);
-              el.textContent = parts.join(' | ');
-            } catch (e) {
-              console.error('module status update failed', e && e.message);
-            }
-          }
-
-          function registerModule(name, src) {
-            var entry = {
-              name: name,
-              src: src,
-              start: Date.now(),
-              status: 'loading',
-              loadTime: null,
-              error: null,
-            };
-            window.__moduleDiagnostics.modules[name] = entry;
-            updateModuleStatusDisplay();
-            var s = document.createElement('script');
-            s.type = 'module';
-            s.src = src;
-            s.onload = function () {
-              entry.status = 'loaded';
-              entry.loadTime = Date.now() - entry.start;
-              updateModuleStatusDisplay();
-              console.log('[module-status] loaded', name, entry.loadTime + 'ms');
-            };
-            s.onerror = function (ev) {
-              entry.status = 'error';
-              entry.error = ev && (ev.message || 'error');
-              entry.loadTime = Date.now() - entry.start;
-              updateModuleStatusDisplay();
-              console.error('[module-status] failed', name, entry.error);
-            };
-            document.body.appendChild(s);
-            return s;
-          }
-
-          // capture global JS errors and rejections
-          window.addEventListener('error', function (e) {
-            try {
-              window.__moduleDiagnostics.globalErrors.push({
-                type: 'error',
-                msg: String((e && e.message) || e),
-              });
-              updateModuleStatusDisplay();
-            } catch (ex) {}
-          });
-          window.addEventListener('unhandledrejection', function (ev) {
-            try {
-              window.__moduleDiagnostics.globalErrors.push({
-                type: 'promise',
-                msg: String((ev && ev.reason) || ev),
-              });
-              updateModuleStatusDisplay();
-            } catch (ex) {}
-          });
-
-          // register the UI modules
-          registerModule('matchBoard', 'src/ui/matchBoard.mjs');
-          registerModule('tactics', 'src/ui/tactics.mjs');
-        })();
-      })();
+    <script type="module">
+      import { initializeFileProtocolWarning } from './src/ui/file-protocol-warning.js';
+      initializeFileProtocolWarning();
     </script>
     <script src="src/legacy_ui/overlays.js"></script>
     <script src="src/legacy_ui/hub.js"></script>

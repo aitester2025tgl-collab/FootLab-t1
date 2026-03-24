@@ -158,6 +158,37 @@ html {
 /* SECÇÃO DO HUB                       */
 /* ----------------------------------- */
 
+/* ----------------------------------- */
+/* SECÇÃO DO JOGO (MATCH)              */
+/* ----------------------------------- */
+
+#match-header {
+  padding: 10px 20px;
+  background: rgba(0, 0, 0, 0.5);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+#match-scoreboard {
+  font-size: 1.6rem;
+  font-weight: 700;
+}
+
+#match-events {
+  flex-grow: 1;
+  padding: 15px;
+  background: rgba(0, 0, 0, 0.3);
+  overflow-y: auto;
+}
+
+#match-footer {
+  padding: 10px;
+  background: rgba(0, 0, 0, 0.5);
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
 #screen-hub {
   /* CORREÇÃO CRÍTICA: Definido em JS, mas manter o fallback */
   background-color: var(--hub-bg, #2e2e2e);
@@ -381,121 +412,7 @@ html {
   gap: 12px !important;
 }
 
-/* --------------------------------------------------------------------------- */
-/* Hub Menu — Recreated layout (stronger defaults to recover broken UI)         */
-/* This section enforces a stable left/center/right hub layout and readable    */
-/* menu controls regardless of team color choices.                             */
-/* --------------------------------------------------------------------------- */
-#hub-content-wrapper {
-  display: flex !important;
-  flex-direction: row !important;
-  align-items: stretch !important;
-  gap: 12px !important;
-  padding: 12px !important;
-  box-sizing: border-box !important;
-}
-
-#left-column {
-  display: flex !important;
-  flex-direction: column !important;
-  justify-content: space-between !important;
-  width: 220px !important;
-  min-width: 220px !important;
-  box-sizing: border-box !important;
-}
-
-#right-column {
-  display: flex !important;
-  flex-direction: column !important;
-  justify-content: flex-start !important;
-  width: 280px !important;
-  min-width: 220px !important;
-  box-sizing: border-box !important;
-}
-
-/* Generic panel (hub-box) visuals */
-.hub-box {
-  background: var(--hub-panel-bg, #2f2f2f) !important;
-  color: var(--team-menu-fg, #fff) !important;
-  padding: 12px !important;
-  border-radius: 10px !important;
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.18) !important;
-}
-
-.hub-box {
-  background: var(--hub-panel-bg, #2f2f2f) !important;
-  color: var(--team-menu-fg, #fff) !important;
-  padding: 12px !important;
-  border-radius: 10px !important;
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.18) !important;
-}
-
-/* Hub menu specifics */
-#hub-menu {
-  width: 100% !important;
-  padding: 10px !important;
-  display: flex !important;
-  flex-direction: column !important;
-  justify-content: space-between !important;
-  gap: 10px !important;
-}
-.hub-menu-main {
-  display: flex !important;
-  flex-direction: column !important;
-  gap: 8px !important;
-}
-.hub-menu-footer {
-  display: flex !important;
-  flex-direction: column !important;
-  gap: 8px !important;
-}
-
-.hub-menu-btn {
-  background: rgba(255, 255, 255, 0.06) !important;
-  color: var(--team-menu-fg, #fff) !important;
-  border: none !important;
-  padding: 10px 12px !important;
-  width: 100% !important;
-  text-align: left !important;
-  font-size: 1rem !important;
-  font-weight: 700 !important;
-  border-radius: 8px !important;
-  cursor: pointer !important;
-}
-.hub-menu-btn:hover {
-  background: rgba(255, 255, 255, 0.12) !important;
-  transform: translateY(-1px) !important;
-}
-.hub-menu-btn.active {
-  background: linear-gradient(90deg, rgba(255, 255, 255, 0.14), rgba(0, 0, 0, 0.08)) !important;
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.2) !important;
-}
-
-/* Finance box at the bottom of the left column */
-#club-finance-box {
-  margin-top: 8px !important;
-}
-
-/* Ensure main content grows and has consistent padding */
-#hub-main-content {
-  flex: 1 1 auto !important;
-  padding: 12px !important;
-}
-
-/* Tactics panel fixed width on right */
-#hub-tactic-panel {
-  width: 100% !important;
-  box-sizing: border-box !important;
-}
-
-/* Floating diagnostics box quick styling fix */
-#__diag_box,
-#__diag_box * {
-  box-sizing: border-box;
-}
-
-/* End Hub Menu recreation */
-/* --------------------------------------------------------------------------- */
+/* The conflicting layout override block has been removed. */
 
 /* Ensure main content tables and blocks align visually with side panels */
 #hub-main-content table {
@@ -517,18 +434,31 @@ html {
 .team-roster-grid {
   display: block;
   margin-top: 0; /* align with other panels */
-  background-color: rgba(0, 0, 0, 0.06);
-  padding: 10px; /* slightly reduced padding to save vertical space */
+  background-color: rgba(0, 0, 0, 0.1); /* Slightly darker background */
+  padding: 16px; /* More padding */
   border-radius: 8px;
   border: 1px solid rgba(255, 255, 255, 0.06);
-  overflow: visible; /* ensure content fits without inner scroll */
-  font-size: 0.92em; /* slightly smaller text to reduce scrolling */
+  overflow: hidden; /* Contain children */
+  font-size: 0.92em;
 }
 
 .team-roster-grid h2 {
   margin-top: 0; /* ensure roster header doesn't push content down */
   margin-bottom: 8px;
   font-size: 1.1em; /* slightly smaller header */
+}
+
+/* Style for each position group (GK, DEF, etc.) */
+.player-group {
+  margin-bottom: 24px; /* Space between position groups */
+  padding-bottom: 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.player-group:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+  padding-bottom: 0;
 }
 
 /* Roster lanes: left-to-right columns with bottom-aligned player slots */
@@ -552,51 +482,13 @@ html {
   font-size: 0.95em;
 }
 .lane-slots {
-  display: flex;
-  flex-direction: row; /* arrange player boxes horizontally */
-  flex-wrap: wrap; /* allow wrapping to a new visual row after 5 items */
-  gap: 14px; /* space between items horizontally and vertically */
-  align-items: flex-start;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); /* Responsive grid */
+  gap: 16px; /* Consistent gap */
   width: 100%;
 }
 
-.lane-row {
-  display: none;
-}
 
-/* When the modern roster renderer uses `.cards-wrap`, stack cards vertically
-	 and make each card fill available width so the roster appears as vertical
-	 lanes instead of horizontal rows. Keep a small gap to separate items. */
-.cards-wrap {
-  display: flex;
-  flex-direction: row; /* arrange cards horizontally per lane */
-  gap: 8px;
-  align-items: flex-start;
-  flex-wrap: nowrap;
-}
-.player-group .player-slot,
-.player-group .player-box {
-  width: auto;
-}
-
-/* Stronger overrides to ensure players render top-to-bottom and fill lane width
-	 regardless of legacy or modern renderers. Use specific selectors and
-	 important where necessary to override inline or legacy styles. */
-.roster-lanes .lane-slots,
-.player-group .cards-wrap {
-  /* prefer horizontal layout for lane slots; keep important only where strictly needed */
-  flex-direction: row !important;
-  align-items: flex-start !important;
-}
-.player-box,
-.player-slot {
-  /* size each player slot so five fit on one line without wrapping */
-  box-sizing: border-box !important;
-  /* account for four 14px gaps between five items => 56px total gap */
-  flex: 0 0 calc((100% - 56px) / 5) !important;
-  max-width: calc((100% - 56px) / 5) !important;
-  display: block !important;
-}
 
 /* Match board: show 4 division blocks in a 2x2 grid, sized to viewport
 	 so all four divisions are visible without page scroll. Each division
@@ -721,9 +613,9 @@ html {
   box-sizing: border-box;
   padding: 10px; /* more internal padding for less cramped text */
   cursor: pointer;
-  width: auto !important; /* let flex-basis control sizing; avoid forcing full width */
-  flex: 0 0 calc((100% - 56px) / 5) !important; /* force exactly five items per visual row */
-  max-width: calc((100% - 56px) / 5) !important;
+  /* Sizing is now handled by the responsive grid in .lane-slots. */
+  /* We remove the rigid flex-basis and max-width properties. */
+  width: auto !important; /* Let the grid cell determine the width */
 }
 .player-box {
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.02), rgba(0, 0, 0, 0.02));
@@ -764,11 +656,14 @@ html {
   width: 36px;
 }
 .player-name {
+  flex: 1; /* KEY FIX: Allows the name to fill the available space in the flex row */
+  min-width: 0; /* Prevents overflow issues in flex layouts */
   font-size: 0.95em;
   font-weight: 700;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  color: white; /* Ensure visibility */
 }
 .skill-bar {
   height: 6px;
@@ -781,16 +676,7 @@ html {
   border-radius: 6px;
 }
 
-.team-roster-grid .player-name {
-  font-size: 0.92em; /* keep player name readable (match roster base size) */
-  font-weight: 500;
-  /* allow names to wrap to two lines so first + last names are visible */
-  /* Note: allow names to wrap to two lines so first + last names are visible */
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
+
 
 /* Simulation button: center-bottom prominent action */
 #simulateBtnHub {
@@ -1007,14 +893,7 @@ html {
   padding: 6px;
   background: rgba(255, 255, 255, 0.03);
 }
-.player-name {
-  flex: 1 1 auto;
-  margin-left: 8px;
-  font-weight: 700;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
+
 .player-skill {
   margin-left: 12px;
   opacity: 0.85;

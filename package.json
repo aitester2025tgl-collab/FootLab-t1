@@ -2,37 +2,39 @@
   "name": "elifoot-smoke",
   "version": "1.0.0",
   "description": "Smoke test for Elifoot project using jsdom",
-  "main": "src/smoke_test.js",
+  "main": "tests/smoke_test.js",
   "scripts": {
-    "smoke": "node src/smoke_test.js",
+    "smoke": "node tests/smoke_test.js",
     "test:rounds": "node tests/generate_rounds_test.js",
     "test:promotions": "node tests/promotion_integration_test.js",
     "test:legacy": "node tests/transfer_integration_test.js",
     "test:unit": "node tests/persistence_test.js && node tests/substitutions_test.js && node tests/offers_test.js && node tests/ai_buy_test.js",
     "test:integration": "node tests/transfer_integration_test.js && node tests/transfer_offers_integration_test.js && node tests/promotion_integration_test.js",
-    "test:smoke": "node src/smoke_test.js && node tests/pending_releases_smoke_test.js",
+    "test:smoke": "node tests/smoke_test.js && node tests/pending_releases_smoke_test.js",
     "lint": "eslint . --ext .js",
     "format": "prettier --write .",
     "build": "node dev/build.js",
     "build:watch": "node dev/build.js --watch",
-    "serve": "node dev/dev-server.js",
-    "test": "npm run test:unit && npm run test:integration && npm run test:smoke",
+    "serve": "npx http-server -p 8080",
+    "test:match-sim": "mocha tests/match_sim_test.js",
+    "test": "npm run test:unit && npm run test:integration && npm run test:smoke && npm run test:match-sim",
     "screenshot-snapshot": "node dev/tools/screenshot_from_snapshot.js",
     "start:electron": "electron src/electron-main.js"
   },
   "author": "",
   "license": "MIT",
   "dependencies": {
-    "jsdom": "^22.0.0"
+    "jsdom": "^28.1.0"
   },
   "devDependencies": {
-    "electron": "^39.2.0",
-    "esbuild": "^0.18.20",
+    "electron": "^0.4.1",
+    "esbuild": "^0.27.4",
     "eslint": "^8.57.1",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-prettier": "^5.5.4",
+    "mocha": "^7.2.0",
     "pngjs": "^7.0.0",
     "prettier": "^3.6.2",
-    "puppeteer": "^24.30.0"
+    "puppeteer": "^19.8.0"
   }
 }

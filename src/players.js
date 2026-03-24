@@ -13,53 +13,7 @@ const PlayersLogger =
       ? window.Elifoot.Logger
       : console;
 
-// Generate a single player. If skillCap is provided, skill will be generated up to that cap
-function generatePlayer(id, position = null, skillCap = 100) {
-  // Player generation disabled. Return a minimal placeholder and log a warning so
-  // callers become aware that `window.REAL_ROSTERS` should be used instead.
-  try {
-    const _logger =
-      typeof window !== 'undefined' && window.FootLab && window.FootLab.Logger
-        ? window.FootLab.Logger
-        : typeof window !== 'undefined' && window.Elifoot && window.Elifoot.Logger
-          ? window.Elifoot.Logger
-          : console;
-    _logger.warn(
-      'generatePlayer: player generation disabled. Use window.REAL_ROSTERS as the authoritative player source.'
-    );
-  } catch (e) {
-    /* ignore */
-  }
-  const pos = position || 'CM';
-  return {
-    id,
-    name: `Unknown Player ${id}`,
-    position: pos,
-    skill: 60,
-    salary: 0,
-    contractYears: 0,
-    goals: 0,
-  };
-}
-
-// Generate a pool of players with optional skill cap
-function generatePlayers(total, skillCap = 100) {
-  // Player generation disabled. Return an empty array and log a warning.
-  try {
-    const _logger =
-      typeof window !== 'undefined' && window.FootLab && window.FootLab.Logger
-        ? window.FootLab.Logger
-        : typeof window !== 'undefined' && window.Elifoot && window.Elifoot.Logger
-          ? window.Elifoot.Logger
-          : console;
-    _logger.warn(
-      'generatePlayers: player generation disabled. Use window.REAL_ROSTERS for real rosters.'
-    );
-  } catch (e) {
-    /* ignore */
-  }
-  return [];
-}
+// generatePlayer and generatePlayers removed as they are obsolete.
 
 // Compute a team's skill cap based on its division and ranking inside that division.
 // Returns an integer skill cap between 0 and 100.
@@ -124,8 +78,6 @@ function applySkillCaps(allDivisions) {
 
 // Expose functions for other modules
 if (typeof window !== 'undefined') {
-  window.generatePlayer = generatePlayer;
-  window.generatePlayers = generatePlayers;
   window.computeTeamSkillCap = computeTeamSkillCap;
   window.applySkillCaps = applySkillCaps;
 }
@@ -779,8 +731,7 @@ if (typeof window !== 'undefined') window.seasonalSkillDrift = seasonalSkillDrif
 try {
   if (typeof window !== 'undefined') {
     window.FootLab = window.FootLab || window.Elifoot || {};
-    window.FootLab.generatePlayer = window.FootLab.generatePlayer || generatePlayer;
-    window.FootLab.generatePlayers = window.FootLab.generatePlayers || generatePlayers;
+
     window.FootLab.computeTeamSkillCap = window.FootLab.computeTeamSkillCap || computeTeamSkillCap;
     window.FootLab.applySkillCaps = window.FootLab.applySkillCaps || applySkillCaps;
     window.FootLab.assignRandomShortContracts =

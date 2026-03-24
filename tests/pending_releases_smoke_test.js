@@ -3,54 +3,30 @@ const { JSDOM } = require('jsdom');
 const fs = require('fs');
 const path = require('path');
 
+// Mock the browser environment
+const dom = new JSDOM('<!DOCTYPE html><html><body></body></html>', {
+  url: 'http://localhost',
+  runScripts: 'dangerously',
+  resources: 'usable',
+});
+global.window = dom.window;
+global.document = dom.window.document;
+
+// Load the game's core files
+require('../archive/data/real_rosters_2025_26.js');
+require('../src/teams.js');
+require('../src/players.js');
+require('../src/config/gameConfig.js');
+require('../src/core/simulation.js');
+require('../src/clubs.js');
+require('../src/matches.js');
+
 (async () => {
   try {
-    const filePath = path.resolve(__dirname, '..', 'index.html');
-    let html = fs.readFileSync(filePath, 'utf8');
-    const dom = new JSDOM(html, {
-      runScripts: 'dangerously',
-      resources: 'usable',
-      url: 'file://' + filePath,
-      beforeParse(window) {
-        window.alert = window.alert || function () {};
-        window.confirm =
-          window.confirm ||
-          function () {
-            return true;
-          };
-        window.prompt =
-          window.prompt ||
-          function () {
-            return null;
-          };
-        if (typeof window.localStorage === 'undefined') {
-          (function () {
-            let store = {};
-            window.localStorage = {
-              getItem(k) {
-                return Object.prototype.hasOwnProperty.call(store, k) ? store[k] : null;
-              },
-              setItem(k, v) {
-                store[k] = String(v);
-              },
-              removeItem(k) {
-                delete store[k];
-              },
-              clear() {
-                store = {};
-              },
-            };
-          })();
-        }
-      },
-    });
-
-    const { window } = dom;
-
-    await new Promise((resolve, reject) => {
-      window.addEventListener('load', () => setTimeout(resolve, 50));
-      setTimeout(() => reject(new Error('timeout waiting for load')), 5000);
-    });
+    // Wait for rosters to be processed into divisionsData
+    if (typeof window.waitForDivisionsData === 'function') {
+      await window.waitForDivisionsData();
+    }
 
     // init minimal runtime similar to smoke helper
     const generateAllClubs =

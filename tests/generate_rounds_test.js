@@ -6,7 +6,7 @@
 global.window = global.window || {};
 
 // require the file (it will attach generateRounds to window)
-require('../matches.js');
+require('../src/matches.js');
 
 const logger = require('./testLogger').getLogger();
 
