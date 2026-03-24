@@ -45,7 +45,7 @@ function buildDivisionsFromRostersOrdered() {
   // Fail fast: the application requires an archived roster dataset to run.
   if (!rostersArePresent) {
     throw new Error(
-      'Required dataset `window.REAL_ROSTERS` is missing or empty. Place the file `archive/data/real_rosters_2025_26.js` in the project and restart.'
+      'Required dataset `window.REAL_ROSTERS` is missing or empty. Ensure `src/data/real_rosters_2025_26.js` is loaded via a <script> tag in index.html before the main app bundle.'
     );
   }
 
@@ -115,7 +115,7 @@ function buildDivisionsFromRostersOrdered() {
     return { bg, fg };
   }
 
-  // Prefer the global `window.REAL_TEAM_COLORS` (archive loads it there).
+  // Prefer the global `window.REAL_TEAM_COLORS` (loaded via <script> tag).
   const teamColorMap =
     (typeof window !== 'undefined' && window.REAL_TEAM_COLORS) ||
     (typeof global !== 'undefined' && global.REAL_TEAM_COLORS) ||

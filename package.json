@@ -13,13 +13,13 @@
     "test:smoke": "node tests/smoke_test.js && node tests/pending_releases_smoke_test.js",
     "lint": "eslint . --ext .js",
     "format": "prettier --write .",
-    "build": "node dev/build.js",
-    "build:watch": "node dev/build.js --watch",
+    "build": "node dev/build_rosters.js && node dev/build.js",
+    "build:watch": "node dev/build_rosters.js && node dev/build.js --watch",
     "serve": "npx http-server -p 8080",
     "test:match-sim": "mocha tests/match_sim_test.js",
     "test": "npm run test:unit && npm run test:integration && npm run test:smoke && npm run test:match-sim",
     "screenshot-snapshot": "node dev/tools/screenshot_from_snapshot.js",
-    "start:electron": "electron src/electron-main.js"
+    "start:electron": "npm run build && electron src/electron-main.js"
   },
   "author": "",
   "license": "MIT",

@@ -326,33 +326,33 @@ export function initHubUI() {
       if (typeof window.initTacticPanel === 'function') window.initTacticPanel();
     } catch (_) {}
   }
-
-  // expose for backwards-compat
-  window.Hub = window.Hub || {};
-  window.Hub.initHubUI = window.Hub.initHubUI || initHubUI;
-  window.Hub.renderHubContent = window.Hub.renderHubContent || renderHubContent;
-  window.Hub.renderTeamRoster = window.Hub.renderTeamRoster || renderTeamRoster;
-  window.Hub.renderTransfers = window.Hub.renderTransfers || renderTransfers;
-  window.Hub.renderFinance = window.Hub.renderFinance || renderFinance;
-  window.Hub.createFloatingOpponentBox =
-    window.Hub.createFloatingOpponentBox || window.Hub.createFloatingOpponentBox || function () {};
-
-  window.FootLab = window.FootLab || window.Elifoot || {};
-  window.FootLab.Hub = window.FootLab.Hub || {};
-  window.FootLab.Hub.initHubUI = window.FootLab.Hub.initHubUI || initHubUI;
-  window.FootLab.Hub.renderHubContent = window.FootLab.Hub.renderHubContent || renderHubContent;
-  window.FootLab.Hub.renderTeamRoster = window.FootLab.Hub.renderTeamRoster || renderTeamRoster;
-  window.FootLab.Hub.renderTransfers = window.FootLab.Hub.renderTransfers || renderTransfers;
-  window.FootLab.Hub.renderFinance = window.FootLab.Hub.renderFinance || renderFinance;
-
-  // compatibility alias
-  window.Elifoot = window.Elifoot || window.FootLab;
-
-  // also export globals
-  window.initHubUI = window.initHubUI || initHubUI;
-  window.renderHubContent = window.renderHubContent || renderHubContent;
-  window.renderTeamRoster = window.renderTeamRoster || renderTeamRoster;
 }
+
+// expose for backwards-compat
+window.Hub = window.Hub || {};
+window.Hub.initHubUI = window.Hub.initHubUI || initHubUI;
+window.Hub.renderHubContent = window.Hub.renderHubContent || renderHubContent;
+window.Hub.renderTeamRoster = window.Hub.renderTeamRoster || renderTeamRoster;
+window.Hub.renderTransfers = window.Hub.renderTransfers || renderTransfers;
+window.Hub.renderFinance = window.Hub.renderFinance || renderFinance;
+window.Hub.createFloatingOpponentBox =
+  window.Hub.createFloatingOpponentBox || window.Hub.createFloatingOpponentBox || function () {};
+
+window.FootLab = window.FootLab || window.Elifoot || {};
+window.FootLab.Hub = window.FootLab.Hub || {};
+window.FootLab.Hub.initHubUI = window.FootLab.Hub.initHubUI || initHubUI;
+window.FootLab.Hub.renderHubContent = window.FootLab.Hub.renderHubContent || renderHubContent;
+window.FootLab.Hub.renderTeamRoster = window.FootLab.Hub.renderTeamRoster || renderTeamRoster;
+window.FootLab.Hub.renderTransfers = window.FootLab.Hub.renderTransfers || renderTransfers;
+window.FootLab.Hub.renderFinance = window.FootLab.Hub.renderFinance || renderFinance;
+
+// compatibility alias
+window.Elifoot = window.Elifoot || window.FootLab;
+
+// also export globals
+window.initHubUI = window.initHubUI || initHubUI;
+window.renderHubContent = window.renderHubContent || renderHubContent;
+window.renderTeamRoster = window.renderTeamRoster || renderTeamRoster;
 
 // default export not necessary but keep named exports
 export default { initHubUI, renderHubContent };

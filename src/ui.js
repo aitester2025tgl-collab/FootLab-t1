@@ -162,6 +162,30 @@
       return window.MatchBoard.updateMatchBoardLine(matchIndex, matchResult);
   }
 
+  // --- Game Start ---
+  // This function was missing, causing the game to not transition from setup to the main hub.
+  function startGame(playerClub) {
+    const setupScreen = document.getElementById('screen-setup');
+    const hubScreen = document.getElementById('screen-hub');
+
+    if (setupScreen) {
+      setupScreen.style.display = 'none';
+    }
+
+    if (hubScreen) {
+      hubScreen.style.display = 'block';
+    }
+
+    // Also initialize the hub UI if the function exists
+    if (typeof initHubUI === 'function') {
+      try {
+        initHubUI(playerClub);
+      } catch (e) {
+        console.error("Error initializing hub UI:", e);
+      }
+    }
+  }
+
   // Expose legacy globals for backward compatibility
   window.updateDayProgress = window.updateDayProgress || updateDayProgress;
   window.hexToRgb = window.hexToRgb || hexToRgb;
@@ -180,4 +204,7 @@
   window.initTacticPanel = window.initTacticPanel || initTacticPanel;
   window.renderInitialMatchBoard = window.renderInitialMatchBoard || renderInitialMatchBoard;
   window.updateMatchBoardLine = window.updateMatchBoardLine || updateMatchBoardLine;
+
+  // Expose the newly added startGame function globally so main.js can call it.
+  window.startGame = window.startGame || startGame;
 })();

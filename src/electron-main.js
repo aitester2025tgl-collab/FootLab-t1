@@ -18,23 +18,10 @@ function createWindow() {
     },
   });
 
-  // Prefer `src/index.html` if it exists, otherwise load repository root `index.html`.
-  const indexPath = path.join(__dirname, 'index.html');
-  const fallbackIndexPath = path.join(__dirname, '..', 'index.html');
-
-  const toLoad = fs.existsSync(indexPath) ? indexPath : fallbackIndexPath;
-  if (!fs.existsSync(toLoad)) {
-    logger.error &&
-      logger.error(
-        'No index.html found in src or project root. Tried:',
-        indexPath,
-        fallbackIndexPath
-      );
-  } else {
-    win.loadFile(toLoad).catch((err) => {
-      logger.error && logger.error('Failed to load index.html in Electron from', toLoad, err);
-    });
-  }
+  const indexPath = path.join(__dirname, '..', 'index.html');
+  win.loadFile(indexPath).catch((err) => {
+    logger.error && logger.error('Failed to load index.html in Electron from', indexPath, err);
+  });
 
   // Attach renderer logging listeners so console messages and load failures
   // are forwarded to the main process terminal for easier debugging.

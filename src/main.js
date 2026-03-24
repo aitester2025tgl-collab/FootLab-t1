@@ -155,18 +155,21 @@ function formatNumber(value) {
     .replace(/\B(?=(\d{3})+(?!\d))/g, '.');
 }
 
-// --- SETUP ---
-// Bind start button safely and catch runtime errors so we can diagnose failures in the browser
-const _startBtn = document.getElementById('startBtn');
-if (!_startBtn) {
-  try {
-    const L = getLogger();
-    L.error && L.error('startBtn not found in DOM; cannot start game.');
-  } catch (_) {
-    /* ignore */
+document.addEventListener('DOMContentLoaded', () => {
+  const _startBtn = document.getElementById('startBtn');
+  if (!_startBtn) {
+    try {
+      const L = getLogger();
+      L.error && L.error('startBtn not found in DOM; cannot start game.');
+    } catch (_) {
+      /* ignore */
+    }
+    return;
   }
-} else {
+
   _startBtn.addEventListener('click', async () => {
+    const L = getLogger();
+    L.info('Start button clicked.');
     coachName = document.getElementById('coachName').value.trim();
     if (!coachName) {
       alert('Digite o nome do treinador!');
@@ -174,12 +177,16 @@ if (!_startBtn) {
     }
 
     // Ensure divisions data is ready (handle race where REAL_ROSTERS loads after teams.js)
+    L.info('Waiting for divisions data...');
     try {
       const waitFn =
         (window && window.waitForDivisionsData) ||
         (window && window.FootLab && window.FootLab.waitForDivisionsData);
       if (typeof waitFn === 'function') {
         await waitFn(3000);
+        L.info('Divisions data loaded.');
+      } else {
+        L.warn('waitForDivisionsData function not found.');
       }
     } catch (err) {
       try {
@@ -209,7 +216,8 @@ if (!_startBtn) {
           inner.style.boxShadow = '0 10px 40px rgba(0,0,0,0.6)';
           inner.innerHTML =
             '<h2 style="margin-top:0">Falha ao carregar rosters</h2>' +
-            '<p>O carregamento do ficheiro de rosters demorou demasiado tempo ou falhou. Verifique que <code>archive/data/real_rosters_2025_26.js</code> existe e reinicie a aplicação.</p>' +
+            '<p>O carregamento dos dados das equipas (rosters) demorou demasiado tempo. Isto acontece quando <code>window.REAL_ROSTERS</code> não está disponível.</p>' +
+            '<p>Verifique se o ficheiro <code>src/data/real_rosters_2025_26.js</code> está a ser carregado no <code>index.html</code> <strong>antes</strong> do bundle da aplicação.</p>' +
             '<div style="margin-top:12px;text-align:right"><button id="fatal-reload-2" style="padding:8px 12px;border-radius:6px;background:#eee;color:#000;border:0;cursor:pointer">Recarregar</button></div>';
           ov.appendChild(inner);
           document.body.appendChild(ov);
@@ -268,9 +276,9 @@ if (!_startBtn) {
               inner.style.borderRadius = '8px';
               inner.style.boxShadow = '0 10px 40px rgba(0,0,0,0.6)';
               inner.innerHTML =
-                '<h2 style="margin-top:0">Erro crítico: rosters arquivados em falta</h2>' +
-                '<p>O modo actual exige o ficheiro de rosters arquivados <code>archive/data/real_rosters_2025_26.js</code>, mas o ficheiro não foi encontrado ou está incompleto.</p>' +
-                '<p>Coloque o ficheiro em <code>archive/data/real_rosters_2025_26.js</code> e reinicie a aplicação. O jogo não pode continuar sem rosters válidos.</p>' +
+                '<h2 style="margin-top:0">Erro crítico: rosters em falta</h2>' +
+                '<p>O ficheiro de dados das equipas (<code>window.REAL_ROSTERS</code>) não foi encontrado ou está incompleto.</p>' +
+                '<p>Execute <code>npm run build</code> para gerar os ficheiros necessários e verifique se <code>src/data/real_rosters_2025_26.js</code> está a ser carregado no <code>index.html</code>.</p>' +
                 '<div style="margin-top:12px;text-align:right">' +
                 '<button id="fatal-rosters-close" style="padding:8px 12px;border-radius:6px;background:#eee;color:#000;border:0;cursor:pointer">Fechar</button>' +
                 '</div>';
@@ -336,7 +344,7 @@ if (!_startBtn) {
             inner.innerHTML =
               '<h2 style="margin-top:0">Dados em falta: equipas não carregadas</h2>' +
               `<p>${msg}</p>` +
-              '<p>Verifique que <code>archive/data/real_rosters_2025_26.js</code> existe e que a aplicação carrega o ficheiro.</p>' +
+              '<p>Verifique se <code>src/data/real_rosters_2025_26.js</code> está a ser carregado corretamente no ficheiro <code>index.html</code>.</p>' +
               '<div style="margin-top:12px;text-align:right"><button id="fatal-open-dev" style="margin-right:8px;padding:8px 12px;border-radius:6px;background:#ffd166;color:#000;border:0;cursor:pointer">Abrir DevTools</button><button id="fatal-reload" style="padding:8px 12px;border-radius:6px;background:#eee;color:#000;border:0;cursor:pointer">Recarregar</button></div>';
             ov.appendChild(inner);
             document.body.appendChild(ov);
@@ -368,7 +376,9 @@ if (!_startBtn) {
         } catch (_) { }
       }
       try {
+        L.info('Generating all clubs...');
         allClubs = generateAllClubs();
+        L.info(`Generated ${allClubs.length} clubs.`);
       } catch (err) {
         // Show a blocking overlay with diagnostics so users can see exact problems
         try {
@@ -502,9 +512,11 @@ if (!_startBtn) {
       // 2. Escolher o clube do jogador (Divisão 4) OR use selected team from UI
       const division4 = allDivisions[3];
       if (!Array.isArray(division4) || division4.length === 0) {
+        L.error('Division 4 has no clubs. Cannot assign player club.');
         alert('Não existem clubes na Divisão 4 para escolher o seu clube.');
         return;
       }
+      L.info(`Found ${division4.length} clubs in Division 4.`);
 
       // Assign some players short (1-year) contracts if missing and mark a subset as expiring
       try {
@@ -537,9 +549,20 @@ if (!_startBtn) {
       let pickedClub = pool[Math.floor(Math.random() * pool.length)];
       playerClub = pickedClub;
 
+      // Set global playerClub BEFORE calling startGame, so UI can initialize correctly
+      L.info('Setting window.playerClub and calling startGame...', { playerClubName: playerClub?.team?.name });
+      window.playerClub = playerClub;
+
+      if (typeof startGame === 'function') {
+        L.info('startGame function found. Executing...');
+        startGame(playerClub);
+        L.info('startGame executed.');
+      } else {
+        L.error('startGame function is not defined!');
+      }
+
       // CRÍTICO: Exportar para o escopo global ANTES de chamar initHubUI
       // keep backwards-compatible globals and also namespace under window.FootLab (and alias Elifoot)
-      window.playerClub = playerClub;
       window.allDivisions = allDivisions;
       window.FootLab = window.FootLab || window.Elifoot || {};
       window.FootLab.playerClub = playerClub;
@@ -1244,10 +1267,10 @@ if (!_startBtn) {
 
       // `updateClubStatsAfterMatches` is implemented in `core/simulation.js` and
       // exported to `window`. Use that shared implementation rather than
-      // duplicating it here.
+      // re-implementing here.
 
       // `assignStartingLineups` is provided by `core/simulation.js` and exported to `window`.
       // We use the global implementation to avoid duplicating logic here.
     } // end if generateAllClubs
   }); // end of startBtn click handler
-} // end else (startBtn exists)
+}); // end of DOMContentLoaded

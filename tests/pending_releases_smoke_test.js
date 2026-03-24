@@ -13,7 +13,7 @@ global.window = dom.window;
 global.document = dom.window.document;
 
 // Load the game's core files
-require('../archive/data/real_rosters_2025_26.js');
+require('../src/data/real_rosters_2025_26.js');
 require('../src/teams.js');
 require('../src/players.js');
 require('../src/config/gameConfig.js');
@@ -21,8 +21,17 @@ require('../src/core/simulation.js');
 require('../src/clubs.js');
 require('../src/matches.js');
 
+// Manually initialize team data, which is normally done by the UI
+if (typeof window.initializeTeams === 'function') {
+  window.initializeTeams();
+}
+
 (async () => {
   try {
+    // Manually initialize team data, which is normally done by the UI, then wait for it to be ready.
+    if (typeof window.initializeTeams === 'function') {
+      window.initializeTeams();
+    }
     // Wait for rosters to be processed into divisionsData
     if (typeof window.waitForDivisionsData === 'function') {
       await window.waitForDivisionsData();

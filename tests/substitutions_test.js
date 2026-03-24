@@ -23,8 +23,8 @@ window.FootLab.GameConfig = window.FootLab.GameConfig || {
   rules: { maxSubs: 5, enforceGkOnlySwap: true },
 };
 
-// Load the overlays module (it will attach to window.Elifoot.Overlays)
-require('../src/legacy_ui/overlays');
+// Load the new overlays module
+const Overlays = require('../src/ui/overlays/index.mjs');
 
 // Build a sample club and match for home side
 const club = { team: { name: 'Test Club', bgColor: '#123456', color: '#fff' } };
@@ -44,12 +44,8 @@ const match = {
   awayGoals: 0,
 };
 
-// Call the overlay to render (use FootLab if available, fallback to Elifoot)
-(window.FootLab &&
-  window.FootLab.Overlays &&
-  typeof window.FootLab.Overlays.showHalfTimeSubsOverlay === 'function'
-  ? window.FootLab.Overlays.showHalfTimeSubsOverlay
-  : window.Elifoot.Overlays.showHalfTimeSubsOverlay)(club, match, () => {});
+// Call the overlay to render, accessing the default export
+Overlays.default.showHalfTimeSubsOverlay(club, match, () => {});
 
 // Wait for the overlay to be rendered (handlers are attached synchronously, but use a tiny timeout)
 setTimeout(() => {

@@ -165,27 +165,10 @@
       <button id="finishSimBtn">Voltar para o Hub</button>
     </div>
 
-    <script src="src/constants.js"></script>
-    <script src="src/players.js"></script>
+    <!-- Load the generated rosters data first -->
     <script src="src/data/real_rosters_2025_26.js"></script>
-    <script src="src/utils/colors.js"></script>
-    <script src="src/data/team_colors.js"></script>
-    <script src="src/teams.js"></script>
-    <script src="src/clubs.js"></script>
-    <script src="src/config/gameConfig.js"></script>
-    <script src="src/core/globals.js"></script>
-    <script src="src/logic/lineups.js"></script>
-    <script src="src/matches.js"></script>
-    <script src="src/services/finance.js"></script>
-    <script type="module">
-      import { initializeFileProtocolWarning } from './src/ui/file-protocol-warning.js';
-      initializeFileProtocolWarning();
-    </script>
-    <script src="src/legacy_ui/overlays.js"></script>
-    <script src="src/legacy_ui/hub.js"></script>
-    <script src="src/ui.js"></script>
-    <script src="src/main.js"></script>
-    <script src="src/core/simulation.js"></script>
+    <!-- Load the main application bundle -->
+    <script src="dist/app.bundle.js"></script>
     <script>
       // Diagnostic helper: poll for Tactics and MatchBoard and log when they attach
       // Disabled by default in production UI. Set `window.__showDiagnostics = true` in dev console to enable.

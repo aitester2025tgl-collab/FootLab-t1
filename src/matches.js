@@ -269,19 +269,6 @@ function advanceMatchDay(matches, minute) {
       }
     }
 
-    // Expose core match helpers on the canonical namespace for compatibility
-    try {
-      if (typeof window !== 'undefined') {
-        window.FootLab = window.FootLab || window.Elifoot || {};
-        window.FootLab.generateRounds = window.FootLab.generateRounds || generateRounds;
-        window.FootLab.advanceMatchDay = window.FootLab.advanceMatchDay || advanceMatchDay;
-        // compatibility alias
-        window.Elifoot = window.Elifoot || window.FootLab;
-      }
-    } catch (e) {
-      /* ignore */
-    }
-
     // Cards simulation: yellows are more common, reds rare. Use on-field players arrays.
     try {
       const yellowChance =
@@ -372,6 +359,23 @@ function advanceMatchDay(matches, minute) {
   return updates;
 }
 
+// Exportar funções necessárias para o escopo global
+try {
+  if (typeof window !== 'undefined') {
+    window.generateRounds = generateRounds;
+    window.advanceMatchDay = advanceMatchDay;
+
+    // Namespace
+    window.FootLab = window.FootLab || {};
+    window.FootLab.Matches = {
+      generateRounds,
+      advanceMatchDay,
+    };
+  }
+} catch (e) {
+  /* ignore */
+}
+
 // Função auxiliar para gerar um golo (nome do jogador, minuto)
 function generateGoal(team, minute, teamType) {
   // Accept either an array of players or a team object with .players
@@ -413,8 +417,3 @@ function generateGoal(team, minute, teamType) {
     player: scorer && scorer.name ? scorer.name : 'Jogador Desconhecido',
   };
 }
-
-// Exportar funções necessárias
-window.generateRounds = generateRounds;
-window.advanceMatchDay = advanceMatchDay;
-// A função updateClubStatsAfterMatches está em main.js

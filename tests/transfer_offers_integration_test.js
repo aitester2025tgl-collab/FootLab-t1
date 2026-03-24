@@ -72,8 +72,8 @@ window.PENDING_RELEASES = [
   }),
 ];
 
-// load hub (offers) code
-require('../src/legacy_ui/hub');
+// load the new offers module
+require('../src/ui/offers.js');
 
 logger.info('Starting full transfer integration test');
 

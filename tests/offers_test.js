@@ -44,6 +44,13 @@ window.formatMoney = function (v) {
 };
 global.formatMoney = window.formatMoney;
 
+// Mock the Offers object, since the UI is not running
+window.Offers = {
+  showPendingReleasesPopup: (cb) => {
+    if (cb) cb();
+  },
+};
+
 // minimal clubs and player
 const seller = {
   team: { name: 'Seller FC', players: [{ id: 'p1', name: 'P1', position: 'ST', salary: 1000 }] },
@@ -63,8 +70,8 @@ window.PENDING_RELEASES = [
   }),
 ];
 
-// load the hub module
-require('../src/legacy_ui/hub');
+// No longer need to load the legacy hub module
+// require('../src/players.js');
 
 try {
   // call the popup; confirm returns false so it will not proceed with transfer, but should not throw

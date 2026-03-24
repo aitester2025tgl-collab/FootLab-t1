@@ -77,10 +77,38 @@ function applySkillCaps(allDivisions) {
 }
 
 // Expose functions for other modules
-if (typeof window !== 'undefined') {
-  window.computeTeamSkillCap = computeTeamSkillCap;
-  window.applySkillCaps = applySkillCaps;
+try {
+  if (typeof window !== 'undefined') {
+    window.computeTeamSkillCap = computeTeamSkillCap;
+    window.applySkillCaps = applySkillCaps;
+    window.assignRandomShortContracts = assignRandomShortContracts;
+    window.computeMinContractFromSkill = computeMinContractFromSkill;
+    window.generateFreeAgents = generateFreeAgents;
+    window.selectPlayersForRelease = selectPlayersForRelease;
+    window.selectExpiringPlayersToLeave = selectExpiringPlayersToLeave;
+    window.processPendingReleases = processPendingReleases;
+    window.computePlayerMarketValue = computePlayerMarketValue;
+    window.seasonalSkillDrift = seasonalSkillDrift;
+
+    // Namespace
+    window.FootLab = window.FootLab || {};
+    window.FootLab.Players = {
+      computeTeamSkillCap,
+      applySkillCaps,
+      assignRandomShortContracts,
+      computeMinContractFromSkill,
+      generateFreeAgents,
+      selectPlayersForRelease,
+      selectExpiringPlayersToLeave,
+      processPendingReleases,
+      computePlayerMarketValue,
+      seasonalSkillDrift,
+    };
+  }
+} catch (e) {
+  /* ignore */
 }
+
 
 // Assign short (1-year) or no contracts randomly to players that don't already have contract info.
 // Options: pctOneYear (0..1) default 0.35
@@ -106,9 +134,7 @@ function assignRandomShortContracts(allDivisions, options) {
   return true;
 }
 
-if (typeof window !== 'undefined') {
-  window.assignRandomShortContracts = assignRandomShortContracts;
-}
+
 
 // Generate a pool of free agents by randomly selecting some players from clubs.
 // Removes the player from their club roster and places them into `window.FREE_TRANSFERS`.
@@ -725,8 +751,6 @@ function seasonalSkillDrift(allDivisions) {
   });
 }
 
-if (typeof window !== 'undefined') window.seasonalSkillDrift = seasonalSkillDrift;
-
 // Ensure canonical namespace and expose key utilities under `window.FootLab`.
 try {
   if (typeof window !== 'undefined') {
@@ -744,5 +768,5 @@ try {
     window.Elifoot = window.Elifoot || window.FootLab;
   }
 } catch (e) {
-  /* ignore */
+  // ignore, this is a non-critical setup block
 }

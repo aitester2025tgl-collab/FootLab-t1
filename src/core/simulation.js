@@ -392,13 +392,17 @@
         return;
       }
 
-      if (typeof advanceMatchDay === 'function') {
-        const updates = advanceMatchDay(window.currentRoundMatches, minute);
-        if (typeof updateDayProgress === 'function') updateDayProgress(minute);
+      if (typeof window.advanceMatchDay === 'function') {
+        const updates = window.advanceMatchDay(window.currentRoundMatches, minute);
+        if (typeof window.updateDayProgress === 'function') window.updateDayProgress(minute);
+        else if (typeof updateDayProgress === 'function') updateDayProgress(minute);
+        
         if (Array.isArray(updates)) {
           updates.forEach((update) => {
             if (!update || !update.match) return;
-            if (typeof updateMatchBoardLine === 'function')
+            if (typeof window.updateMatchBoardLine === 'function')
+              window.updateMatchBoardLine(update.match.index, update.match);
+            else if (typeof updateMatchBoardLine === 'function')
               updateMatchBoardLine(update.match.index, update.match);
           });
         }
@@ -483,12 +487,12 @@
     // Detect end of season: assume season length equals number of rounds in top division
     try {
       if (
-        typeof generateRounds === 'function' &&
+        typeof window.generateRounds === 'function' &&
         Array.isArray(window.allDivisions) &&
         window.allDivisions.length
       ) {
         const topDivClubs = window.allDivisions[0] || [];
-        const topRounds = generateRounds(topDivClubs);
+        const topRounds = window.generateRounds(topDivClubs);
         const seasonLength = Array.isArray(topRounds) ? topRounds.length : 0;
         if (seasonLength > 0 && (window.currentJornada || 0) > seasonLength) {
           // Season finished -> apply promotions/relegations
@@ -614,10 +618,10 @@
     isSimulating = false;
 
     try {
-      if (typeof generateRounds === 'function') {
+      if (typeof window.generateRounds === 'function') {
         const nextRoundMatches = [];
         (window.allDivisions || []).forEach((divisionClubs) => {
-          const rounds = generateRounds(divisionClubs);
+          const rounds = window.generateRounds(divisionClubs);
           if (!Array.isArray(rounds) || rounds.length === 0) return;
           let roundIndex = ((window.currentJornada || 1) - 1) % rounds.length;
           try {

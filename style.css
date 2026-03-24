@@ -12,23 +12,12 @@ html {
   overflow-x: hidden;
 }
 
-/* Layout variables to keep sidebar/tactic widths consistent */
 :root {
   --hub-menu-width: 200px;
   --tactic-panel-width: 280px;
   --hub-bg: #2e2e2e; /* Solid hub background (no gradients) */
   --hub-panel-bg: #333333; /* Solid panel background for boxes */
-}
-
-/* Compact side-panel width used when team menu is active */
-:root {
   --side-panel-compact-width: 180px;
-}
-
-/* (Retro theme removed - reverted to base theme.) */
-
-/* Single side-panel width so finance (left bottom) and next-opponent (right bottom) are symmetric */
-:root {
   --side-panel-width: 340px;
 }
 

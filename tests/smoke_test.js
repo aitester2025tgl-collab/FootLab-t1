@@ -14,14 +14,14 @@ const path = require('path');
     // the test HTML so jsdom page scripts can access window.REAL_ROSTERS
     // synchronously (avoids relying on dynamic loaders in the shim).
     try {
-      const rosterIndexPath = path.resolve(__dirname, 'data', 'rosters', 'index.json');
+      const rosterIndexPath = path.resolve(__dirname, '..', 'src', 'data', 'rosters', 'index.json');
       if (fs.existsSync(rosterIndexPath)) {
         const idx = JSON.parse(fs.readFileSync(rosterIndexPath, 'utf8'));
         let inline = ['<script>window.REAL_ROSTERS = window.REAL_ROSTERS || {};'];
         for (const teamName of Object.keys(idx)) {
           try {
             const fname = idx[teamName];
-            const teamPath = path.resolve(__dirname, 'data', 'rosters', fname);
+            const teamPath = path.resolve(__dirname, '..', 'src', 'data', 'rosters', fname);
             if (!fs.existsSync(teamPath)) continue;
             const data = fs.readFileSync(teamPath, 'utf8');
             // read file content (JSON array) and assign to window.REAL_ROSTERS
