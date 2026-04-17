@@ -40,12 +40,19 @@ function buildDivisionsFromRostersOrdered() {
     typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : {};
   const rostersSource = (globalObj && globalObj.REAL_ROSTERS) || (E && E.REAL_ROSTERS) || null;
   const rosters = rostersSource ? Object.keys(rostersSource) : [];
+
+  // CRÍTICO: Obter as cores e verificar se o mapa não está vazio
+  const teamColorMapSource =
+    (globalObj && globalObj.REAL_TEAM_COLORS) ||
+    (E && E.REAL_TEAM_COLORS) ||
+    null;
+
   const rostersArePresent = Array.isArray(rosters) && rosters.length > 0;
 
-  // Fail fast: the application requires an archived roster dataset to run.
+  // Só prosseguir se o dataset de ROSTERS estiver carregado (obrigatório)
   if (!rostersArePresent) {
     throw new Error(
-      'Required dataset `window.REAL_ROSTERS` is missing or empty. Ensure `src/data/real_rosters_2025_26.js` is loaded via a <script> tag in index.html before the main app bundle.'
+      `Aguardando dados: window.REAL_ROSTERS não encontrado. Verifique se real_rosters_2025_26.js foi carregado.`
     );
   }
 
@@ -96,31 +103,35 @@ function buildDivisionsFromRostersOrdered() {
     const sat = 60 + (h % 10); // 60-69
     const light = 34 + (h % 12); // 34-45
 
-    // Prefer shared hsl->hex and color utilities
-    const ColorUtils =
-      (window.FootLab && window.FootLab.ColorUtils) ||
-      window.ColorUtils ||
-      (window.Elifoot && window.Elifoot.ColorUtils) ||
-      {};
-    const bg =
-      ColorUtils && typeof ColorUtils.hslToHex === 'function'
-        ? ColorUtils.hslToHex(hue, sat, light)
-        : '#2e2e2e';
-    const rgb =
-      ColorUtils && typeof ColorUtils.hexToRgb === 'function' ? ColorUtils.hexToRgb(bg) : null;
-    const L =
-      ColorUtils && typeof ColorUtils.luminance === 'function' ? ColorUtils.luminance(rgb) : 0;
+    // Implementação local de HSL para HEX para evitar dependência de ColorUtils externa
+    const hslToHexLocal = (h, s, l) => {
+      l /= 100;
+      const a = (s * Math.min(l, 1 - l)) / 100;
+      const f = (n) => {
+        const k = (n + h / 30) % 12;
+        const color = l - a * Math.max(Math.min(k - 3, 9 - k, 1), -1);
+        return Math.round(255 * color).toString(16).padStart(2, '0');
+      };
+      return `#${f(0)}${f(8)}${f(4)}`;
+    };
+
+    // Cálculo local de luminância para decidir cor do texto (preto ou branco)
+    const getLuminanceLocal = (hex) => {
+      const r = parseInt(hex.slice(1, 3), 16) / 255;
+      const g = parseInt(hex.slice(3, 5), 16) / 255;
+      const b = parseInt(hex.slice(5, 7), 16) / 255;
+      const a = [r, g, b].map(v => v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4));
+      return 0.2126 * a[0] + 0.7152 * a[1] + 0.0722 * a[2];
+    };
+
+    const bg = hslToHexLocal(hue, sat, light);
+    const L = getLuminanceLocal(bg);
 
     const fg = L > 0.5 ? '#000000' : '#ffffff';
     return { bg, fg };
   }
 
-  // Prefer the global `window.REAL_TEAM_COLORS` (loaded via <script> tag).
-  const teamColorMap =
-    (typeof window !== 'undefined' && window.REAL_TEAM_COLORS) ||
-    (typeof global !== 'undefined' && global.REAL_TEAM_COLORS) ||
-    (E && E.REAL_TEAM_COLORS) ||
-    {};
+  const teamColorMap = teamColorMapSource;
 
   // Normalize team names for robust color lookups. Many team names in the
   // archived rosters include diacritics, abbreviations (FC/CF/AC/etc.) or
@@ -131,8 +142,8 @@ function buildDivisionsFromRostersOrdered() {
     // unicode normalize and remove diacritics
     let s = n.normalize ? n.normalize('NFD').replace(/\p{Diacritic}/gu, '') : n;
     s = String(s).toLowerCase();
-    // remove common club prefixes/suffixes and punctuation
-    s = s.replace(/\b(fc|f c|cf|c f|ac|ac\.|rcd|ssc|ss|cd|cf|fc\.|sc|sc\.)\b/g, '');
+    // Normalização alargada para clubes portugueses (SL, SC, CD, SAD, etc)
+    s = s.replace(/\b(fc|cf|sl|sc|cd|ac|cp|sad|f c|c f|ac\.|fc\.|sc\.|rcd|ssc|ss|clube|futebol)\b/g, '');
     s = s.replace(/[\u2018\u2019'`’]/g, ''); // apostrophes
     s = s.replace(/[^a-z0-9\s]/g, '');
     s = s.replace(/\s+/g, ' ').trim();

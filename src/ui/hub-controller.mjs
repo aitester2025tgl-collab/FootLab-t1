@@ -160,21 +160,38 @@ export function renderHubContent(menuId) {
       content.innerHTML = '<h2>Bem-vindo!</h2><p>Selecione uma opção no menu.</p>';
   }
 }
-
-export function initHubUI() {
+export function initHubUI(playerClub) {
   const E = window.FootLab || window.Elifoot || window;
   try {
     const L = (E && E.Logger) || console;
-    L.debug && L.debug('Initializing Hub Controller');
+    L.debug && L.debug('Initializing Hub Controller with playerClub:', playerClub);
   } catch (_) {}
+
+
+  // Store playerClub on the global namespace if it isn't already there
+  if (playerClub && !E.playerClub) E.playerClub = playerClub;
+  const club = E.playerClub;
+
+  // Update coach and team name displays
+  try {
+    const coachNameDisplay = document.getElementById('coachNameDisplay');
+    const playerTeamNameHub = document.getElementById('playerTeamNameHub');
+    const playerTeamNameFooter = document.getElementById('playerTeamNameFooter');
+    if (coachNameDisplay && club && club.coach) coachNameDisplay.textContent = club.coach.name;
+    if (playerTeamNameHub && club && club.team) playerTeamNameHub.textContent = club.team.name;
+    if (playerTeamNameFooter && club && club.team)
+      playerTeamNameFooter.textContent = club.team.name;
+  } catch (e) {
+    /* ignore */
+  }
 
   // Apply team colors to some UI areas (minimal conservative approach)
   try {
     const hubScreen = document.getElementById('screen-hub');
     const hubMenu = document.getElementById('hub-menu');
-    if (hubScreen && E.playerClub && E.playerClub.team) {
-      let bg = E.playerClub.team.bgColor || '#2e2e2e';
-      let fg = E.playerClub.team.color || '#ffffff';
+    if (hubScreen && club && club.team) {
+      let bg = club.team.bgColor || '#2e2e2e';
+      let fg = club.team.color || '#ffffff';
       if (!/^#([0-9a-f]{3}){1,2}$/i.test(bg)) bg = '#2e2e2e';
       if (!/^#([0-9a-f]{3}){1,2}$/i.test(fg)) fg = '#ffffff';
       // compute luminance and adjust team colors for readability
@@ -198,6 +215,16 @@ export function initHubUI() {
       if (bgLum > 0.85) bg = adjustColor(bg, -32);
 
       // Apply team color as the page background (archived behaviour) and derive panel bg
+      const hubHeader = document.getElementById('hub-header');
+      if (hubHeader) {
+        hubHeader.style.backgroundColor = bg;
+        hubHeader.style.color = getReadableTextColor(bg);
+      }
+      const hubFooter = document.getElementById('hub-footer-status');
+      if (hubFooter) {
+        hubFooter.style.backgroundColor = bg;
+        hubFooter.style.color = getReadableTextColor(bg);
+      }
       hubScreen.style.backgroundImage = 'none';
       hubScreen.style.backgroundColor = bg;
       hubScreen.style.setProperty('--hub-bg', bg);
@@ -213,6 +240,31 @@ export function initHubUI() {
   } catch (e) {
     /* ignore */
   }
+
+  // Update finance displays
+  updateBudgetDisplays(club);
+
+  // Set default content and next opponent
+  renderHubContent('menu-team');
+  try {
+    const opponentDetails = document.getElementById('nextOpponentDetails');
+    if (opponentDetails) {
+      const html =
+        window.Hub &&
+        window.Hub.buildNextOpponentHtml &&
+        typeof window.Hub.buildNextOpponentHtml === 'function'
+          ? window.Hub.buildNextOpponentHtml()
+          : typeof buildNextOpponentHtml === 'function'
+            ? buildNextOpponentHtml()
+            : '—';
+      opponentDetails.innerHTML = html;
+    }
+  } catch (e) {
+    /* ignore */
+  }
+
+  // Initialize tactic panel
+  initTacticPanel();
 
   // Menu wiring
   const menuButtons = document.querySelectorAll('#hub-menu .hub-menu-btn');
@@ -248,29 +300,6 @@ export function initHubUI() {
       }
     });
   });
-
-  // Default render
-  const defaultBtn = document.getElementById('menu-team');
-  if (defaultBtn) {
-    defaultBtn.classList.add('active');
-    defaultBtn.style.background =
-      'linear-gradient(90deg, rgba(255,255,255,0.13) 0%, rgba(0,0,0,0.13) 100%)';
-    defaultBtn.style.color = getReadableTextColor(
-      (E.playerClub && E.playerClub.team && E.playerClub.team.bgColor) || '#2e2e2e',
-      (E.playerClub && E.playerClub.team && E.playerClub.team.color) || '#008000'
-    );
-    defaultBtn.style.boxShadow = '0 6px 18px rgba(0,0,0,0.16)';
-    try {
-      const hubMenu = document.getElementById('hub-menu');
-      const leftCol = document.getElementById('left-column');
-      if (hubMenu) hubMenu.classList.add('compact-buttons');
-      if (leftCol) leftCol.classList.add('compact');
-    } catch (e) {}
-    renderHubContent('menu-team');
-    try {
-      if (typeof updateBudgetDisplays === 'function') updateBudgetDisplays(window.playerClub);
-    } catch (_) {}
-  }
 
   // Simulate button wiring (preserve previous behavior)
   const simulateBtn = document.getElementById('simulateBtnHub');
@@ -355,4 +384,4 @@ window.renderHubContent = window.renderHubContent || renderHubContent;
 window.renderTeamRoster = window.renderTeamRoster || renderTeamRoster;
 
 // default export not necessary but keep named exports
-export default { initHubUI, renderHubContent };
+export default { initHubUI, renderHubContent, };

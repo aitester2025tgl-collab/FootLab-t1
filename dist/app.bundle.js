@@ -176,7 +176,7 @@
             return str && str.length || 0;
           }
         }
-        function getLogger5() {
+        function getLogger6() {
           try {
             if (typeof window !== "undefined" && (window.FootLab || window.Elifoot) && (window.FootLab || window.Elifoot).Logger)
               return (window.FootLab || window.Elifoot).Logger;
@@ -238,7 +238,7 @@
               return true;
             } catch (e2) {
               try {
-                const lg = getLogger5();
+                const lg = getLogger6();
                 lg.warn && lg.warn("Persistence.saveSnapshot failed", e2);
               } catch (_) {
               }
@@ -254,7 +254,7 @@
               if (!envelope || typeof envelope !== "object") return null;
               if (!("version" in envelope)) {
                 try {
-                  const lg = getLogger5();
+                  const lg = getLogger6();
                   lg.info && lg.info("Persistence.loadSnapshot: migrating legacy snapshot to versioned envelope");
                 } catch (_) {
                 }
@@ -279,7 +279,7 @@
               }
               if (envelope.version !== SNAPSHOT_VERSION) {
                 try {
-                  const lg = getLogger5();
+                  const lg = getLogger6();
                   lg.warn && lg.warn("Persistence.loadSnapshot: snapshot version mismatch", envelope.version);
                 } catch (_) {
                 }
@@ -288,7 +288,7 @@
               return envelope.payload || null;
             } catch (e2) {
               try {
-                const lg = getLogger5();
+                const lg = getLogger6();
                 lg.warn && lg.warn("Persistence.loadSnapshot failed", e2);
               } catch (_) {
               }
@@ -479,7 +479,7 @@
       var E = typeof window !== "undefined" ? window.FootLab || window.Elifoot || window : typeof global !== "undefined" ? global : {};
       function buildDivisionsFromRostersOrdered() {
         const E2 = typeof window !== "undefined" ? window.FootLab || window.Elifoot || window : typeof global !== "undefined" ? global : {};
-        function getLogger5() {
+        function getLogger6() {
           try {
             return typeof window !== "undefined" && window.FootLab && window.FootLab.Logger || typeof window !== "undefined" && window.Elifoot && window.Elifoot.Logger || console;
           } catch (e2) {
@@ -489,10 +489,12 @@
         const globalObj = typeof window !== "undefined" ? window : typeof global !== "undefined" ? global : {};
         const rostersSource = globalObj && globalObj.REAL_ROSTERS || E2 && E2.REAL_ROSTERS || null;
         const rosters = rostersSource ? Object.keys(rostersSource) : [];
+        const teamColorMapSource = globalObj && globalObj.REAL_TEAM_COLORS || E2 && E2.REAL_TEAM_COLORS || null;
         const rostersArePresent = Array.isArray(rosters) && rosters.length > 0;
-        if (!rostersArePresent) {
+        const colorsArePresent = teamColorMapSource && Object.keys(teamColorMapSource).length > 0;
+        if (!rostersArePresent || !colorsArePresent) {
           throw new Error(
-            "Required dataset `window.REAL_ROSTERS` is missing or empty. Ensure `src/data/real_rosters_2025_26.js` is loaded via a <script> tag in index.html before the main app bundle."
+            `Aguardando dados: Rosters=${rostersArePresent}, Cores=${colorsArePresent}. Verifique se team_colors.js foi carregado.`
           );
         }
         function validateRosters(expectedTeams = 72, minPlayers = 18) {
@@ -513,7 +515,7 @@
           if (problems.length) {
             const msg = "Roster validation failed: " + problems.join("; ");
             try {
-              const L = getLogger5();
+              const L = getLogger6();
               L && L.warn && L.warn(msg);
             } catch (e2) {
               try {
@@ -532,19 +534,34 @@
           const hue = h % 360;
           const sat = 60 + h % 10;
           const light = 34 + h % 12;
-          const ColorUtils = window.FootLab && window.FootLab.ColorUtils || window.ColorUtils || window.Elifoot && window.Elifoot.ColorUtils || {};
-          const bg = ColorUtils && typeof ColorUtils.hslToHex === "function" ? ColorUtils.hslToHex(hue, sat, light) : "#2e2e2e";
-          const rgb = ColorUtils && typeof ColorUtils.hexToRgb === "function" ? ColorUtils.hexToRgb(bg) : null;
-          const L = ColorUtils && typeof ColorUtils.luminance === "function" ? ColorUtils.luminance(rgb) : 0;
+          const hslToHexLocal = (h2, s, l) => {
+            l /= 100;
+            const a = s * Math.min(l, 1 - l) / 100;
+            const f = (n) => {
+              const k = (n + h2 / 30) % 12;
+              const color = l - a * Math.max(Math.min(k - 3, 9 - k, 1), -1);
+              return Math.round(255 * color).toString(16).padStart(2, "0");
+            };
+            return `#${f(0)}${f(8)}${f(4)}`;
+          };
+          const getLuminanceLocal = (hex) => {
+            const r = parseInt(hex.slice(1, 3), 16) / 255;
+            const g = parseInt(hex.slice(3, 5), 16) / 255;
+            const b = parseInt(hex.slice(5, 7), 16) / 255;
+            const a = [r, g, b].map((v) => v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4));
+            return 0.2126 * a[0] + 0.7152 * a[1] + 0.0722 * a[2];
+          };
+          const bg = hslToHexLocal(hue, sat, light);
+          const L = getLuminanceLocal(bg);
           const fg = L > 0.5 ? "#000000" : "#ffffff";
           return { bg, fg };
         }
-        const teamColorMap = typeof window !== "undefined" && window.REAL_TEAM_COLORS || typeof global !== "undefined" && global.REAL_TEAM_COLORS || E2 && E2.REAL_TEAM_COLORS || {};
+        const teamColorMap = teamColorMapSource;
         function normalizeName(n) {
           if (!n) return "";
           let s = n.normalize ? n.normalize("NFD").replace(/\p{Diacritic}/gu, "") : n;
           s = String(s).toLowerCase();
-          s = s.replace(/\b(fc|f c|cf|c f|ac|ac\.|rcd|ssc|ss|cd|cf|fc\.|sc|sc\.)\b/g, "");
+          s = s.replace(/\b(fc|cf|sl|sc|cd|ac|cp|sad|f c|c f|ac\.|fc\.|sc\.|rcd|ssc|ss|clube|futebol)\b/g, "");
           s = s.replace(/[\u2018\u2019'`’]/g, "");
           s = s.replace(/[^a-z0-9\s]/g, "");
           s = s.replace(/\s+/g, " ").trim();
@@ -864,7 +881,7 @@
 
   // src/logic/lineups.js
   (function() {
-    function getLogger5() {
+    function getLogger6() {
       try {
         return window.FootLab && window.FootLab.Logger || window.Elifoot && window.Elifoot.Logger || console;
       } catch (e2) {
@@ -1068,7 +1085,7 @@
           }
         } catch (err) {
           try {
-            getLogger5().error("Erro a reordenar match por roster", err);
+            getLogger6().error("Erro a reordenar match por roster", err);
           } catch (_) {
           }
         }
@@ -1080,7 +1097,7 @@
       NS.reorderMatchByRoster = reorderMatchByRoster;
     } catch (err) {
       try {
-        getLogger5().error("Erro a inicializar Elifoot.Lineups", err);
+        getLogger6().error("Erro a inicializar Elifoot.Lineups", err);
       } catch (_) {
       }
     }
@@ -1835,7 +1852,7 @@
       throw new Error(msg);
     }
   }
-  function generateAllClubs2() {
+  function generateAllClubs() {
     const allClubs2 = [];
     validateAllRosters(18);
     for (let i = 1; i <= 4; i++) {
@@ -1846,9 +1863,8 @@
   }
   try {
     if (typeof window !== "undefined") {
-      window.generateAllClubs = generateAllClubs2;
       window.FootLab = window.FootLab || window.Elifoot || {};
-      window.FootLab.generateAllClubs = window.FootLab.generateAllClubs || generateAllClubs2;
+      window.FootLab.generateAllClubs = window.FootLab.generateAllClubs || generateAllClubs;
       window.FootLab.generateDivisionClubs = window.FootLab.generateDivisionClubs || generateDivisionClubs;
       window.Elifoot = window.Elifoot || window.FootLab;
     }
@@ -1859,6 +1875,18 @@
   var import_teams = __toESM(require_teams(), 1);
 
   // src/matches.js
+  var SIM_CONFIG = {
+    baseGoalChance: 0.015,
+    homeAdvantageFactor: 1.15,
+    skillExponentialBase: 1.01,
+    maxGoalsPerMinute: 2,
+    events: {
+      yellowChance: 0.02,
+      redChance: 1e-3,
+      suspensionYellows: 1,
+      suspensionRed: 2
+    }
+  };
   function getLogger() {
     return typeof window !== "undefined" && window.FootLab && window.FootLab.Logger ? window.FootLab.Logger : typeof window !== "undefined" && window.Elifoot && window.Elifoot.Logger ? window.Elifoot.Logger : console;
   }
@@ -1902,7 +1930,7 @@
           awayGoals: 0,
           goals: [],
           isFinished: false,
-          division: homeClub.division
+          division: Number(homeClub.division)
         };
         matchesThisRound.push(match);
       }
@@ -1920,7 +1948,7 @@
         awayGoals: 0,
         goals: [],
         isFinished: false,
-        division: m.division
+        division: Number(m.division)
       }));
     });
     return rounds.concat(returnLegs);
@@ -1932,6 +1960,12 @@
       const match = matches[i];
       if (!match || match.isFinished) continue;
       match.goals = Array.isArray(match.goals) ? match.goals : [];
+      if (minute === 1 || !match._homeSkill) {
+        const hp = match.homePlayers || match.home && match.home.players || [];
+        const ap = match.awayPlayers || match.away && match.away.players || [];
+        match._homeSkill = hp.reduce((sum, p) => sum + (p.skill || 0), 0) / Math.max(1, hp.length);
+        match._awaySkill = ap.reduce((sum, p) => sum + (p.skill || 0), 0) / Math.max(1, ap.length);
+      }
       const homePlayers = match.homePlayers && Array.isArray(match.homePlayers) ? match.homePlayers : match.home && match.home.players;
       const awayPlayers = match.awayPlayers && Array.isArray(match.awayPlayers) ? match.awayPlayers : match.away && match.away.players;
       if (!homePlayers || !awayPlayers || !Array.isArray(homePlayers) || !Array.isArray(awayPlayers)) {
@@ -1942,109 +1976,84 @@
         }
         continue;
       }
-      const homeSkill = homePlayers.reduce((sum, p) => sum + (p.skill || 0), 0) / Math.max(1, homePlayers.length);
-      const awaySkill = awayPlayers.reduce((sum, p) => sum + (p.skill || 0), 0) / Math.max(1, awayPlayers.length);
-      const baseChance = 0.01;
+      const homeSkill = match._homeSkill;
+      const awaySkill = match._awaySkill;
       const skillDiff = homeSkill - awaySkill;
-      const homeChanceFactor = 1 + skillDiff / 200;
-      const awayChanceFactor = 1 - skillDiff / 200;
-      const goalsThisMinute = match.goals ? match.goals.filter((g) => g.minute === minute && g.type === "goal").length : 0;
-      try {
-        if (window.DEBUG_MATCH_SIM && minute <= 5) {
-          const dbgHomeBase = 0.01 * Math.max(0.3, homeChanceFactor) * 1.1;
-          const dbgAwayBase = 0.01 * Math.max(0.3, awayChanceFactor);
-          try {
-            const L = getLogger();
-            L.debug && L.debug("DBG advanceMatchDay", {
-              minute,
-              matchIdx: i,
-              homeSkill: homeSkill.toFixed(2),
-              awaySkill: awaySkill.toFixed(2),
-              homeBase: dbgHomeBase.toFixed(6),
-              awayBase: dbgAwayBase.toFixed(6),
-              goalsThisMinute
-            });
-          } catch (_) {
-          }
+      const skillMultiplier = Math.pow(SIM_CONFIG.skillExponentialBase, skillDiff);
+      const homeChanceFactor = skillMultiplier;
+      const awayChanceFactor = 1 / skillMultiplier;
+      const homeGoalChance = SIM_CONFIG.baseGoalChance * homeChanceFactor * SIM_CONFIG.homeAdvantageFactor;
+      const homeDraw = Math.random();
+      if (window.DEBUG_MATCH_SIM && minute <= 10) {
+        try {
+          const L = getLogger();
+          L.debug && L.debug("DBG goal-check home", {
+            matchIdx: i,
+            minute,
+            homePlayers: homePlayers.length,
+            awayPlayers: awayPlayers.length,
+            homeSkill: homeSkill.toFixed(2),
+            awaySkill: awaySkill.toFixed(2),
+            homeGoalChance: homeGoalChance.toFixed(6),
+            homeDraw: homeDraw.toFixed(6)
+          });
+        } catch (e2) {
         }
-      } catch (e2) {
       }
-      if ((goalsThisMinute || 0) >= 2) {
-      } else {
-        const homeGoalChanceBase = baseChance * Math.max(0.3, homeChanceFactor) * 1.1;
-        const homeGoalChance = goalsThisMinute >= 1 ? homeGoalChanceBase * 0.06 : homeGoalChanceBase;
-        const homeDraw = Math.random();
+      if (homeDraw < homeGoalChance) {
+        const homeGoal = generateGoal(homePlayers, minute, "home");
+        homeGoal.type = "goal";
+        match.goals.push(homeGoal);
+        try {
+          const L = getLogger();
+          L.info && L.info("advanceMatchDay: HOME GOAL ->", homeGoal.player, "min", minute, "matchIdx", i);
+        } catch (e2) {
+        }
+        match.homeGoals = (match.homeGoals || 0) + 1;
+        match.index = i;
+        updates.push({ match });
+      }
+      const goalsAfterHome = match.goals ? match.goals.filter((g) => g.minute === minute).length : 0;
+      if ((goalsAfterHome || 0) < SIM_CONFIG.maxGoalsPerMinute) {
+        const awayGoalChanceBase = SIM_CONFIG.baseGoalChance * awayChanceFactor;
+        const awayGoalChance = goalsAfterHome >= 1 ? awayGoalChanceBase * 0.06 : awayGoalChanceBase;
+        const awayDraw = Math.random();
         if (window.DEBUG_MATCH_SIM && minute <= 10) {
           try {
             const L = getLogger();
-            L.debug && L.debug("DBG goal-check home", {
+            L.debug && L.debug("DBG goal-check away", {
               matchIdx: i,
               minute,
-              homePlayers: homePlayers.length,
-              awayPlayers: awayPlayers.length,
-              homeSkill: homeSkill.toFixed(2),
-              awaySkill: awaySkill.toFixed(2),
-              homeGoalChance: homeGoalChance.toFixed(6),
-              homeDraw: homeDraw.toFixed(6)
+              awayGoalChance: awayGoalChance.toFixed(6),
+              awayDraw: awayDraw.toFixed(6)
             });
           } catch (e2) {
           }
         }
-        if (homeDraw < homeGoalChance) {
-          const homeGoal = generateGoal(homePlayers, minute, "home");
-          homeGoal.type = "goal";
-          match.goals.push(homeGoal);
+        if (awayDraw < awayGoalChance) {
+          const awayGoal = generateGoal(awayPlayers, minute, "away");
+          awayGoal.type = "goal";
+          match.goals.push(awayGoal);
           try {
             const L = getLogger();
-            L.info && L.info("advanceMatchDay: HOME GOAL ->", homeGoal.player, "min", minute, "matchIdx", i);
+            L.info && L.info(
+              "advanceMatchDay: AWAY GOAL ->",
+              awayGoal.player,
+              "min",
+              minute,
+              "matchIdx",
+              i
+            );
           } catch (e2) {
           }
-          match.homeGoals = (match.homeGoals || 0) + 1;
+          match.awayGoals = (match.awayGoals || 0) + 1;
           match.index = i;
           updates.push({ match });
         }
-        const goalsAfterHome = match.goals ? match.goals.filter((g) => g.minute === minute).length : 0;
-        if ((goalsAfterHome || 0) < 2) {
-          const awayGoalChanceBase = baseChance * Math.max(0.3, awayChanceFactor);
-          const awayGoalChance = goalsAfterHome >= 1 ? awayGoalChanceBase * 0.06 : awayGoalChanceBase;
-          const awayDraw = Math.random();
-          if (window.DEBUG_MATCH_SIM && minute <= 10) {
-            try {
-              const L = getLogger();
-              L.debug && L.debug("DBG goal-check away", {
-                matchIdx: i,
-                minute,
-                awayGoalChance: awayGoalChance.toFixed(6),
-                awayDraw: awayDraw.toFixed(6)
-              });
-            } catch (e2) {
-            }
-          }
-          if (awayDraw < awayGoalChance) {
-            const awayGoal = generateGoal(awayPlayers, minute, "away");
-            awayGoal.type = "goal";
-            match.goals.push(awayGoal);
-            try {
-              const L = getLogger();
-              L.info && L.info(
-                "advanceMatchDay: AWAY GOAL ->",
-                awayGoal.player,
-                "min",
-                minute,
-                "matchIdx",
-                i
-              );
-            } catch (e2) {
-            }
-            match.awayGoals = (match.awayGoals || 0) + 1;
-            match.index = i;
-            updates.push({ match });
-          }
-        }
       }
       try {
-        const yellowChance = window.GameConfig && window.GameConfig.events && window.GameConfig.events.yellowChancePerMinuteTeam || 0.02;
-        const redChance = window.GameConfig && window.GameConfig.events && window.GameConfig.events.redChancePerMinuteTeam || 1e-3;
+        const yellowChance = SIM_CONFIG.events.yellowChance;
+        const redChance = SIM_CONFIG.events.redChance;
         const giveCard = function(teamPlayers, side) {
           if (!teamPlayers || !teamPlayers.length) return;
           if (Math.random() < yellowChance) {
@@ -2063,7 +2072,7 @@
               });
               const idx = teamPlayers.findIndex((x) => x === p);
               if (idx >= 0) teamPlayers.splice(idx, 1);
-              const banGames = window.GameConfig && window.GameConfig.events && window.GameConfig.events.suspensionDoubleYellowGames || 1;
+              const banGames = SIM_CONFIG.events.suspensionYellows;
               p.suspendedGames = Math.max(p.suspendedGames || 0, banGames);
               p.sentOff = true;
             }
@@ -2081,7 +2090,7 @@
             });
             const idx = teamPlayers.findIndex((x) => x === p);
             if (idx >= 0) teamPlayers.splice(idx, 1);
-            const straightBan = window.GameConfig && window.GameConfig.events && window.GameConfig.events.suspensionStraightRedGames || 2;
+            const straightBan = SIM_CONFIG.events.suspensionRed;
             p.suspendedGames = Math.max(p.suspendedGames || 0, straightBan);
             p.sentOff = true;
           }
@@ -2280,11 +2289,11 @@
       if (window.Tactics && typeof window.Tactics.initTacticPanel === "function")
         return window.Tactics.initTacticPanel();
     }
-    function renderInitialMatchBoard2(allDivisions2) {
+    function renderInitialMatchBoard3(allDivisions2) {
       if (window.MatchBoard && typeof window.MatchBoard.renderInitialMatchBoard === "function")
         return window.MatchBoard.renderInitialMatchBoard(allDivisions2);
     }
-    function updateMatchBoardLine2(matchIndex, matchResult) {
+    function updateMatchBoardLine3(matchIndex, matchResult) {
       if (window.MatchBoard && typeof window.MatchBoard.updateMatchBoardLine === "function")
         return window.MatchBoard.updateMatchBoardLine(matchIndex, matchResult);
     }
@@ -2319,15 +2328,15 @@
     window.renderAllDivisionsTables = window.renderAllDivisionsTables || renderAllDivisionsTables;
     window.renderLeagueTable = window.renderLeagueTable || renderLeagueTable;
     window.initTacticPanel = window.initTacticPanel || initTacticPanel2;
-    window.renderInitialMatchBoard = window.renderInitialMatchBoard || renderInitialMatchBoard2;
-    window.updateMatchBoardLine = window.updateMatchBoardLine || updateMatchBoardLine2;
+    window.renderInitialMatchBoard = window.renderInitialMatchBoard || renderInitialMatchBoard3;
+    window.updateMatchBoardLine = window.updateMatchBoardLine || updateMatchBoardLine3;
     window.startGame = window.startGame || startGame2;
   })();
 
   // src/core/simulation.js
   (function() {
     "use strict";
-    function getLogger5() {
+    function getLogger6() {
       return typeof window !== "undefined" && window.FootLab && window.FootLab.Logger ? window.FootLab.Logger : typeof window !== "undefined" && window.Elifoot && window.Elifoot.Logger ? window.Elifoot.Logger : console;
     }
     const PersistenceAPI = typeof window !== "undefined" && window.FootLab && window.FootLab.Persistence || typeof window !== "undefined" && window.Elifoot && window.Elifoot.Persistence || null;
@@ -2362,7 +2371,7 @@
             }
           } catch (e2) {
             try {
-              const L = getLogger5();
+              const L = getLogger6();
               L.warn && L.warn("Erro a calcular receita/assist\xEAncia do jogo:", e2);
             } catch (_) {
             }
@@ -2398,7 +2407,7 @@
           match._counted = true;
         } catch (err) {
           try {
-            const L = getLogger5();
+            const L = getLogger6();
             L.warn && L.warn("updateClubStatsAfterMatches: failed for match", match, err);
           } catch (_) {
           }
@@ -2429,7 +2438,7 @@
         }
       } catch (err) {
         try {
-          const L = getLogger5();
+          const L = getLogger6();
           L.warn && L.warn("Could not persist snapshot after updating club stats", err);
         } catch (_) {
         }
@@ -2464,7 +2473,7 @@
               result = Lineups.chooseStarters(homeTeam) || {};
             } catch (e2) {
               try {
-                const L = getLogger5();
+                const L = getLogger6();
                 L.warn && L.warn("chooseStarters failed for homeTeam, using fallback", e2);
               } catch (_) {
               }
@@ -2485,7 +2494,7 @@
               result = Lineups.chooseStarters(awayTeam) || {};
             } catch (e2) {
               try {
-                const L = getLogger5();
+                const L = getLogger6();
                 L.warn && L.warn("chooseStarters failed for awayTeam, using fallback", e2);
               } catch (_) {
               }
@@ -2502,7 +2511,7 @@
           }
         } catch (err) {
           try {
-            const L = getLogger5();
+            const L = getLogger6();
             L.error && L.error("Erro ao atribuir lineups para match", err, match);
           } catch (_) {
           }
@@ -2514,7 +2523,7 @@
         const win = typeof window !== "undefined" ? window : null;
         const allowed = win && win.__userInitiatedSim || win && win.__allowProgrammaticSim;
         if (!allowed) {
-          const L = getLogger5();
+          const L = getLogger6();
           L.info && L.info("simulateDay blocked: not user-initiated");
           return;
         }
@@ -2522,7 +2531,7 @@
       }
       if (isSimulating2) {
         try {
-          const L = getLogger5();
+          const L = getLogger6();
           L.warn && L.warn("simulateDay called but already simulating (Jornada", window.currentJornada, ")");
         } catch (_) {
         }
@@ -2538,7 +2547,7 @@
         assignStartingLineups(window.currentRoundMatches);
       } catch (e2) {
         try {
-          const L = getLogger5();
+          const L = getLogger6();
           L.error && L.error("Erro ao atribuir lineups antes da simula\xE7\xE3o", e2);
         } catch (_) {
         }
@@ -2557,7 +2566,7 @@
             renderInitialMatchBoard(window.allDivisions);
         } catch (e2) {
           try {
-            const L = getLogger5();
+            const L = getLogger6();
             L.error && L.error("renderInitialMatchBoard not found", e2);
           } catch (_) {
           }
@@ -2576,25 +2585,25 @@
             } catch (e2) {
             }
             try {
-              const L = getLogger5();
+              const L = getLogger6();
               L.info && L.info("Scheduling simulation interval in", START_DELAY_MS, "ms, tick=", perMinuteMs);
               setTimeout(() => {
-                const L2 = getLogger5();
+                const L2 = getLogger6();
                 L2.info && L2.info("Starting simulation interval, tick=", perMinuteMs);
                 simIntervalId2 = setInterval(simulationTick, perMinuteMs);
               }, START_DELAY_MS);
             } catch (e2) {
-              const L3 = getLogger5();
+              const L3 = getLogger6();
               L3.info && L3.info("Starting simulation interval (fallback) tick=", perMinuteMs);
               simIntervalId2 = setInterval(simulationTick, perMinuteMs);
             }
           });
         } catch (e2) {
           proceedToMatch();
-          const L = getLogger5();
+          const L = getLogger6();
           L.info && L.info("Scheduling simulation interval in", START_DELAY_MS, "ms, tick=", perMinuteMs);
           setTimeout(() => {
-            const L2 = getLogger5();
+            const L2 = getLogger6();
             L2.info && L2.info("Starting simulation interval, tick=", perMinuteMs);
             simIntervalId2 = setInterval(simulationTick, perMinuteMs);
           }, START_DELAY_MS);
@@ -2642,16 +2651,18 @@
           else if (typeof updateDayProgress === "function") updateDayProgress(minute);
           if (Array.isArray(updates)) {
             updates.forEach((update) => {
-              if (!update || !update.match) return;
+              if (!update || !update.match || typeof update.match.index === "undefined") return;
+              const fullMatch = window.currentRoundMatches[update.match.index];
+              if (!fullMatch) return;
               if (typeof window.updateMatchBoardLine === "function")
-                window.updateMatchBoardLine(update.match.index, update.match);
+                window.updateMatchBoardLine(update.match.index, fullMatch);
               else if (typeof updateMatchBoardLine === "function")
-                updateMatchBoardLine(update.match.index, update.match);
+                updateMatchBoardLine(update.match.index, fullMatch);
             });
           }
         } else {
           try {
-            const L = getLogger5();
+            const L = getLogger6();
             L.error && L.error("Fun\xE7\xE3o advanceMatchDay n\xE3o encontrada (matches.js).");
           } catch (_) {
           }
@@ -2680,8 +2691,8 @@
       } catch (e2) {
       }
       try {
-        if (typeof finishDayAndReturnToHub === "function") {
-          finishDayAndReturnToHub();
+        if (typeof finishDayAndReturnToHub2 === "function") {
+          finishDayAndReturnToHub2();
           return;
         }
       } catch (e2) {
@@ -2692,13 +2703,13 @@
         if (typeof renderHubContent === "function") renderHubContent("menu-standings");
       } catch (e2) {
         try {
-          const L = getLogger5();
+          const L = getLogger6();
           L.warn && L.warn("endSimulation fallback failed", e2);
         } catch (_) {
         }
       }
     }
-    function finishDayAndReturnToHub() {
+    function finishDayAndReturnToHub2() {
       try {
         if (Array.isArray(window.currentRoundMatches)) {
           window.currentRoundMatches.forEach((m) => {
@@ -2709,7 +2720,7 @@
         }
       } catch (e2) {
         try {
-          const L = getLogger5();
+          const L = getLogger6();
           L.warn && L.warn("finishDayAndReturnToHub: error finalizing matches", e2);
         } catch (_) {
         }
@@ -2762,7 +2773,7 @@
                     });
                   } catch (e2) {
                     try {
-                      const L = getLogger5();
+                      const L = getLogger6();
                       L.warn && L.warn("Could not show season summary overlay", e2);
                     } catch (_) {
                     }
@@ -2782,7 +2793,7 @@
               }
             } catch (e2) {
               try {
-                const L = getLogger5();
+                const L = getLogger6();
                 L.warn && L.warn("applyPromotionRelegation failed", e2);
               } catch (_) {
               }
@@ -2839,7 +2850,7 @@
               }
             } catch (e2) {
               try {
-                const L = getLogger5();
+                const L = getLogger6();
                 L.warn && L.warn("Erro ao evitar repeti\xE7\xE3o de advers\xE1rio na gera\xE7\xE3o de rondas:", e2);
               } catch (_) {
               }
@@ -2851,7 +2862,7 @@
             assignStartingLineups(window.currentRoundMatches);
           } catch (e2) {
             try {
-              const L = getLogger5();
+              const L = getLogger6();
               L.error && L.error("ERRO ao atribuir lineups:", e2);
             } catch (_) {
             }
@@ -2884,7 +2895,7 @@
         }
       } catch (e2) {
         try {
-          const L = getLogger5();
+          const L = getLogger6();
           L.warn && L.warn("finishDayAndReturnToHub main error", e2);
         } catch (_) {
         }
@@ -2899,7 +2910,7 @@
         }
       } catch (err) {
         try {
-          const L = getLogger5();
+          const L = getLogger6();
           L.warn && L.warn("selectExpiringPlayersToLeave failed in finishDayAndReturnToHub:", err);
         } catch (_) {
         }
@@ -2910,7 +2921,7 @@
         }
       } catch (err) {
         try {
-          const L = getLogger5();
+          const L = getLogger6();
           L.warn && L.warn("selectPlayersForRelease failed in finishDayAndReturnToHub:", err);
         } catch (_) {
         }
@@ -2964,7 +2975,7 @@
         }
       } catch (e2) {
         try {
-          const L = getLogger5();
+          const L = getLogger6();
           L.warn && L.warn("ensurePendingReleases filler failed:", e2);
         } catch (_) {
         }
@@ -2998,7 +3009,7 @@
         }
       } catch (e2) {
         try {
-          const L = getLogger5();
+          const L = getLogger6();
           L.warn && L.warn("Erro ao decrementar suspens\xF5es:", e2);
         } catch (_) {
         }
@@ -3009,12 +3020,12 @@
     window.Simulation.assignStartingLineups = assignStartingLineups;
     window.Simulation.simulateDay = simulateDay2;
     window.Simulation.endSimulation = endSimulation;
-    window.Simulation.finishDayAndReturnToHub = finishDayAndReturnToHub;
+    window.Simulation.finishDayAndReturnToHub = finishDayAndReturnToHub2;
     window.updateClubStatsAfterMatches = updateClubStatsAfterMatches;
     window.assignStartingLineups = assignStartingLineups;
     window.simulateDay = simulateDay2;
     window.endSimulation = endSimulation;
-    window.finishDayAndReturnToHub = finishDayAndReturnToHub;
+    window.finishDayAndReturnToHub = finishDayAndReturnToHub2;
   })();
 
   // src/ui/helpers.mjs
@@ -3866,6 +3877,13 @@ Probabilidade estimada: ${(prob * 100).toFixed(1)}%`
   }
 
   // src/ui/hub-controller.mjs
+  var hub_controller_exports = {};
+  __export(hub_controller_exports, {
+    default: () => hub_controller_default,
+    initHubUI: () => initHubUI2,
+    renderHubContent: () => renderHubContent2,
+    updateBudgetDisplays: () => updateBudgetDisplays
+  });
   var FootLab = window.FootLab || window.Elifoot || window;
   function updateBudgetDisplays(club) {
     try {
@@ -4000,19 +4018,31 @@ Probabilidade estimada: ${(prob * 100).toFixed(1)}%`
         content.innerHTML = "<h2>Bem-vindo!</h2><p>Selecione uma op\xE7\xE3o no menu.</p>";
     }
   }
-  function initHubUI2() {
+  function initHubUI2(playerClub2) {
     const E = window.FootLab || window.Elifoot || window;
     try {
       const L = E && E.Logger || console;
-      L.debug && L.debug("Initializing Hub Controller");
+      L.debug && L.debug("Initializing Hub Controller with playerClub:", playerClub2);
     } catch (_) {
+    }
+    if (playerClub2 && !E.playerClub) E.playerClub = playerClub2;
+    const club = E.playerClub;
+    try {
+      const coachNameDisplay = document.getElementById("coachNameDisplay");
+      const playerTeamNameHub = document.getElementById("playerTeamNameHub");
+      const playerTeamNameFooter = document.getElementById("playerTeamNameFooter");
+      if (coachNameDisplay && club && club.coach) coachNameDisplay.textContent = club.coach.name;
+      if (playerTeamNameHub && club && club.team) playerTeamNameHub.textContent = club.team.name;
+      if (playerTeamNameFooter && club && club.team)
+        playerTeamNameFooter.textContent = club.team.name;
+    } catch (e2) {
     }
     try {
       const hubScreen = document.getElementById("screen-hub");
       const hubMenu = document.getElementById("hub-menu");
-      if (hubScreen && E.playerClub && E.playerClub.team) {
-        let bg = E.playerClub.team.bgColor || "#2e2e2e";
-        let fg = E.playerClub.team.color || "#ffffff";
+      if (hubScreen && club && club.team) {
+        let bg = club.team.bgColor || "#2e2e2e";
+        let fg = club.team.color || "#ffffff";
         if (!/^#([0-9a-f]{3}){1,2}$/i.test(bg)) bg = "#2e2e2e";
         if (!/^#([0-9a-f]{3}){1,2}$/i.test(fg)) fg = "#ffffff";
         const bgRgb = hexToRgb(bg);
@@ -4029,6 +4059,16 @@ Probabilidade estimada: ${(prob * 100).toFixed(1)}%`
         };
         if (bgLum < 0.18) bg = adjustColor(bg, 32);
         if (bgLum > 0.85) bg = adjustColor(bg, -32);
+        const hubHeader = document.getElementById("hub-header");
+        if (hubHeader) {
+          hubHeader.style.backgroundColor = bg;
+          hubHeader.style.color = getReadableTextColor(bg);
+        }
+        const hubFooter = document.getElementById("hub-footer-status");
+        if (hubFooter) {
+          hubFooter.style.backgroundColor = bg;
+          hubFooter.style.color = getReadableTextColor(bg);
+        }
         hubScreen.style.backgroundImage = "none";
         hubScreen.style.backgroundColor = bg;
         hubScreen.style.setProperty("--hub-bg", bg);
@@ -4043,6 +4083,17 @@ Probabilidade estimada: ${(prob * 100).toFixed(1)}%`
       }
     } catch (e2) {
     }
+    updateBudgetDisplays(club);
+    renderHubContent2("menu-team");
+    try {
+      const opponentDetails = document.getElementById("nextOpponentDetails");
+      if (opponentDetails) {
+        const html = window.Hub && window.Hub.buildNextOpponentHtml && typeof window.Hub.buildNextOpponentHtml === "function" ? window.Hub.buildNextOpponentHtml() : typeof buildNextOpponentHtml === "function" ? buildNextOpponentHtml() : "\u2014";
+        opponentDetails.innerHTML = html;
+      }
+    } catch (e2) {
+    }
+    initTacticPanel();
     const menuButtons = document.querySelectorAll("#hub-menu .hub-menu-btn");
     menuButtons.forEach((btn) => {
       btn.addEventListener("click", (e2) => {
@@ -4074,28 +4125,6 @@ Probabilidade estimada: ${(prob * 100).toFixed(1)}%`
         }
       });
     });
-    const defaultBtn = document.getElementById("menu-team");
-    if (defaultBtn) {
-      defaultBtn.classList.add("active");
-      defaultBtn.style.background = "linear-gradient(90deg, rgba(255,255,255,0.13) 0%, rgba(0,0,0,0.13) 100%)";
-      defaultBtn.style.color = getReadableTextColor(
-        E.playerClub && E.playerClub.team && E.playerClub.team.bgColor || "#2e2e2e",
-        E.playerClub && E.playerClub.team && E.playerClub.team.color || "#008000"
-      );
-      defaultBtn.style.boxShadow = "0 6px 18px rgba(0,0,0,0.16)";
-      try {
-        const hubMenu = document.getElementById("hub-menu");
-        const leftCol = document.getElementById("left-column");
-        if (hubMenu) hubMenu.classList.add("compact-buttons");
-        if (leftCol) leftCol.classList.add("compact");
-      } catch (e2) {
-      }
-      renderHubContent2("menu-team");
-      try {
-        if (typeof updateBudgetDisplays === "function") updateBudgetDisplays(window.playerClub);
-      } catch (_) {
-      }
-    }
     const simulateBtn = document.getElementById("simulateBtnHub");
     if (simulateBtn && (E && typeof E.simulateDay === "function" || typeof window.simulateDay === "function")) {
       simulateBtn.addEventListener("click", (e2) => {
@@ -4164,6 +4193,211 @@ Probabilidade estimada: ${(prob * 100).toFixed(1)}%`
   window.initHubUI = window.initHubUI || initHubUI2;
   window.renderHubContent = window.renderHubContent || renderHubContent2;
   window.renderTeamRoster = window.renderTeamRoster || renderTeamRoster2;
+  var hub_controller_default = { initHubUI: initHubUI2, renderHubContent: renderHubContent2 };
+
+  // src/ui/matchBoard.mjs
+  function getFinance() {
+    const FootLab2 = window.FootLab || window.Elifoot || {};
+    return FootLab2 && FootLab2.Finance || window.Finance;
+  }
+  function getLogger2() {
+    const FootLab2 = window.FootLab || window.Elifoot || {};
+    return FootLab2 && FootLab2.Logger ? FootLab2.Logger : console;
+  }
+  function renderInitialMatchBoard2(allDivisions2) {
+    const FootLab2 = window.FootLab || window.Elifoot || {};
+    const allMatches = FootLab2 && FootLab2.currentRoundMatches || window.currentRoundMatches || [];
+    if (!allMatches || !allMatches.length) return;
+    const Finance = getFinance();
+    try {
+      const player = window.FootLab && window.FootLab.playerClub || window.Elifoot && window.Elifoot.playerClub || window.playerClub;
+      const playerMatch = (allMatches || []).find(
+        (m) => m.homeClub === player || m.awayClub === player
+      );
+      const headerSpan = document.getElementById("playerTeamNameMatch");
+      if (playerMatch && headerSpan) {
+        const home = playerMatch.home ? playerMatch.home.name : "Home";
+        const away = playerMatch.away ? playerMatch.away.name : "Away";
+        headerSpan.textContent = `${home} \xD7 ${away}`;
+      }
+      if ((FootLab2 && FootLab2.GAME_NAME || window.GAME_NAME) && typeof document !== "undefined") {
+        const gameName = FootLab2 && FootLab2.GAME_NAME || window.GAME_NAME;
+        document.title = `${gameName} \u2014 ${player && player.team ? player.team.name : ""}`;
+      }
+    } catch (err) {
+    }
+    const divisionContainers = {
+      1: document.getElementById("division-1"),
+      2: document.getElementById("division-2"),
+      3: document.getElementById("division-3"),
+      4: document.getElementById("division-4")
+    };
+    Object.values(divisionContainers).forEach((container) => {
+      if (container) container.innerHTML = "";
+    });
+    const matchesByDivision = { 1: [], 2: [], 3: [], 4: [] };
+    allMatches.forEach((match, index) => {
+      if (match.division && matchesByDivision[match.division]) {
+        match.index = index;
+        matchesByDivision[match.division].push(match);
+      }
+    });
+    [1, 2, 3, 4].forEach((divisionNumber) => {
+      const matches = matchesByDivision[divisionNumber];
+      const container = divisionContainers[divisionNumber];
+      if (container) {
+        const divisionNames = { 1: "Division 1", 2: "Division 2", 3: "Division 3", 4: "Division 4" };
+        let html = `<h3 class="division-title">${divisionNames[divisionNumber]}</h3>`;
+        matches.forEach((match) => {
+          const homeBg = match.home && match.home.bgColor || "#333";
+          const homeSec = match.home && match.home.color || "#ffffff";
+          const homeFg = getReadableTextColor(homeBg, homeSec);
+          const homeBorder = homeSec;
+          const awayBg = match.away && match.away.bgColor || "#333";
+          const awaySec = match.away && match.away.color || "#ffffff";
+          const awayFg = getReadableTextColor(awayBg, awaySec);
+          const awayBorder = awaySec;
+          html += `
+                        <div class="match-line-new" id="match-line-${match.index}" style="display:flex; align-items:center; gap:8px;">
+                            <span class="team-name home" style="display:inline-block; width:16ch; max-width:16ch; min-width:16ch; box-sizing:border-box; text-align:center; vertical-align:middle; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color: ${homeFg}; background-color: ${homeBg}; padding:4px 6px; border-radius:3px; font-weight:bold; border:2px solid ${homeBorder};">${match.home.name}</span>
+                            <span class="home-goals" style="width:28px; text-align:center; font-weight:700;">0</span>
+                            <span class="separator">-</span>
+                            <span class="away-goals" style="width:28px; text-align:center; font-weight:700;">0</span>
+                            <span class="team-name away" style="display:inline-block; width:16ch; max-width:16ch; min-width:16ch; box-sizing:border-box; text-align:center; vertical-align:middle; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color: ${awayFg}; background-color: ${awayBg}; padding:4px 6px; border-radius:3px; font-weight:bold; border:2px solid ${awayBorder};">${match.away.name}</span>
+                            <span class="last-goal" style="flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:inherit; font-size:0.95em;"></span>
+                            <span class="spectators" style="display:inline-block; width:6ch; min-width:6ch; max-width:6ch; text-align:right; font-variant-numeric: tabular-nums;">\u2014</span>
+                        </div>
+                    `;
+        });
+        container.innerHTML = html;
+        try {
+          matches.forEach((match) => {
+            const el = document.getElementById(`match-line-${match.index}`);
+            if (!el) return;
+            const specEl = el.querySelector(".spectators");
+            if (!specEl) return;
+            let attendance = null;
+            try {
+              if (typeof match.attendance !== "undefined") attendance = match.attendance;
+              else if (Finance && typeof Finance.computeMatchAttendance === "function") {
+                const a = Finance.computeMatchAttendance(match);
+                attendance = a && typeof a.attendance !== "undefined" ? a.attendance : null;
+              }
+            } catch (e2) {
+              attendance = null;
+            }
+            specEl.textContent = attendance === null || typeof attendance === "undefined" ? "\u2014" : `${attendance.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".")}`;
+          });
+        } catch (e2) {
+        }
+      }
+    });
+    try {
+      adjustMatchBoardSizing();
+    } catch (e2) {
+    }
+  }
+  function updateMatchBoardLine2(matchIndex, matchResult) {
+    const FootLab2 = window.FootLab || window.Elifoot || {};
+    const DEBUG_MATCH_SIM = FootLab2 && FootLab2.DEBUG_MATCH_SIM || window.DEBUG_MATCH_SIM;
+    if (DEBUG_MATCH_SIM) {
+      try {
+        const L = FootLab2 && FootLab2.Logger ? FootLab2.Logger : console;
+        L.debug && L.debug("DBG updateMatchBoardLine called", {
+          matchIndex,
+          hasGoals: Array.isArray(matchResult.goals) ? matchResult.goals.length : 0
+        });
+      } catch (e2) {
+      }
+    }
+    const lineElement = document.getElementById(`match-line-${matchIndex}`);
+    if (!lineElement) {
+      if (window.DEBUG_MATCH_SIM)
+        try {
+          const L = getLogger2();
+          L.warn && L.warn("DBG updateMatchBoardLine: element not found for index", matchIndex);
+        } catch (e2) {
+        }
+      return;
+    }
+    const homeGoalsEl = lineElement.querySelector(".home-goals");
+    const awayGoalsEl = lineElement.querySelector(".away-goals");
+    const lastGoalEl = lineElement.querySelector(".last-goal");
+    if (homeGoalsEl) homeGoalsEl.textContent = matchResult.homeGoals;
+    if (awayGoalsEl) awayGoalsEl.textContent = matchResult.awayGoals;
+    const lastGoal = Array.isArray(matchResult.goals) && matchResult.goals.length ? matchResult.goals[matchResult.goals.length - 1] : null;
+    if (lastGoal && lastGoalEl) {
+      const isHome = lastGoal.team === "home";
+      const team = isHome ? matchResult.home : matchResult.away;
+      const bg = team.bgColor || "#333";
+      const fg = getReadableTextColor(bg, team.color || "#fff");
+      const playerName = lastGoal.player || (lastGoal.scorer ? lastGoal.scorer : "Jogador");
+      lastGoalEl.innerHTML = `(${lastGoal.minute}') <span style="background:${bg};color:${fg};padding:2px 6px;border-radius:3px;font-weight:bold;text-shadow:0 1px 2px #0008;">${playerName}</span>`;
+    }
+    try {
+      const specEl = lineElement.querySelector(".spectators");
+      let attendance = null;
+      if (typeof matchResult.attendance !== "undefined") {
+        attendance = matchResult.attendance;
+      } else if (getFinance() && typeof getFinance().computeMatchAttendance === "function") {
+        try {
+          attendance = getFinance().computeMatchAttendance(matchResult).attendance;
+        } catch (e2) {
+          attendance = null;
+        }
+      }
+      if (specEl) {
+        specEl.textContent = attendance === null || typeof attendance === "undefined" ? "\u2014" : `${attendance.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".")}`;
+      }
+    } catch (e2) {
+    }
+  }
+  function adjustMatchBoardSizing() {
+    const board = document.getElementById("match-board");
+    if (!board) return;
+    const lines = board.querySelectorAll(".match-line-new");
+    const totalLines = lines ? lines.length : 0;
+    if (!totalLines) return;
+    const viewportH = window.innerHeight || document.documentElement.clientHeight;
+    const boardRect = board.getBoundingClientRect();
+    const progressH = document.getElementById("progress-container") && document.getElementById("progress-container").offsetHeight || 0;
+    const footerH = document.getElementById("hub-footer-status") && document.getElementById("hub-footer-status").offsetHeight || 0;
+    const reserved = progressH + footerH + 80;
+    const availableForBoard = Math.max(100, viewportH - boardRect.top - reserved);
+    const headers = board.querySelectorAll(".division-title");
+    let headersTotal = 0;
+    headers.forEach((h) => headersTotal += h.offsetHeight || 24);
+    const gapTotal = Math.max(0, headers.length - 1) * 12 + headers.length * 12;
+    const availableForLines = Math.max(60, availableForBoard - headersTotal - gapTotal);
+    let target = Math.floor(availableForLines / totalLines);
+    if (target < 16) target = 16;
+    if (target > 40) target = 40;
+    try {
+      document.documentElement.style.setProperty("--match-line-height", `${target}px`);
+    } catch (e2) {
+    }
+  }
+  function attachGlobals() {
+    window.MatchBoard = window.MatchBoard || {};
+    window.MatchBoard.renderInitialMatchBoard = renderInitialMatchBoard2;
+    window.MatchBoard.updateMatchBoardLine = updateMatchBoardLine2;
+    window.renderInitialMatchBoard = renderInitialMatchBoard2;
+    window.updateMatchBoardLine = updateMatchBoardLine2;
+    window.FootLab = window.FootLab || window.Elifoot || {};
+    window.FootLab.MatchBoard = window.FootLab.MatchBoard || {};
+    window.FootLab.MatchBoard.renderInitialMatchBoard = renderInitialMatchBoard2;
+    window.FootLab.MatchBoard.updateMatchBoardLine = updateMatchBoardLine2;
+    window.FootLab.renderInitialMatchBoard = renderInitialMatchBoard2;
+    window.FootLab.updateMatchBoardLine = updateMatchBoardLine2;
+    window.Elifoot = window.Elifoot || window.FootLab;
+  }
+  attachGlobals();
+  window.addEventListener("resize", function() {
+    try {
+      adjustMatchBoardSizing();
+    } catch (e2) {
+    }
+  });
 
   // src/ui/overlays/intro.mjs
   var intro_exports = {};
@@ -4171,7 +4405,7 @@ Probabilidade estimada: ${(prob * 100).toFixed(1)}%`
     setIntroColors: () => setIntroColors,
     showIntroOverlay: () => showIntroOverlay2
   });
-  function getLogger2() {
+  function getLogger3() {
     return window.FootLab && window.FootLab.Logger || console;
   }
   function setIntroColors(club) {
@@ -4242,7 +4476,7 @@ Probabilidade estimada: ${(prob * 100).toFixed(1)}%`
       }, 2200);
     } catch (e2) {
       try {
-        const L = getLogger2();
+        const L = getLogger3();
         L.warn && L.warn("showIntroOverlay failed", e2);
       } catch (_) {
       }
@@ -4262,7 +4496,7 @@ Probabilidade estimada: ${(prob * 100).toFixed(1)}%`
   __export(halftime_exports, {
     showHalfTimeSubsOverlay: () => showHalfTimeSubsOverlay2
   });
-  function getLogger3() {
+  function getLogger4() {
     return window.FootLab && window.FootLab.Logger || console;
   }
   function showHalfTimeSubsOverlay2(club, match, cb) {
@@ -4452,7 +4686,7 @@ Probabilidade estimada: ${(prob * 100).toFixed(1)}%`
               });
             } catch (e2) {
               try {
-                const L = getLogger3();
+                const L = getLogger4();
                 L.warn && L.warn("Error auto-applying substitutions on close", e2);
               } catch (_) {
               }
@@ -4614,7 +4848,7 @@ Probabilidade estimada: ${(prob * 100).toFixed(1)}%`
                 }
               } catch (err) {
                 try {
-                  const L = getLogger3();
+                  const L = getLogger4();
                   L.warn && L.warn("Error applying substitution on confirm", err);
                 } catch (_) {
                 }
@@ -4669,7 +4903,7 @@ Probabilidade estimada: ${(prob * 100).toFixed(1)}%`
       renderPairs();
     } catch (e2) {
       try {
-        const L = getLogger3();
+        const L = getLogger4();
         L.warn && L.warn("showHalfTimeSubsOverlay failed", e2);
       } catch (_) {
       }
@@ -4773,7 +5007,7 @@ Probabilidade estimada: ${(prob * 100).toFixed(1)}%`
     }
   }
   var MainLogger = typeof window !== "undefined" && window.FootLab && window.FootLab.Logger ? window.FootLab.Logger : console;
-  function getLogger4() {
+  function getLogger5() {
     return typeof window !== "undefined" && window.FootLab && window.FootLab.Logger || typeof window !== "undefined" && window.Elifoot && window.Elifoot.Logger || MainLogger || console;
   }
   function setupInitialUiHandlers() {
@@ -4825,7 +5059,7 @@ Probabilidade estimada: ${(prob * 100).toFixed(1)}%`
       setupInitialUiHandlers();
     } catch (e2) {
       try {
-        const L = getLogger4();
+        const L = getLogger5();
         L.warn && L.warn("setupInitialUiHandlers failed", e2);
       } catch (_) {
       }
@@ -4839,19 +5073,22 @@ Probabilidade estimada: ${(prob * 100).toFixed(1)}%`
     const _startBtn = document.getElementById("startBtn");
     if (!_startBtn) {
       try {
-        const L = getLogger4();
+        const L = getLogger5();
         L.error && L.error("startBtn not found in DOM; cannot start game.");
       } catch (_) {
       }
       return;
     }
     _startBtn.addEventListener("click", async () => {
-      const L = getLogger4();
+      const L = getLogger5();
       L.info("Start button clicked.");
       coachName = document.getElementById("coachName").value.trim();
       if (!coachName) {
         alert("Digite o nome do treinador!");
         return;
+      }
+      if (!window.REAL_TEAM_COLORS) {
+        L.warn("window.REAL_TEAM_COLORS n\xE3o encontrado. O jogo usar\xE1 cores geradas automaticamente.");
       }
       L.info("Waiting for divisions data...");
       try {
@@ -5151,7 +5388,7 @@ Probabilidade estimada: ${(prob * 100).toFixed(1)}%`
           }
         } catch (e2) {
           try {
-            const L2 = getLogger4();
+            const L2 = getLogger5();
             L2.warn && L2.warn("assignRandomShortContracts failed", e2);
           } catch (_) {
           }
@@ -5162,7 +5399,7 @@ Probabilidade estimada: ${(prob * 100).toFixed(1)}%`
           }
         } catch (e2) {
           try {
-            const L2 = getLogger4();
+            const L2 = getLogger5();
             L2.warn && L2.warn("markSomeContractsExpiring failed", e2);
           } catch (_) {
           }
@@ -5185,22 +5422,22 @@ Probabilidade estimada: ${(prob * 100).toFixed(1)}%`
         window.FootLab.allDivisions = allDivisions;
         window.Elifoot = window.Elifoot || window.FootLab;
         try {
-          const L2 = getLogger4();
+          const L2 = getLogger5();
           L2.debug && L2.debug("Clube do jogador selecionado:", playerClub);
         } catch (_) {
         }
         try {
-          const L2 = getLogger4();
+          const L2 = getLogger5();
           L2.debug && L2.debug("Equipa do clube:", playerClub.team);
         } catch (_) {
         }
         try {
-          const L2 = getLogger4();
+          const L2 = getLogger5();
           L2.debug && L2.debug("Jogadores da equipa:", playerClub.team.players);
         } catch (_) {
         }
         try {
-          const L2 = getLogger4();
+          const L2 = getLogger5();
           L2.debug && L2.debug(
             "N\xFAmero de jogadores:",
             playerClub.team.players ? playerClub.team.players.length : 0
@@ -5211,13 +5448,13 @@ Probabilidade estimada: ${(prob * 100).toFixed(1)}%`
           try {
             applySkillCaps(allDivisions);
             try {
-              const L2 = getLogger4();
+              const L2 = getLogger5();
               L2.debug && L2.debug("applySkillCaps executed");
             } catch (_) {
             }
           } catch (e2) {
             try {
-              const L2 = getLogger4();
+              const L2 = getLogger5();
               L2.warn && L2.warn("applySkillCaps failed", e2);
             } catch (_) {
             }
@@ -5240,31 +5477,25 @@ Probabilidade estimada: ${(prob * 100).toFixed(1)}%`
             const _assign = typeof window !== "undefined" && (window.assignStartingLineups || window.FootLab && window.FootLab.assignStartingLineups || window.Elifoot && window.Elifoot.assignStartingLineups);
             if (typeof _assign === "function") _assign(currentRoundMatches);
           }
-          const proceedToMatch = function() {
+          window.proceedToMatch = function() {
             document.getElementById("screen-hub").style.display = "none";
             document.getElementById("screen-match").style.display = "flex";
             try {
-              const nextFloat = document.getElementById("nextOpponentFloating");
-              if (nextFloat && nextFloat.parentNode) {
-                nextFloat.parentNode.removeChild(nextFloat);
-              }
-              const budgetFloat = document.getElementById("budgetFloating");
-              if (budgetFloat && budgetFloat.parentNode) {
-                budgetFloat.parentNode.removeChild(budgetFloat);
-              }
+              ["nextOpponentFloating", "budgetFloating"].forEach((id) => {
+                const el = document.getElementById(id);
+                if (el && el.parentNode) el.parentNode.removeChild(el);
+              });
             } catch (e2) {
             }
             const matchTeamNameEl = document.getElementById("playerTeamNameMatch");
-            if (matchTeamNameEl) matchTeamNameEl.textContent = "";
-            const hubTeamNameEl = document.getElementById("playerTeamNameHub");
-            if (hubTeamNameEl) hubTeamNameEl.textContent = "";
-            const teamFooterEl = document.getElementById("playerTeamNameFooter");
-            if (teamFooterEl) teamFooterEl.textContent = "";
+            if (matchTeamNameEl && window.playerClub && window.playerClub.team) {
+              matchTeamNameEl.textContent = window.playerClub.team.name;
+            }
             if (typeof renderInitialMatchBoard === "function") {
-              renderInitialMatchBoard(allDivisions);
+              renderInitialMatchBoard(window.allDivisions);
             } else {
               try {
-                const L2 = getLogger4();
+                const L2 = getLogger5();
                 L2.error && L2.error("Fun\xE7\xE3o renderInitialMatchBoard n\xE3o encontrada (ui.js).");
               } catch (_) {
               }
@@ -5282,7 +5513,7 @@ Probabilidade estimada: ${(prob * 100).toFixed(1)}%`
                 initHubUI();
               } catch (e2) {
                 try {
-                  const L2 = getLogger4();
+                  const L2 = getLogger5();
                   L2.warn && L2.warn("initHubUI threw during start flow:", e2);
                 } catch (_) {
                 }
@@ -5297,7 +5528,7 @@ Probabilidade estimada: ${(prob * 100).toFixed(1)}%`
                 renderHubContent("menu-team");
               } catch (e2) {
                 try {
-                  const L2 = getLogger4();
+                  const L2 = getLogger5();
                   L2.warn && L2.warn("renderHubContent failed during start flow:", e2);
                 } catch (_) {
                 }
@@ -5305,7 +5536,7 @@ Probabilidade estimada: ${(prob * 100).toFixed(1)}%`
             }
           } catch (e2) {
             try {
-              const L2 = getLogger4();
+              const L2 = getLogger5();
               L2.warn && L2.warn("Failed to show hub after team selection:", e2);
             } catch (_) {
             }
@@ -5322,7 +5553,7 @@ Probabilidade estimada: ${(prob * 100).toFixed(1)}%`
               _updateClubStats(currentRoundMatches);
             } else {
               try {
-                const L2 = getLogger4();
+                const L2 = getLogger5();
                 L2.error && L2.error("Fun\xE7\xE3o updateClubStatsAfterMatches n\xE3o encontrada (matches.js).");
               } catch (_) {
               }
@@ -5341,13 +5572,14 @@ Probabilidade estimada: ${(prob * 100).toFixed(1)}%`
             if (typeof renderHubContent === "function") renderHubContent("menu-standings");
           } catch (err) {
             try {
-              const L2 = getLogger4();
+              const L2 = getLogger5();
               L2.warn && L2.warn("endSimulation: could not switch to standings view", err);
             } catch (_) {
             }
           }
         };
-        const finishDayAndReturnToHub = function() {
+        window.endSimulation = endSimulation;
+        window.finishDayAndReturnToHub = function() {
           try {
             if (Array.isArray(currentRoundMatches)) {
               currentRoundMatches.forEach((m) => {
@@ -5358,7 +5590,7 @@ Probabilidade estimada: ${(prob * 100).toFixed(1)}%`
                 if (typeof _updateClubStats === "function") {
                   _updateClubStats(currentRoundMatches);
                   try {
-                    const L2 = getLogger4();
+                    const L2 = getLogger5();
                     L2.debug && L2.debug(
                       "finishDayAndReturnToHub: updateClubStatsAfterMatches executed for current round"
                     );
@@ -5369,7 +5601,7 @@ Probabilidade estimada: ${(prob * 100).toFixed(1)}%`
             }
           } catch (e2) {
             try {
-              const L2 = getLogger4();
+              const L2 = getLogger5();
               L2.warn && L2.warn("finishDayAndReturnToHub: error finalizing matches", e2);
             } catch (_) {
             }
@@ -5397,7 +5629,7 @@ Probabilidade estimada: ${(prob * 100).toFixed(1)}%`
               const rounds = generateRounds(divisionClubs);
               if (!Array.isArray(rounds) || rounds.length === 0) {
                 try {
-                  const L2 = getLogger4();
+                  const L2 = getLogger5();
                   L2.warn && L2.warn("generateRounds retornou vazio para uma divis\xE3o");
                 } catch (_) {
                 }
@@ -5434,7 +5666,7 @@ Probabilidade estimada: ${(prob * 100).toFixed(1)}%`
                 }
               } catch (e2) {
                 try {
-                  const L2 = getLogger4();
+                  const L2 = getLogger5();
                   L2.warn && L2.warn("Erro ao evitar repeti\xE7\xE3o de advers\xE1rio na gera\xE7\xE3o de rondas:", e2);
                 } catch (_) {
                 }
@@ -5443,7 +5675,7 @@ Probabilidade estimada: ${(prob * 100).toFixed(1)}%`
                 nextRoundMatches.push(...rounds[roundIndex]);
               } else {
                 try {
-                  const L2 = getLogger4();
+                  const L2 = getLogger5();
                   L2.warn && L2.warn("\xCDndice de jornada fora de alcance:", roundIndex, "de", rounds.length);
                 } catch (_) {
                 }
@@ -5452,7 +5684,7 @@ Probabilidade estimada: ${(prob * 100).toFixed(1)}%`
             currentRoundMatches = nextRoundMatches;
             window.currentRoundMatches = currentRoundMatches;
             try {
-              const L2 = getLogger4();
+              const L2 = getLogger5();
               L2.info && L2.info(
                 "finishDayAndReturnToHub: jornada",
                 currentJornada,
@@ -5465,7 +5697,7 @@ Probabilidade estimada: ${(prob * 100).toFixed(1)}%`
             const sampleMatch = currentRoundMatches[0];
             if (sampleMatch) {
               try {
-                const L2 = getLogger4();
+                const L2 = getLogger5();
                 L2.debug && L2.debug("Exemplo de jogo gerado:", {
                   home: sampleMatch.homeClub?.team?.name,
                   away: sampleMatch.awayClub?.team?.name,
@@ -5479,13 +5711,13 @@ Probabilidade estimada: ${(prob * 100).toFixed(1)}%`
               const _assign = typeof window !== "undefined" && (window.assignStartingLineups || window.FootLab && window.FootLab.assignStartingLineups || window.Elifoot && window.Elifoot.assignStartingLineups);
               if (typeof _assign === "function") _assign(currentRoundMatches);
               try {
-                const L2 = getLogger4();
+                const L2 = getLogger5();
                 L2.info && L2.info("Lineups atribu\xEDdas para pr\xF3xima jornada");
               } catch (_) {
               }
             } catch (e2) {
               try {
-                const L2 = getLogger4();
+                const L2 = getLogger5();
                 L2.error && L2.error("ERRO ao atribuir lineups:", e2);
               } catch (_) {
               }
@@ -5513,7 +5745,7 @@ Probabilidade estimada: ${(prob * 100).toFixed(1)}%`
                   }
                 } catch (e2) {
                   try {
-                    const L2 = getLogger4();
+                    const L2 = getLogger5();
                     L2.warn && L2.warn("Could not write debug snapshot to localStorage", e2);
                   } catch (_) {
                   }
@@ -5521,7 +5753,7 @@ Probabilidade estimada: ${(prob * 100).toFixed(1)}%`
               }
             } catch (e2) {
               try {
-                const L2 = getLogger4();
+                const L2 = getLogger5();
                 L2.warn && L2.warn("Could not write debug snapshot", e2);
               } catch (_) {
               }
@@ -5551,7 +5783,7 @@ Probabilidade estimada: ${(prob * 100).toFixed(1)}%`
                   }
                 } catch (err) {
                   try {
-                    const L2 = getLogger4();
+                    const L2 = getLogger5();
                     L2.warn && L2.warn("Could not write snapshot to localStorage", err);
                   } catch (_) {
                   }
@@ -5559,7 +5791,7 @@ Probabilidade estimada: ${(prob * 100).toFixed(1)}%`
               }
             } catch (err) {
               try {
-                const L2 = getLogger4();
+                const L2 = getLogger5();
                 L2.warn && L2.warn("Erro ao guardar snapshot:", err);
               } catch (_) {
               }
@@ -5571,7 +5803,7 @@ Probabilidade estimada: ${(prob * 100).toFixed(1)}%`
             }
           } catch (err) {
             try {
-              const L2 = getLogger4();
+              const L2 = getLogger5();
               L2.warn && L2.warn("Erro em seasonalSkillDrift:", err);
             } catch (_) {
             }
@@ -5582,7 +5814,7 @@ Probabilidade estimada: ${(prob * 100).toFixed(1)}%`
             }
           } catch (err) {
             try {
-              const L2 = getLogger4();
+              const L2 = getLogger5();
               L2.warn && L2.warn("selectExpiringPlayersToLeave failed:", err);
             } catch (_) {
             }
@@ -5593,7 +5825,7 @@ Probabilidade estimada: ${(prob * 100).toFixed(1)}%`
             }
           } catch (err) {
             try {
-              const L2 = getLogger4();
+              const L2 = getLogger5();
               L2.warn && L2.warn("selectPlayersForRelease failed:", err);
             } catch (_) {
             }
@@ -5609,7 +5841,7 @@ Probabilidade estimada: ${(prob * 100).toFixed(1)}%`
                   renderHubContent("menu-team");
                 } catch (e2) {
                   try {
-                    const L2 = getLogger4();
+                    const L2 = getLogger5();
                     L2.warn && L2.warn("renderHubContent failed after offers popup", e2);
                   } catch (_) {
                   }
@@ -5645,7 +5877,7 @@ Probabilidade estimada: ${(prob * 100).toFixed(1)}%`
             }
           } catch (e2) {
             try {
-              const L2 = getLogger4();
+              const L2 = getLogger5();
               L2.warn && L2.warn("Erro ao decrementar suspens\xF5es:", e2);
             } catch (_) {
             }
@@ -5696,7 +5928,7 @@ Probabilidade estimada: ${(prob * 100).toFixed(1)}%`
             startGame();
           } catch (err) {
             try {
-              const L2 = getLogger4();
+              const L2 = getLogger5();
               L2.error && L2.error("Erro ao carregar jogo salvo:", err);
             } catch (_) {
             }
@@ -5707,5 +5939,8 @@ Probabilidade estimada: ${(prob * 100).toFixed(1)}%`
       }
     });
   });
+
+  // src/entry.mjs
+  window.Hub = hub_controller_exports;
 })();
 //# sourceMappingURL=app.bundle.js.map

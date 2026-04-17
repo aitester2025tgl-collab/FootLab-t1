@@ -29,10 +29,8 @@ function renderInitialMatchBoard(allDivisions) {
     );
     const headerSpan = document.getElementById('playerTeamNameMatch');
     if (playerMatch && headerSpan) {
-      const home =
-        playerMatch.homeClub && playerMatch.homeClub.team ? playerMatch.homeClub.team.name : 'Home';
-      const away =
-        playerMatch.awayClub && playerMatch.awayClub.team ? playerMatch.awayClub.team.name : 'Away';
+      const home = playerMatch.home ? playerMatch.home.name : 'Home';
+      const away = playerMatch.away ? playerMatch.away.name : 'Away';
       headerSpan.textContent = `${home} × ${away}`;
     }
     if (((FootLab && FootLab.GAME_NAME) || window.GAME_NAME) && typeof document !== 'undefined') {
@@ -71,27 +69,23 @@ function renderInitialMatchBoard(allDivisions) {
       let html = `<h3 class="division-title">${divisionNames[divisionNumber]}</h3>`;
 
       matches.forEach((match) => {
-        const homeBg =
-          (match.homeClub && match.homeClub.team && match.homeClub.team.bgColor) || '#333';
-        const homeSec =
-          (match.homeClub && match.homeClub.team && match.homeClub.team.color) || '#ffffff';
+        const homeBg = (match.home && match.home.bgColor) || '#333';
+        const homeSec = (match.home && match.home.color) || '#ffffff';
         const homeFg = getReadableTextColor(homeBg, homeSec);
         const homeBorder = homeSec;
 
-        const awayBg =
-          (match.awayClub && match.awayClub.team && match.awayClub.team.bgColor) || '#333';
-        const awaySec =
-          (match.awayClub && match.awayClub.team && match.awayClub.team.color) || '#ffffff';
+        const awayBg = (match.away && match.away.bgColor) || '#333';
+        const awaySec = (match.away && match.away.color) || '#ffffff';
         const awayFg = getReadableTextColor(awayBg, awaySec);
         const awayBorder = awaySec;
 
         html += `
                         <div class="match-line-new" id="match-line-${match.index}" style="display:flex; align-items:center; gap:8px;">
-                            <span class="team-name home" style="display:inline-block; width:16ch; max-width:16ch; min-width:16ch; box-sizing:border-box; text-align:center; vertical-align:middle; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color: ${homeFg}; background-color: ${homeBg}; padding:4px 6px; border-radius:3px; font-weight:bold; border:2px solid ${homeBorder};">${match.homeClub.team.name}</span>
+                            <span class="team-name home" style="display:inline-block; width:16ch; max-width:16ch; min-width:16ch; box-sizing:border-box; text-align:center; vertical-align:middle; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color: ${homeFg}; background-color: ${homeBg}; padding:4px 6px; border-radius:3px; font-weight:bold; border:2px solid ${homeBorder};">${match.home.name}</span>
                             <span class="home-goals" style="width:28px; text-align:center; font-weight:700;">0</span>
                             <span class="separator">-</span>
                             <span class="away-goals" style="width:28px; text-align:center; font-weight:700;">0</span>
-                            <span class="team-name away" style="display:inline-block; width:16ch; max-width:16ch; min-width:16ch; box-sizing:border-box; text-align:center; vertical-align:middle; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color: ${awayFg}; background-color: ${awayBg}; padding:4px 6px; border-radius:3px; font-weight:bold; border:2px solid ${awayBorder};">${match.awayClub.team.name}</span>
+                            <span class="team-name away" style="display:inline-block; width:16ch; max-width:16ch; min-width:16ch; box-sizing:border-box; text-align:center; vertical-align:middle; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color: ${awayFg}; background-color: ${awayBg}; padding:4px 6px; border-radius:3px; font-weight:bold; border:2px solid ${awayBorder};">${match.away.name}</span>
                             <span class="last-goal" style="flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:inherit; font-size:0.95em;"></span>
                             <span class="spectators" style="display:inline-block; width:6ch; min-width:6ch; max-width:6ch; text-align:right; font-variant-numeric: tabular-nums;">—</span>
                         </div>
@@ -173,7 +167,7 @@ function updateMatchBoardLine(matchIndex, matchResult) {
       : null;
   if (lastGoal && lastGoalEl) {
     const isHome = lastGoal.team === 'home';
-    const team = isHome ? matchResult.homeClub.team : matchResult.awayClub.team;
+    const team = isHome ? matchResult.home : matchResult.away;
     const bg = team.bgColor || '#333';
     const fg = getReadableTextColor(bg, team.color || '#fff');
     const playerName = lastGoal.player || (lastGoal.scorer ? lastGoal.scorer : 'Jogador');

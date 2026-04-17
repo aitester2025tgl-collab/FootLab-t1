@@ -1,4 +1,5 @@
-/* global divisionsData, generateAllClubs, applySkillCaps, generateRounds, renderInitialMatchBoard, initHubUI, renderHubContent, seasonalSkillDrift, selectExpiringPlayersToLeave, selectPlayersForRelease, simulateDay, startGame, assignRandomShortContracts, markSomeContractsExpiring */
+/* global divisionsData, applySkillCaps, generateRounds, renderInitialMatchBoard, initHubUI, renderHubContent, seasonalSkillDrift, selectExpiringPlayersToLeave, selectPlayersForRelease, simulateDay, startGame, assignRandomShortContracts, markSomeContractsExpiring */
+import { generateAllClubs } from './clubs.js';
 /* exported isSimulating, populateTeamSelection, formatNumber, proceedToMatch, endSimulation */
 /* eslint-disable no-empty */
 // main.js - VERSÃO COMPLETA SEM toLocaleString
@@ -54,7 +55,7 @@ function populateTeamSelection() {
       card.className = 'team-select-card';
       card.title = t.name;
       card.innerHTML = `<div class="badge" style="background:${t.bgColor || '#ccc'};border-color:${t.color || '#fff'}"></div><div class="team-name">${t.name}</div>`;
-      // informational only, no onclick
+      card.onclick = () => selectTeam(t.name);
       grid.appendChild(card);
     });
   } catch (e) {
@@ -174,6 +175,10 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!coachName) {
       alert('Digite o nome do treinador!');
       return;
+    }
+
+    if (!window.REAL_TEAM_COLORS) {
+      L.warn('window.REAL_TEAM_COLORS não encontrado. O jogo usará cores geradas automaticamente.');
     }
 
     // Ensure divisions data is ready (handle race where REAL_ROSTERS loads after teams.js)
@@ -647,36 +652,29 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // CRÍTICO: Exportar para o escopo global (and namespace)
         // proceedToMatch switches screens and renders the initial board
-        /* eslint-disable-next-line no-unused-vars */
-        const proceedToMatch = function () {
+        window.proceedToMatch = function () {
           document.getElementById('screen-hub').style.display = 'none';
           document.getElementById('screen-match').style.display = 'flex';
 
           // Remove floating UI elements (they must not persist during match view)
           try {
-            const nextFloat = document.getElementById('nextOpponentFloating');
-            if (nextFloat && nextFloat.parentNode) {
-              nextFloat.parentNode.removeChild(nextFloat);
-            }
-            const budgetFloat = document.getElementById('budgetFloating');
-            if (budgetFloat && budgetFloat.parentNode) {
-              budgetFloat.parentNode.removeChild(budgetFloat);
-            }
+            ['nextOpponentFloating', 'budgetFloating'].forEach(id => {
+              const el = document.getElementById(id);
+              if (el && el.parentNode) el.parentNode.removeChild(el);
+            });
           } catch (e) {
             /* ignore */
           }
 
+          // Atualizar nomes das equipas na UI de jogo
           const matchTeamNameEl = document.getElementById('playerTeamNameMatch');
-          if (matchTeamNameEl) matchTeamNameEl.textContent = '';
-
-          const hubTeamNameEl = document.getElementById('playerTeamNameHub');
-          if (hubTeamNameEl) hubTeamNameEl.textContent = '';
-
-          const teamFooterEl = document.getElementById('playerTeamNameFooter');
-          if (teamFooterEl) teamFooterEl.textContent = '';
+          if (matchTeamNameEl && window.playerClub && window.playerClub.team) {
+            matchTeamNameEl.textContent = window.playerClub.team.name;
+          }
 
           if (typeof renderInitialMatchBoard === 'function') {
-            renderInitialMatchBoard(allDivisions);
+            // Passamos as divisões e garantimos que os jogos estão no window.currentRoundMatches
+            renderInitialMatchBoard(window.allDivisions);
           } else {
             try {
               const L = getLogger();
@@ -788,8 +786,9 @@ document.addEventListener('DOMContentLoaded', () => {
           }
         }
       };
+      window.endSimulation = endSimulation;
 
-      const finishDayAndReturnToHub = function () {
+      window.finishDayAndReturnToHub = function () {
         // Ensure today's matches are finalized and stats applied before moving to the next jornada.
         try {
           if (Array.isArray(currentRoundMatches)) {

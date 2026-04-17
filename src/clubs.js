@@ -261,7 +261,7 @@ function validateAllRosters(minPlayers = 18) {
 /**
  * Gera todos os clubes (4 divisões) chamando generateDivisionClubs.
  */
-function generateAllClubs() {
+export function generateAllClubs() {
   const allClubs = [];
   validateAllRosters(18);
 
@@ -276,7 +276,6 @@ function generateAllClubs() {
 // Export global helpers and namespace
 try {
   if (typeof window !== 'undefined') {
-    window.generateAllClubs = generateAllClubs;
     window.FootLab = window.FootLab || window.Elifoot || {};
     window.FootLab.generateAllClubs = window.FootLab.generateAllClubs || generateAllClubs;
     window.FootLab.generateDivisionClubs =

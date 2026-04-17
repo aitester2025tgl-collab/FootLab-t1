@@ -399,11 +399,13 @@
         
         if (Array.isArray(updates)) {
           updates.forEach((update) => {
-            if (!update || !update.match) return;
+            if (!update || !update.match || typeof update.match.index === 'undefined') return;
+            const fullMatch = window.currentRoundMatches[update.match.index];
+            if (!fullMatch) return;
             if (typeof window.updateMatchBoardLine === 'function')
-              window.updateMatchBoardLine(update.match.index, update.match);
+              window.updateMatchBoardLine(update.match.index, fullMatch);
             else if (typeof updateMatchBoardLine === 'function')
-              updateMatchBoardLine(update.match.index, update.match);
+              updateMatchBoardLine(update.match.index, fullMatch);
           });
         }
       } else {

@@ -1,9 +1,21 @@
 // matches.js - CORRIGIDO: Adicionada advanceMatchDay e Match Club Naming
 
 /**
- * Gera um calendário básico de jogos (ida e volta) para uma liga
- * ATENÇÃO: Recebe a lista de CLUBES daquela divisão.
+ * Configurações de equilíbrio da simulação (Game Design)
  */
+const SIM_CONFIG = {
+  baseGoalChance: 0.015,
+  homeAdvantageFactor: 1.15,
+  skillExponentialBase: 1.01,
+  maxGoalsPerMinute: 2,
+  events: {
+    yellowChance: 0.02,
+    redChance: 0.001,
+    suspensionYellows: 1,
+    suspensionRed: 2
+  }
+};
+
 
 // local helper to prefer centralized logger when available
 function getLogger() {
@@ -65,7 +77,7 @@ function generateRounds(clubs) {
         awayGoals: 0,
         goals: [],
         isFinished: false,
-        division: homeClub.division,
+        division: Number(homeClub.division),
       };
       matchesThisRound.push(match);
     }
@@ -88,7 +100,7 @@ function generateRounds(clubs) {
       awayGoals: 0,
       goals: [],
       isFinished: false,
-      division: m.division,
+      division: Number(m.division),
     }));
   });
 
@@ -114,6 +126,14 @@ function advanceMatchDay(matches, minute) {
     match.goals = Array.isArray(match.goals) ? match.goals : [];
 
     // Verificar se as equipas têm jogadores (prefere lineups definidas por match.homePlayers/match.awayPlayers)
+    // Pré-cálculo de skills no minuto 1 para evitar cálculos repetitivos
+    if (minute === 1 || !match._homeSkill) {
+      const hp = match.homePlayers || (match.home && match.home.players) || [];
+      const ap = match.awayPlayers || (match.away && match.away.players) || [];
+      match._homeSkill = hp.reduce((sum, p) => sum + (p.skill || 0), 0) / Math.max(1, hp.length);
+      match._awaySkill = ap.reduce((sum, p) => sum + (p.skill || 0), 0) / Math.max(1, ap.length);
+    }
+
     const homePlayers =
       match.homePlayers && Array.isArray(match.homePlayers)
         ? match.homePlayers
@@ -137,54 +157,20 @@ function advanceMatchDay(matches, minute) {
       continue;
     }
 
-    // Obter skills médias das equipas (para cálculo de probabilidade)
-    const homeSkill =
-      homePlayers.reduce((sum, p) => sum + (p.skill || 0), 0) / Math.max(1, homePlayers.length);
-    const awaySkill =
-      awayPlayers.reduce((sum, p) => sum + (p.skill || 0), 0) / Math.max(1, awayPlayers.length);
+    const homeSkill = match._homeSkill;
+    const awaySkill = match._awaySkill;
 
-    // Ajustar a chance base (mais realista)
-    const baseChance = 0.01; // Chance por minuto por jogo (adjusted for reasonable scoring rate)
+    // Fator de golo base por minuto. Reduzido para compensar o aumento do impacto da skill.
     const skillDiff = homeSkill - awaySkill;
-    const homeChanceFactor = 1 + skillDiff / 200; // Ajuste mais suave por skill
-    const awayChanceFactor = 1 - skillDiff / 200;
 
-    // Limit goals per minute: at most 2 goals per minute in total, and second goal is rare
-    // Count only goal events (cards are also stored in match.goals)
-    const goalsThisMinute = match.goals
-      ? match.goals.filter((g) => g.minute === minute && g.type === 'goal').length
-      : 0;
-    // Debug: expose per-match probabilities for early minutes when enabled
-    try {
-      if (window.DEBUG_MATCH_SIM && minute <= 5) {
-        const dbgHomeBase = 0.01 * Math.max(0.3, homeChanceFactor) * 1.1;
-        const dbgAwayBase = 0.01 * Math.max(0.3, awayChanceFactor);
-        try {
-          const L = getLogger();
-          L.debug &&
-            L.debug('DBG advanceMatchDay', {
-              minute,
-              matchIdx: i,
-              homeSkill: homeSkill.toFixed(2),
-              awaySkill: awaySkill.toFixed(2),
-              homeBase: dbgHomeBase.toFixed(6),
-              awayBase: dbgAwayBase.toFixed(6),
-              goalsThisMinute,
-            });
-        } catch (_) {
-          /* ignore */
-        }
-      }
-    } catch (e) {
-      /* ignore */
-    }
-    if ((goalsThisMinute || 0) >= 2) {
-      // too many goals already this minute, skip scoring
-    } else {
-      // Chance de golo para a equipa da casa (com fator casa)
-      const homeGoalChanceBase = baseChance * Math.max(0.3, homeChanceFactor) * 1.1; // 1.1 = Fator casa
-      // If there's already a goal this minute, make a second goal much less likely
-      const homeGoalChance = goalsThisMinute >= 1 ? homeGoalChanceBase * 0.06 : homeGoalChanceBase;
+    // NOVO CÁLCULO: Usar potência para acentuar a diferença de skill.
+    const skillMultiplier = Math.pow(SIM_CONFIG.skillExponentialBase, skillDiff);
+
+    const homeChanceFactor = skillMultiplier;
+    const awayChanceFactor = 1 / skillMultiplier; // Inverso para a equipa mais fraca
+
+    // Chance de golo para a equipa da casa
+    const homeGoalChance = SIM_CONFIG.baseGoalChance * homeChanceFactor * SIM_CONFIG.homeAdvantageFactor;
       // sample RNG once so we can debug decisions without changing distribution
       const homeDraw = Math.random();
       if (window.DEBUG_MATCH_SIM && minute <= 10) {
@@ -226,8 +212,8 @@ function advanceMatchDay(matches, minute) {
       const goalsAfterHome = match.goals
         ? match.goals.filter((g) => g.minute === minute).length
         : 0;
-      if ((goalsAfterHome || 0) < 2) {
-        const awayGoalChanceBase = baseChance * Math.max(0.3, awayChanceFactor);
+      if ((goalsAfterHome || 0) < SIM_CONFIG.maxGoalsPerMinute) {
+        const awayGoalChanceBase = SIM_CONFIG.baseGoalChance * awayChanceFactor;
         const awayGoalChance = goalsAfterHome >= 1 ? awayGoalChanceBase * 0.06 : awayGoalChanceBase;
         const awayDraw = Math.random();
         if (window.DEBUG_MATCH_SIM && minute <= 10) {
@@ -267,20 +253,10 @@ function advanceMatchDay(matches, minute) {
           updates.push({ match });
         }
       }
-    }
-
     // Cards simulation: yellows are more common, reds rare. Use on-field players arrays.
     try {
-      const yellowChance =
-        (window.GameConfig &&
-          window.GameConfig.events &&
-          window.GameConfig.events.yellowChancePerMinuteTeam) ||
-        0.02; // per team per minute
-      const redChance =
-        (window.GameConfig &&
-          window.GameConfig.events &&
-          window.GameConfig.events.redChancePerMinuteTeam) ||
-        0.001; // straight red chance
+      const yellowChance = SIM_CONFIG.events.yellowChance;
+      const redChance = SIM_CONFIG.events.redChance;
 
       const giveCard = function (teamPlayers, side) {
         if (!teamPlayers || !teamPlayers.length) return;
@@ -305,11 +281,7 @@ function advanceMatchDay(matches, minute) {
             // remove from on-field players
             const idx = teamPlayers.findIndex((x) => x === p);
             if (idx >= 0) teamPlayers.splice(idx, 1);
-            const banGames =
-              (window.GameConfig &&
-                window.GameConfig.events &&
-                window.GameConfig.events.suspensionDoubleYellowGames) ||
-              1;
+            const banGames = SIM_CONFIG.events.suspensionYellows;
             p.suspendedGames = Math.max(p.suspendedGames || 0, banGames);
             p.sentOff = true;
           }
@@ -329,11 +301,7 @@ function advanceMatchDay(matches, minute) {
           });
           const idx = teamPlayers.findIndex((x) => x === p);
           if (idx >= 0) teamPlayers.splice(idx, 1);
-          const straightBan =
-            (window.GameConfig &&
-              window.GameConfig.events &&
-              window.GameConfig.events.suspensionStraightRedGames) ||
-            2;
+          const straightBan = SIM_CONFIG.events.suspensionRed;
           p.suspendedGames = Math.max(p.suspendedGames || 0, straightBan);
           p.sentOff = true;
         }
