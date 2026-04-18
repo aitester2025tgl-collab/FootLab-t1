@@ -215,56 +215,10 @@
     if (hubScreen) {
       // Injetar CSS para corrigir as proporções e forçar a verticalidade das laterais
       let styleEl = document.getElementById('hub-layout-adjustment');
-      if (styleEl) styleEl.remove(); // Limpa o anterior se existir para evitar duplicação
-      
-      styleEl = document.createElement('style');
-      styleEl.id = 'hub-layout-adjustment';
-      document.head.appendChild(styleEl);
-      
-      styleEl.textContent = `
-        /* O Hub principal é uma linha com 3 colunas */
-        #screen-hub { 
-          display: flex !important; 
-          flex-direction: row !important; 
-          width: 100vw !important; 
-          height: 100vh !important; 
-          overflow: hidden !important;
-        }
-
-        /* FORÇAR VERTICALIDADE NAS LATERAIS */
-        .hub-sidebar, .hub-sidebar-left, .hub-sidebar-right, #tactics-panel, .tactics-column, .sidebar {
-          display: flex !important;
-          flex-direction: column !important; /* Empilha os blocos verticalmente */
-          flex: 0 0 220px !important; /* Largura fixa e estreita para as laterais */
-          width: 220px !important;
-          gap: 30px !important; /* Espaço entre o bloco do treinador e os botões */
-          padding: 15px !important;
-          box-sizing: border-box !important;
-          overflow-y: auto !important;
-          background: rgba(0,0,0,0.2);
-        }
-
-        /* O PLANTEL (MEIO) - Prioridade Total */
-        #hub-main-content {
-          flex: 1 !important; /* Ocupa todo o espaço que sobra */
-          display: block !important;
-          min-width: 0 !important;
-          overflow-y: auto !important;
-          padding: 20px !important;
-        }
-
-        /* Forçar que cada grupo (Treinador, Finanças, Próximo Jogo) ocupe a largura total */
-        .hub-sidebar > *, .hub-sidebar-left > *, #tactics-panel > *, .tactics-column > * {
-          width: 100% !important;
-          display: flex !important;
-          flex-direction: column !important; /* Garante que o conteúdo dentro destes blocos também seja vertical */
-          margin-bottom: 10px !important;
-          flex-shrink: 0 !important;
-        }
-      `;
+      if (styleEl) styleEl.remove(); 
 
       hubScreen.style.setProperty('display', 'flex', 'important');
-      hubScreen.style.setProperty('flex-direction', 'row', 'important');
+      hubScreen.style.setProperty('flex-direction', 'column', 'important');
       hubScreen.style.opacity = '1';
     }
 

@@ -60,16 +60,15 @@
     </div>
 
     <div id="screen-hub" style="display: none">
-      <div id="hub-header">
-        <div id="hub-header-content">
-          <div><strong>Treinador:</strong> <span id="coachNameDisplay"></span></div>
-          <div><strong>Equipa:</strong> <span id="playerTeamNameHub"></span></div>
-        </div>
-        <div id="module-status-indicator"></div>
-      </div>
-
       <div id="hub-content-wrapper">
         <div id="left-column">
+          <div id="hub-header" class="hub-box">
+            <div id="hub-header-content" style="display: flex; flex-direction: column; gap: 8px;">
+              <div><span style="font-size: 0.8em; color: #888; text-transform: uppercase;">Treinador</span><br><strong id="coachNameDisplay" style="font-size: 1.1em; color: #fff;"></strong></div>
+              <div><span style="font-size: 0.8em; color: #888; text-transform: uppercase;">Equipa</span><br><strong id="playerTeamNameHub" style="font-size: 1.1em; color: #fff;"></strong></div>
+            </div>
+            <div id="module-status-indicator"></div>
+          </div>
           <div id="hub-menu" class="hub-box">
             <div class="hub-menu-main">
               <button class="hub-menu-btn" id="menu-team">EQUIPA</button>
@@ -119,24 +118,15 @@
             <div class="opponent-label">ADVERSÁRIO</div>
             <div id="nextOpponentDetails">—</div>
           </div>
-        </div>
-      </div>
 
-      <div id="hub-footer-status">
-        <div id="footer-status-left" class="footer-panel">
-          <div>
-            Finanças visíveis no painel lateral
+          <div class="hub-box" style="font-size: 0.85em; color: #888; margin-top: auto;">
+            <div style="margin-bottom: 8px;">Finanças visíveis no painel lateral</div>
+            <div>Equipa: <span id="playerTeamNameFooter" style="color: #fff; font-weight: bold;"></span></div>
           </div>
         </div>
-
-        <div id="footer-action-right-new" class="footer-panel">
-          <button id="simulateBtnHub">SIMULAR DIA DE JOGOS</button>
-        </div>
-
-        <div id="footer-team-name" class="footer-panel">
-          Equipa: <span id="playerTeamNameFooter"></span>
-        </div>
       </div>
+
+      <button id="simulateBtnHub">SIMULAR DIA DE JOGOS</button>
     </div>
 
     <!-- Intro overlay shown for 3 seconds before match screen (kit + team name) -->

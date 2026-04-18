@@ -2,7 +2,7 @@
   "name": "elifoot-smoke",
   "version": "1.0.0",
   "description": "Smoke test for Elifoot project using jsdom",
-  "main": "tests/smoke_test.js",
+  "main": "src/electron-main.js",
   "scripts": {
     "smoke": "node tests/smoke_test.js",
     "test:rounds": "node tests/generate_rounds_test.js",
@@ -23,15 +23,13 @@
   },
   "author": "",
   "license": "MIT",
-  "dependencies": {
-    "jsdom": "^28.1.0"
-  },
   "devDependencies": {
     "electron": "^31.0.0",
     "esbuild": "^0.27.4",
     "eslint": "^8.57.1",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-prettier": "^5.5.4",
+    "jsdom": "^29.0.2",
     "mocha": "^10.4.0",
     "pngjs": "^7.0.0",
     "prettier": "^3.6.2",
