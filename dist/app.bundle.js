@@ -2357,9 +2357,81 @@
         return window.Hub.renderTeamRoster(club);
     }
     function buildNextOpponentHtml2() {
-      if (window.Hub && typeof window.Hub.buildNextOpponentHtml === "function")
-        return window.Hub.buildNextOpponentHtml();
-      return "<div>Sem informa\xE7\xE3o.</div>";
+      let html = "";
+      if (window.Hub && typeof window.Hub.buildNextOpponentHtml === "function") {
+        html = window.Hub.buildNextOpponentHtml();
+      }
+      if (!html || html.includes("Sem informa\xE7\xE3o")) {
+        if (!window.playerClub || !window.seasonCalendar || !window.currentJornada) {
+          return "<div>Sem informa\xE7\xE3o do calend\xE1rio.</div>";
+        }
+        const nextRoundIndex = window.currentJornada - 1;
+        if (nextRoundIndex >= window.seasonCalendar.length) {
+          return "<div>Fim de \xC9poca</div>";
+        }
+        const nextRoundMatches = window.seasonCalendar[nextRoundIndex];
+        const myMatch = nextRoundMatches.find((m) => m.homeClub === window.playerClub || m.awayClub === window.playerClub);
+        if (!myMatch) return "<div>Sem jogo agendado (Folga)</div>";
+        const isHome = myMatch.homeClub === window.playerClub;
+        const oppClub = isHome ? myMatch.awayClub : myMatch.homeClub;
+        const oppName = oppClub && oppClub.team ? oppClub.team.name : "Desconhecido";
+        const oppBg = oppClub && oppClub.team ? oppClub.team.bgColor : "#333";
+        const oppFg = oppClub && oppClub.team ? oppClub.team.color : "#fff";
+        const oppTactic = oppClub && oppClub.team && oppClub.team.tactic || "4-4-2";
+        const oppGF = oppClub ? oppClub.goalsFor || 0 : 0;
+        const oppGA = oppClub ? oppClub.goalsAgainst || 0 : 0;
+        let topScorer = { name: "Nenhum", goals: 0 };
+        let avgSkill2 = 0;
+        if (oppClub && oppClub.team && oppClub.team.players) {
+          oppClub.team.players.forEach((p) => {
+            if ((p.goals || 0) > topScorer.goals) topScorer = p;
+          });
+          const sortedSkill = [...oppClub.team.players].sort((a, b) => (b.skill || 0) - (a.skill || 0)).slice(0, 11);
+          if (sortedSkill.length > 0) {
+            avgSkill2 = Math.round(sortedSkill.reduce((sum, p) => sum + (p.skill || 0), 0) / sortedSkill.length);
+          }
+        }
+        html = `
+        <div style="display:flex; flex-direction:column; gap:14px; margin-top:5px; width: 100%;">
+          <div style="display:flex; align-items:center; gap:12px;">
+            <div style="width:40px; height:40px; flex-shrink:0; border-radius:6px; background:${oppBg}; border:2px solid ${oppFg}; box-shadow: 0 4px 8px rgba(0,0,0,0.3);"></div>
+            <div style="display:flex; flex-direction:column; overflow:hidden;">
+              <strong style="font-size:1.1em; color:#fff; white-space:nowrap; text-overflow:ellipsis;">${oppName}</strong>
+              <span style="font-size:0.85em; color:#aaa;">${isHome ? "Jogo em Casa" : "Jogo Fora"} - Jornada ${window.currentJornada}</span>
+            </div>
+          </div>
+          
+          <div style="background:rgba(0,0,0,0.25); border:1px solid rgba(255,255,255,0.05); border-radius:8px; padding:12px; font-size:0.9em; color:#ccc; display:flex; flex-direction:column; gap:10px;">
+            <div style="display:flex; justify-content:space-between; border-bottom:1px solid rgba(255,255,255,0.05); padding-bottom:6px;">
+              <span>T\xE1tica Habitual:</span>
+              <strong style="color:#fff;">${oppTactic}</strong>
+            </div>
+            <div style="display:flex; justify-content:space-between; border-bottom:1px solid rgba(255,255,255,0.05); padding-bottom:6px;">
+              <span>Qualidade M\xE9dia (Onze):</span>
+              <strong style="color:#ffeb3b;">${avgSkill2}</strong>
+            </div>
+            <div style="display:flex; justify-content:space-between; border-bottom:1px solid rgba(255,255,255,0.05); padding-bottom:6px;">
+              <span>Golos (Marcados/Sofridos):</span>
+              <strong style="color:#fff;"><span style="color:#4CAF50;">${oppGF}</span> / <span style="color:#F44336;">${oppGA}</span></strong>
+            </div>
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <span>Melhor Marcador:</span>
+              <div style="text-align:right;">
+                <strong style="color:#fff; display:block; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:120px;">${topScorer.name}</strong>
+                <span style="color:#aaa; font-size:0.85em;">${topScorer.goals} Golo(s)</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+      }
+      return html;
+    }
+    function updateNextOpponentDisplay() {
+      const container = document.getElementById("nextOpponentDetails");
+      if (container) {
+        container.innerHTML = buildNextOpponentHtml2();
+      }
     }
     function buildTableHtml(divisionIndex) {
       const divisionNum = divisionIndex + 1;
@@ -2474,6 +2546,9 @@
           console.error("Error initializing hub UI:", e2);
         }
       }
+      if (typeof updateNextOpponentDisplay === "function") {
+        updateNextOpponentDisplay();
+      }
     }
     window.updateDayProgress = window.updateDayProgress || updateDayProgress2;
     window.hexToRgb = window.hexToRgb || hexToRgb2;
@@ -2491,6 +2566,7 @@
     window.initTacticPanel = window.initTacticPanel || initTacticPanel2;
     window.renderInitialMatchBoard = window.renderInitialMatchBoard || renderInitialMatchBoard3;
     window.updateMatchBoardLine = window.updateMatchBoardLine || updateMatchBoardLine3;
+    window.updateNextOpponentDisplay = window.updateNextOpponentDisplay || updateNextOpponentDisplay;
     window.startGame = window.startGame || startGame2;
   })();
 
@@ -4114,43 +4190,95 @@ Probabilidade estimada: ${(prob * 100).toFixed(1)}%`
         break;
       case "menu-load":
         try {
-          const snap = FootLab && FootLab.Persistence && typeof FootLab.Persistence.loadSnapshot === "function" ? FootLab.Persistence.loadSnapshot() : (function() {
-            try {
-              const raw = localStorage.getItem("footlab_t1_save_snapshot") || localStorage.getItem("elifoot_save_snapshot");
-              return raw ? JSON.parse(raw) : null;
-            } catch (e2) {
-              return null;
+          const saves = [];
+          for (let i = 0; i < localStorage.length; i++) {
+            const key = localStorage.key(i);
+            if (key && key.startsWith("footlab_save_")) {
+              try {
+                const parsed = JSON.parse(localStorage.getItem(key));
+                saves.push({ key, name: key.replace("footlab_save_", ""), data: parsed });
+              } catch (e2) {
+              }
             }
-          })();
-          if (!snap) {
+          }
+          const oldSaveRaw = localStorage.getItem("footlab_t1_save_snapshot");
+          if (oldSaveRaw) {
+            try {
+              const oldSaveParsed = JSON.parse(oldSaveRaw);
+              if (!saves.find((s) => s.name === "Save Antigo (Autom\xE1tico)")) {
+                saves.push({ key: "footlab_t1_save_snapshot", name: "Save Antigo (Autom\xE1tico)", data: oldSaveParsed });
+              }
+            } catch (e2) {
+            }
+          }
+          if (saves.length === 0) {
             content.innerHTML = "<h2>Carregar Jogo</h2><p>Nenhum jogo salvo encontrado.</p>";
             break;
           }
-          const html = `<h2>Jogo salvo</h2><div style="padding:12px;background:rgba(0,0,0,0.06);border-radius:8px;"><div><strong>Jornada:</strong> ${snap.currentJornada || "-"} </div><div><strong>Clube do jogador:</strong> ${snap.playerClub && snap.playerClub.team && snap.playerClub.team.name || "-"}</div><div style="margin-top:10px;"><button id="loadSavedBtn" style="padding:8px 12px;border-radius:8px;border:none;">Carregar jogo salvo</button></div></div>`;
+          let html = '<h2>Carregar Jogo</h2><p>Selecione a grava\xE7\xE3o que deseja carregar:</p><div style="display:flex; flex-direction:column; gap:10px; margin-top:15px; max-width:500px;">';
+          saves.forEach((save) => {
+            html += `
+            <div style="padding:12px;background:rgba(0,0,0,0.2);border:1px solid rgba(255,255,255,0.05);border-radius:8px;display:flex;justify-content:space-between;align-items:center;">
+              <div>
+                <strong style="color:#ffeb3b;font-size:1.1em;">${save.name}</strong><br>
+                <span style="font-size:0.85em;color:#aaa;">Jornada: ${save.data.currentJornada || "-"} | Clube: ${save.data.playerClub && save.data.playerClub.team && save.data.playerClub.team.name || "-"}</span>
+              </div>
+              <button class="load-specific-btn" data-key="${save.key}" style="padding:8px 16px;border-radius:6px;border:none;background:#2196F3;color:white;cursor:pointer;font-weight:bold;transition:background 0.2s;">Carregar</button>
+            </div>
+          `;
+          });
+          html += "</div>";
           content.innerHTML = html;
-          const btn = document.getElementById("loadSavedBtn");
-          if (btn)
-            btn.addEventListener("click", () => {
-              if (typeof window.loadSavedGame === "function") window.loadSavedGame();
+          const btns = content.querySelectorAll(".load-specific-btn");
+          btns.forEach((btn) => {
+            btn.addEventListener("click", (e2) => {
+              const key = e2.target.getAttribute("data-key");
+              const saveData = localStorage.getItem(key);
+              localStorage.setItem("footlab_t1_save_snapshot", saveData);
+              if (typeof window.loadSavedGame === "function") {
+                window.loadSavedGame();
+              } else {
+                alert("Carregado! Por favor fa\xE7a refresh \xE0 p\xE1gina caso n\xE3o inicie sozinho.");
+              }
             });
+          });
         } catch (e2) {
           content.innerHTML = "<h2>Carregar Jogo</h2><p>Erro ao ler o save.</p>";
         }
         break;
       case "save-game":
         try {
-          content.innerHTML = `<h2>Gravar Jogo</h2><p>Guarde o estado atual do jogo para carregar mais tarde.</p><div style="margin-top:10px;"><button id="doSaveBtn" style="padding:8px 12px;border-radius:8px;border:none;">Gravar agora</button></div>`;
+          content.innerHTML = `
+          <h2>Gravar Jogo</h2>
+          <p>Guarde o estado atual do jogo para carregar mais tarde.</p>
+          <div style="margin-top:20px; display:flex; flex-direction:column; gap:12px; max-width:320px; background:rgba(0,0,0,0.2); padding:20px; border-radius:10px; border:1px solid rgba(255,255,255,0.05);">
+            <label for="saveGameName" style="font-size:0.9em; color:#ccc;">Nome da grava\xE7\xE3o:</label>
+            <input type="text" id="saveGameName" placeholder="Ex: Minha Carreira" style="padding:10px 12px; border-radius:6px; border:1px solid #444; background:#222; color:#fff; font-size:1em;">
+            <button id="doSaveBtn" style="padding:12px; border-radius:6px; border:none; background:#4CAF50; color:white; cursor:pointer; font-weight:bold; font-size:1.05em; margin-top:5px;">Gravar Jogo</button>
+          </div>
+        `;
           const btn = document.getElementById("doSaveBtn");
           if (btn)
             btn.addEventListener("click", () => {
               try {
+                const inputName = document.getElementById("saveGameName").value.trim();
+                const saveName = inputName || "Save_" + (/* @__PURE__ */ new Date()).toLocaleString().replace(/[:/]/g, "-");
+                const saveKey = "footlab_save_" + saveName;
                 const snap = {
                   currentJornada: window.currentJornada,
                   playerClub: window.playerClub,
                   allDivisions: window.allDivisions,
                   allClubs: window.allClubs,
-                  currentRoundMatches: window.currentRoundMatches
+                  currentRoundMatches: window.currentRoundMatches,
+                  seasonCalendar: window.seasonCalendar || [],
+                  freeTransfers: window.FREE_TRANSFERS || [],
+                  pendingReleases: window.PENDING_RELEASES || [],
+                  transferHistory: window.TRANSFER_HISTORY || []
                 };
+                try {
+                  localStorage.setItem(saveKey, JSON.stringify(snap));
+                } catch (_) {
+                }
                 if (FootLab && FootLab.Persistence && typeof FootLab.Persistence.saveSnapshot === "function") {
                   try {
                     FootLab.Persistence.saveSnapshot(snap);
@@ -4166,7 +4294,8 @@ Probabilidade estimada: ${(prob * 100).toFixed(1)}%`
                   } catch (_) {
                   }
                 }
-                alert("Jogo gravado com sucesso.");
+                alert("Jogo gravado com sucesso com o nome: " + saveName);
+                document.getElementById("saveGameName").value = "";
               } catch (e2) {
                 alert("Erro ao gravar o jogo: " + (e2 && e2.message));
               }
@@ -5266,16 +5395,53 @@ Probabilidade estimada: ${(prob * 100).toFixed(1)}%`
     window.allClubs = allClubs;
     window.currentJornada = 1;
     if (typeof generateRounds === "function") {
-      const firstRoundMatches = [];
+      window.seasonCalendar = [];
       allDivisions.forEach((div) => {
         const rounds = generateRounds(div);
-        if (rounds.length > 0) firstRoundMatches.push(...rounds[0]);
+        rounds.forEach((roundMatches, idx) => {
+          if (!window.seasonCalendar[idx]) window.seasonCalendar[idx] = [];
+          window.seasonCalendar[idx].push(...roundMatches);
+        });
       });
-      window.currentRoundMatches = firstRoundMatches;
+      if (window.seasonCalendar.length > 0) {
+        window.currentRoundMatches = window.seasonCalendar[0];
+      } else {
+        window.currentRoundMatches = [];
+      }
       if (typeof assignStartingLineups === "function") assignStartingLineups(window.currentRoundMatches);
     }
     return playerClub;
   }
+  window.loadSavedGame = function() {
+    try {
+      const snapRaw = localStorage.getItem("footlab_t1_save_snapshot");
+      if (!snapRaw) {
+        alert("Nenhum jogo salvo encontrado.");
+        return;
+      }
+      const snap = JSON.parse(snapRaw);
+      if (!snap.playerClub || !snap.allDivisions) {
+        alert("Save corrompido ou inv\xE1lido.");
+        return;
+      }
+      window.allDivisions = snap.allDivisions;
+      window.allClubs = snap.allClubs;
+      window.currentRoundMatches = snap.currentRoundMatches;
+      window.currentJornada = snap.currentJornada;
+      window.playerClub = window.allClubs.find((c) => c.team && snap.playerClub.team && c.team.name === snap.playerClub.team.name) || snap.playerClub;
+      window.seasonCalendar = snap.seasonCalendar || [];
+      window.FREE_TRANSFERS = snap.freeTransfers || [];
+      window.PENDING_RELEASES = snap.pendingReleases || [];
+      window.TRANSFER_HISTORY = snap.transferHistory || [];
+      if (typeof window.startGame === "function") {
+        window.startGame(window.playerClub);
+      } else {
+        alert("Erro: fun\xE7\xE3o startGame n\xE3o encontrada.");
+      }
+    } catch (e2) {
+      alert("Erro ao ler o ficheiro de grava\xE7\xE3o: " + e2.message);
+    }
+  };
   document.addEventListener("DOMContentLoaded", () => {
     const _startBtn = document.getElementById("startBtn");
     if (!_startBtn) {
@@ -5298,6 +5464,25 @@ Probabilidade estimada: ${(prob * 100).toFixed(1)}%`
         alert("Erro cr\xEDtico: " + err.message);
       }
     });
+    const _loadGameSetupBtn = document.getElementById("loadGameSetupBtn");
+    if (_loadGameSetupBtn) {
+      _loadGameSetupBtn.addEventListener("click", () => {
+        ["screen-setup", "intro-screen"].forEach((id) => {
+          const el = document.getElementById(id);
+          if (el) el.style.display = "none";
+        });
+        const hubScreen = document.getElementById("screen-hub");
+        if (hubScreen) {
+          hubScreen.style.display = "flex";
+          hubScreen.style.flexDirection = "column";
+        }
+        if (typeof window.renderHubContent === "function") {
+          window.renderHubContent("menu-load");
+        } else {
+          alert("M\xF3dulo de UI n\xE3o carregado.");
+        }
+      });
+    }
   });
 
   // src/entry.mjs

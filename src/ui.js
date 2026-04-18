@@ -190,9 +190,96 @@
       return window.Hub.renderTeamRoster(club);
   }
   function buildNextOpponentHtml() {
-    if (window.Hub && typeof window.Hub.buildNextOpponentHtml === 'function')
-      return window.Hub.buildNextOpponentHtml();
-    return '<div>Sem informação.</div>';
+    let html = '';
+    if (window.Hub && typeof window.Hub.buildNextOpponentHtml === 'function') {
+      html = window.Hub.buildNextOpponentHtml();
+    }
+
+    // Se o Hub não existe ou devolveu fallback vazio, nós calculamos:
+    if (!html || html.includes('Sem informação')) {
+      if (!window.playerClub || !window.seasonCalendar || !window.currentJornada) {
+        return '<div>Sem informação do calendário.</div>';
+      }
+      
+      const nextRoundIndex = window.currentJornada - 1; 
+      if (nextRoundIndex >= window.seasonCalendar.length) {
+        return '<div>Fim de Época</div>';
+      }
+      
+      const nextRoundMatches = window.seasonCalendar[nextRoundIndex];
+      const myMatch = nextRoundMatches.find(m => m.homeClub === window.playerClub || m.awayClub === window.playerClub);
+      
+      if (!myMatch) return '<div>Sem jogo agendado (Folga)</div>';
+      
+      const isHome = myMatch.homeClub === window.playerClub;
+      const oppClub = isHome ? myMatch.awayClub : myMatch.homeClub;
+      const oppName = oppClub && oppClub.team ? oppClub.team.name : 'Desconhecido';
+      const oppBg = oppClub && oppClub.team ? oppClub.team.bgColor : '#333';
+      const oppFg = oppClub && oppClub.team ? oppClub.team.color : '#fff';
+      
+      // --- Nova Informação Detalhada (Scouting) ---
+      const oppTactic = (oppClub && oppClub.team && oppClub.team.tactic) || '4-4-2';
+      const oppGF = oppClub ? (oppClub.goalsFor || 0) : 0;
+      const oppGA = oppClub ? (oppClub.goalsAgainst || 0) : 0;
+      
+      let topScorer = { name: 'Nenhum', goals: 0 };
+      let avgSkill = 0;
+      
+      if (oppClub && oppClub.team && oppClub.team.players) {
+        // Encontrar melhor marcador
+        oppClub.team.players.forEach(p => {
+          if ((p.goals || 0) > topScorer.goals) topScorer = p;
+        });
+        
+        // Calcular média de qualidade do Onze Inicial (os 11 melhores)
+        const sortedSkill = [...oppClub.team.players].sort((a,b) => (b.skill||0) - (a.skill||0)).slice(0, 11);
+        if (sortedSkill.length > 0) {
+          avgSkill = Math.round(sortedSkill.reduce((sum, p) => sum + (p.skill||0), 0) / sortedSkill.length);
+        }
+      }
+      
+      html = `
+        <div style="display:flex; flex-direction:column; gap:14px; margin-top:5px; width: 100%;">
+          <div style="display:flex; align-items:center; gap:12px;">
+            <div style="width:40px; height:40px; flex-shrink:0; border-radius:6px; background:${oppBg}; border:2px solid ${oppFg}; box-shadow: 0 4px 8px rgba(0,0,0,0.3);"></div>
+            <div style="display:flex; flex-direction:column; overflow:hidden;">
+              <strong style="font-size:1.1em; color:#fff; white-space:nowrap; text-overflow:ellipsis;">${oppName}</strong>
+              <span style="font-size:0.85em; color:#aaa;">${isHome ? 'Jogo em Casa' : 'Jogo Fora'} - Jornada ${window.currentJornada}</span>
+            </div>
+          </div>
+          
+          <div style="background:rgba(0,0,0,0.25); border:1px solid rgba(255,255,255,0.05); border-radius:8px; padding:12px; font-size:0.9em; color:#ccc; display:flex; flex-direction:column; gap:10px;">
+            <div style="display:flex; justify-content:space-between; border-bottom:1px solid rgba(255,255,255,0.05); padding-bottom:6px;">
+              <span>Tática Habitual:</span>
+              <strong style="color:#fff;">${oppTactic}</strong>
+            </div>
+            <div style="display:flex; justify-content:space-between; border-bottom:1px solid rgba(255,255,255,0.05); padding-bottom:6px;">
+              <span>Qualidade Média (Onze):</span>
+              <strong style="color:#ffeb3b;">${avgSkill}</strong>
+            </div>
+            <div style="display:flex; justify-content:space-between; border-bottom:1px solid rgba(255,255,255,0.05); padding-bottom:6px;">
+              <span>Golos (Marcados/Sofridos):</span>
+              <strong style="color:#fff;"><span style="color:#4CAF50;">${oppGF}</span> / <span style="color:#F44336;">${oppGA}</span></strong>
+            </div>
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <span>Melhor Marcador:</span>
+              <div style="text-align:right;">
+                <strong style="color:#fff; display:block; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:120px;">${topScorer.name}</strong>
+                <span style="color:#aaa; font-size:0.85em;">${topScorer.goals} Golo(s)</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+    return html;
+  }
+
+  function updateNextOpponentDisplay() {
+    const container = document.getElementById('nextOpponentDetails');
+    if (container) {
+      container.innerHTML = buildNextOpponentHtml();
+    }
   }
 
   // --- Fallbacks Robustos para gerar Tabelas de Classificação ---
@@ -328,6 +415,11 @@
         console.error("Error initializing hub UI:", e);
       }
     }
+
+    // Forçar a renderização do Próximo Adversário quando o jogo arranca
+    if (typeof updateNextOpponentDisplay === 'function') {
+      updateNextOpponentDisplay();
+    }
   }
 
   // Expose legacy globals for backward compatibility
@@ -348,6 +440,7 @@
   window.initTacticPanel = window.initTacticPanel || initTacticPanel;
   window.renderInitialMatchBoard = window.renderInitialMatchBoard || renderInitialMatchBoard;
   window.updateMatchBoardLine = window.updateMatchBoardLine || updateMatchBoardLine;
+  window.updateNextOpponentDisplay = window.updateNextOpponentDisplay || updateNextOpponentDisplay;
 
   // Expose the newly added startGame function globally so main.js can call it.
   window.startGame = window.startGame || startGame;

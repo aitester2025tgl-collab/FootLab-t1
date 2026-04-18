@@ -56,7 +56,8 @@ html {
 #coachName::placeholder {
   color: rgba(255, 255, 255, 0.7);
 }
-#startBtn {
+#startBtn,
+#loadGameSetupBtn {
   background-color: rgba(255, 255, 255, 0.12);
   color: #fff;
   padding: 12px 18px;
@@ -69,7 +70,8 @@ html {
     transform 0.08s;
   width: 100%;
 }
-#startBtn:hover {
+#startBtn:hover,
+#loadGameSetupBtn:hover {
   background-color: rgba(255, 255, 255, 0.18);
   transform: translateY(-2px);
 }

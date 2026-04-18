@@ -89,48 +89,107 @@ export function renderHubContent(menuId) {
       break;
     case 'menu-load':
       try {
-        const snap =
-          FootLab && FootLab.Persistence && typeof FootLab.Persistence.loadSnapshot === 'function'
-            ? FootLab.Persistence.loadSnapshot()
-            : (function () {
-                try {
-                  const raw =
-                    localStorage.getItem('footlab_t1_save_snapshot') ||
-                    localStorage.getItem('elifoot_save_snapshot');
-                  return raw ? JSON.parse(raw) : null;
-                } catch (e) {
-                  return null;
-                }
-              })();
-        if (!snap) {
+        // Procurar todos os saves com o prefixo 'footlab_save_'
+        const saves = [];
+        for (let i = 0; i < localStorage.length; i++) {
+          const key = localStorage.key(i);
+          if (key && key.startsWith('footlab_save_')) {
+            try {
+              const parsed = JSON.parse(localStorage.getItem(key));
+              saves.push({ key: key, name: key.replace('footlab_save_', ''), data: parsed });
+            } catch(e) {}
+          }
+        }
+        
+        // Tentar também o save antigo caso exista (e não seja um duplicado)
+        const oldSaveRaw = localStorage.getItem('footlab_t1_save_snapshot');
+        if (oldSaveRaw) {
+           try {
+             const oldSaveParsed = JSON.parse(oldSaveRaw);
+             if (!saves.find(s => s.name === 'Save Antigo (Automático)')) {
+               saves.push({ key: 'footlab_t1_save_snapshot', name: 'Save Antigo (Automático)', data: oldSaveParsed });
+             }
+           } catch(e) {}
+        }
+
+        if (saves.length === 0) {
           content.innerHTML = '<h2>Carregar Jogo</h2><p>Nenhum jogo salvo encontrado.</p>';
           break;
         }
-        const html = `<h2>Jogo salvo</h2><div style="padding:12px;background:rgba(0,0,0,0.06);border-radius:8px;"><div><strong>Jornada:</strong> ${snap.currentJornada || '-'} </div><div><strong>Clube do jogador:</strong> ${(snap.playerClub && snap.playerClub.team && snap.playerClub.team.name) || '-'}</div><div style="margin-top:10px;"><button id="loadSavedBtn" style="padding:8px 12px;border-radius:8px;border:none;">Carregar jogo salvo</button></div></div>`;
+        
+        let html = '<h2>Carregar Jogo</h2><p>Selecione a gravação que deseja carregar:</p><div style="display:flex; flex-direction:column; gap:10px; margin-top:15px; max-width:500px;">';
+        
+        saves.forEach(save => {
+          html += `
+            <div style="padding:12px;background:rgba(0,0,0,0.2);border:1px solid rgba(255,255,255,0.05);border-radius:8px;display:flex;justify-content:space-between;align-items:center;">
+              <div>
+                <strong style="color:#ffeb3b;font-size:1.1em;">${save.name}</strong><br>
+                <span style="font-size:0.85em;color:#aaa;">Jornada: ${save.data.currentJornada || '-'} | Clube: ${(save.data.playerClub && save.data.playerClub.team && save.data.playerClub.team.name) || '-'}</span>
+              </div>
+              <button class="load-specific-btn" data-key="${save.key}" style="padding:8px 16px;border-radius:6px;border:none;background:#2196F3;color:white;cursor:pointer;font-weight:bold;transition:background 0.2s;">Carregar</button>
+            </div>
+          `;
+        });
+        html += '</div>';
+        
         content.innerHTML = html;
-        const btn = document.getElementById('loadSavedBtn');
-        if (btn)
-          btn.addEventListener('click', () => {
-            if (typeof window.loadSavedGame === 'function') window.loadSavedGame();
+        
+        const btns = content.querySelectorAll('.load-specific-btn');
+        btns.forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            const key = e.target.getAttribute('data-key');
+            const saveData = localStorage.getItem(key);
+            
+            // Copiar para a chave padrão que o código original lê
+            localStorage.setItem('footlab_t1_save_snapshot', saveData);
+            
+            if (typeof window.loadSavedGame === 'function') {
+               window.loadSavedGame();
+            } else {
+               alert('Carregado! Por favor faça refresh à página caso não inicie sozinho.');
+            }
           });
+        });
       } catch (e) {
         content.innerHTML = '<h2>Carregar Jogo</h2><p>Erro ao ler o save.</p>';
       }
       break;
     case 'save-game':
       try {
-        content.innerHTML = `<h2>Gravar Jogo</h2><p>Guarde o estado atual do jogo para carregar mais tarde.</p><div style="margin-top:10px;"><button id="doSaveBtn" style="padding:8px 12px;border-radius:8px;border:none;">Gravar agora</button></div>`;
+        content.innerHTML = `
+          <h2>Gravar Jogo</h2>
+          <p>Guarde o estado atual do jogo para carregar mais tarde.</p>
+          <div style="margin-top:20px; display:flex; flex-direction:column; gap:12px; max-width:320px; background:rgba(0,0,0,0.2); padding:20px; border-radius:10px; border:1px solid rgba(255,255,255,0.05);">
+            <label for="saveGameName" style="font-size:0.9em; color:#ccc;">Nome da gravação:</label>
+            <input type="text" id="saveGameName" placeholder="Ex: Minha Carreira" style="padding:10px 12px; border-radius:6px; border:1px solid #444; background:#222; color:#fff; font-size:1em;">
+            <button id="doSaveBtn" style="padding:12px; border-radius:6px; border:none; background:#4CAF50; color:white; cursor:pointer; font-weight:bold; font-size:1.05em; margin-top:5px;">Gravar Jogo</button>
+          </div>
+        `;
         const btn = document.getElementById('doSaveBtn');
         if (btn)
           btn.addEventListener('click', () => {
             try {
+              const inputName = document.getElementById('saveGameName').value.trim();
+              const saveName = inputName || ('Save_' + new Date().toLocaleString().replace(/[:/]/g, '-'));
+              const saveKey = 'footlab_save_' + saveName;
+
               const snap = {
                 currentJornada: window.currentJornada,
                 playerClub: window.playerClub,
                 allDivisions: window.allDivisions,
                 allClubs: window.allClubs,
                 currentRoundMatches: window.currentRoundMatches,
+                seasonCalendar: window.seasonCalendar || [],
+                freeTransfers: window.FREE_TRANSFERS || [],
+                pendingReleases: window.PENDING_RELEASES || [],
+                transferHistory: window.TRANSFER_HISTORY || [],
               };
+              
+              // 1. Gravar SEMPRE na chave específica com o nome do save:
+              try {
+                localStorage.setItem(saveKey, JSON.stringify(snap));
+              } catch (_) {}
+
               if (
                 FootLab &&
                 FootLab.Persistence &&
@@ -141,13 +200,15 @@ export function renderHubContent(menuId) {
                 } catch (_) {}
               } else {
                 try {
+                  // Gravar também no auto-save original por garantia
                   localStorage.setItem('footlab_t1_save_snapshot', JSON.stringify(snap));
                 } catch (_) {}
                 try {
                   localStorage.setItem('elifoot_save_snapshot', JSON.stringify(snap));
                 } catch (_) {}
               }
-              alert('Jogo gravado com sucesso.');
+              alert('Jogo gravado com sucesso com o nome: ' + saveName);
+              document.getElementById('saveGameName').value = ''; // Limpar o campo após gravar
             } catch (e) {
               alert('Erro ao gravar o jogo: ' + (e && e.message));
             }

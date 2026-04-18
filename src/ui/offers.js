@@ -1,6 +1,8 @@
 // This module re-implements the pending release offers popup that was
 // previously in the legacy hub.js file.
 
+import { findPotentialBuyer, executeTransfer } from '../logic/transfers.js';
+
 (function () {
   // small local logger shim
   const L =
@@ -16,58 +18,11 @@
     );
   };
 
-  // Verifica se o clube realmente precisa de um jogador desta categoria
-  function clubNeedsPosition(club, category) {
-    const Lineups = window.FootLab && window.FootLab.Lineups;
-    if (!Lineups) return true;
-
-    const tacticName = club.team.tactic || '4-4-2';
-    const formation = (typeof Lineups.parseFormation === 'function')
-      ? Lineups.parseFormation(tacticName)
-      : [4, 4, 2];
-
-    const requirements = {
-      GK: 1,
-      DEF: formation[0] || 4,
-      MID: formation[1] || 4,
-      ATT: formation[2] || 2
-    };
-
-    // Contar quantos jogadores o clube já tem nesta categoria
-    const currentCount = (club.team.players || []).filter(p => Lineups.getPositionCategory(p.position) === category).length;
-
-    // Limite de saturação: Não compra se tiver mais do dobro do necessário (mínimo 2 para GKs, 4 para o resto)
-    const saturationLimit = Math.max(category === 'GK' ? 2 : 4, requirements[category] * 2);
-    
-    return currentCount < saturationLimit;
-  }
-
   function handleOfferAccept(player, playerIndex, onClose) {
     const sellerClub = player.originalClubRef;
     const fee = player.leavingFee || 0;
 
-    const Lineups = window.FootLab && window.FootLab.Lineups;
-    const category = Lineups ? Lineups.getPositionCategory(player.position) : 'MID';
-
-    // Filtrar todos os clubes de todas as divisões
-    const allClubs = window.ALL_CLUBS || [];
-    const potentialBuyers = allClubs.filter(club => {
-      // 1. Não pode ser o próprio vendedor
-      if (club === sellerClub) return false;
-      
-      // 2. Tem que ter orçamento para a transferência
-      if (club.budget < fee) return false;
-
-      // 3. Tem que ter necessidade técnica (não estar saturado naquela posição)
-      if (!clubNeedsPosition(club, category)) return false;
-
-      return true;
-    });
-
-    // Selecionar um comprador aleatório de entre os interessados
-    const buyerClub = potentialBuyers.length > 0 
-      ? potentialBuyers[Math.floor(Math.random() * potentialBuyers.length)]
-      : null;
+    const buyerClub = findPotentialBuyer(player, fee);
 
     if (!buyerClub) {
       alert('Nenhum clube tem orçamento ou necessidade para contratar este jogador no momento.');
@@ -103,18 +58,8 @@
     );
 
     if (confirmed) {
-      // Perform transfer
-      sellerClub.budget = (sellerClub.budget || 0) + fee;
-      buyerClub.budget = (buyerClub.budget || 0) - fee;
-
-      const pIdx = sellerClub.team.players.findIndex((p) => p.id === player.id);
-      if (pIdx > -1) {
-        const [transferredPlayer] = sellerClub.team.players.splice(pIdx, 1);
-        transferredPlayer.salary = offerSalary;
-        transferredPlayer.contractYears = 1;
-        transferredPlayer.contractYearsLeft = 1;
-        buyerClub.team.players.push(transferredPlayer);
-      }
+      // Efetua a transferência através da lógica centralizada
+      executeTransfer(player, sellerClub, buyerClub, fee, offerSalary);
 
       window.PENDING_RELEASES.splice(playerIndex, 1);
 

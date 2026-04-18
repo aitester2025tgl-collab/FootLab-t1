@@ -206,17 +206,63 @@ function initializeGameSession() {
 
   // Gerar calendários
   if (typeof generateRounds === 'function') {
-    const firstRoundMatches = [];
+    window.seasonCalendar = []; // Array que vai conter as 34 jornadas
     allDivisions.forEach((div) => {
       const rounds = generateRounds(div);
-      if (rounds.length > 0) firstRoundMatches.push(...rounds[0]);
+      rounds.forEach((roundMatches, idx) => {
+        if (!window.seasonCalendar[idx]) window.seasonCalendar[idx] = [];
+        window.seasonCalendar[idx].push(...roundMatches);
+      });
     });
-    window.currentRoundMatches = firstRoundMatches;
+    if (window.seasonCalendar.length > 0) {
+      window.currentRoundMatches = window.seasonCalendar[0];
+    } else {
+      window.currentRoundMatches = [];
+    }
     if (typeof assignStartingLineups === 'function') assignStartingLineups(window.currentRoundMatches);
   }
 
   return playerClub;
 }
+
+window.loadSavedGame = function() {
+  try {
+    const snapRaw = localStorage.getItem('footlab_t1_save_snapshot');
+    if (!snapRaw) {
+      alert('Nenhum jogo salvo encontrado.');
+      return;
+    }
+    const snap = JSON.parse(snapRaw);
+    if (!snap.playerClub || !snap.allDivisions) {
+      alert('Save corrompido ou inválido.');
+      return;
+    }
+    
+    // Restaurar o estado global do jogo
+    window.allDivisions = snap.allDivisions;
+    window.allClubs = snap.allClubs;
+    window.currentRoundMatches = snap.currentRoundMatches;
+    window.currentJornada = snap.currentJornada;
+    
+    // Religar o playerClub à referência correta dentro do allClubs para a memória ficar sincronizada
+    window.playerClub = window.allClubs.find(c => c.team && snap.playerClub.team && c.team.name === snap.playerClub.team.name) || snap.playerClub;
+    
+    // Restaurar calendário e o estado do mercado de transferências
+    window.seasonCalendar = snap.seasonCalendar || [];
+    window.FREE_TRANSFERS = snap.freeTransfers || [];
+    window.PENDING_RELEASES = snap.pendingReleases || [];
+    window.TRANSFER_HISTORY = snap.transferHistory || [];
+    
+    // Arrancar a interface com o clube carregado
+    if (typeof window.startGame === 'function') {
+      window.startGame(window.playerClub);
+    } else {
+      alert('Erro: função startGame não encontrada.');
+    }
+  } catch(e) {
+    alert('Erro ao ler o ficheiro de gravação: ' + e.message);
+  }
+};
 
 function formatMoney(value) {
   if (!value && value !== 0) return '0 €';
@@ -261,4 +307,28 @@ document.addEventListener('DOMContentLoaded', () => {
       alert('Erro crítico: ' + err.message);
     }
   }); // end of startBtn click handler
+
+  // Ligar o botão de Carregar Jogo do ecrã inicial
+  const _loadGameSetupBtn = document.getElementById('loadGameSetupBtn');
+  if (_loadGameSetupBtn) {
+    _loadGameSetupBtn.addEventListener('click', () => {
+      // Ocultar os ecrãs iniciais
+      ['screen-setup', 'intro-screen'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.style.display = 'none';
+      });
+      // Mostrar o Hub
+      const hubScreen = document.getElementById('screen-hub');
+      if (hubScreen) {
+        hubScreen.style.display = 'flex';
+        hubScreen.style.flexDirection = 'column';
+      }
+      // Forçar a abertura do ecrã de Carregar Jogo (listar os saves)
+      if (typeof window.renderHubContent === 'function') {
+        window.renderHubContent('menu-load');
+      } else {
+        alert('Módulo de UI não carregado.');
+      }
+    });
+  }
 }); // end of DOMContentLoaded
