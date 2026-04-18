@@ -98,21 +98,42 @@
   function showHalfTimeSubsOverlay(club, match, cb) {
     // CRÍTICO: Aplicar as cores no elemento ANTES de qualquer delegação ou retorno
     const overlay = document.getElementById('subs-overlay');
-    if (overlay && club && club.team) {
-      const bg = club.team.bgColor || '#2e2e2e';
-      const fg = club.team.color || '#ffffff';
-      const rgb = hexToRgb(bg);
-      const lum = rgb ? luminance(rgb) : 0;
-      const panelBgAdjust = lum < 0.35 ? 20 : -25;
-      const panelBg = adjustColor(bg, panelBgAdjust);
-      
-      overlay.style.setProperty('--subs-overlay-bg', `rgba(${rgb ? rgb.join(',') : '0,0,0'}, 0.8)`, 'important');
-      overlay.style.setProperty('--subs-panel-bg', panelBg, 'important');
-      overlay.style.setProperty('--subs-fg', fg, 'important');
+    let bg = '#2e2e2e';
+    let fg = '#ffffff';
+
+    if (club) {
+      bg = club.bgColor || (club.team && club.team.bgColor) || '#2e2e2e';
+      fg = club.color || (club.team && club.team.color) || '#ffffff';
     }
 
-    if (window.Overlays && typeof window.Overlays.showHalfTimeSubsOverlay === 'function')
-      return window.Overlays.showHalfTimeSubsOverlay(club, match, cb);
+    if (overlay) {
+      overlay.style.setProperty('--subs-overlay-bg', 'rgba(0, 0, 0, 0.9)', 'important');
+      overlay.style.setProperty('--subs-panel-bg', bg, 'important');
+      overlay.style.setProperty('--subs-fg', fg, 'important');
+
+      // Garante que o elemento .subs-panel recebe dinamicamente a cor da equipa
+      const panel = overlay.querySelector('.subs-panel');
+      if (panel) {
+        panel.style.backgroundColor = bg;
+        panel.style.color = fg;
+        panel.style.opacity = '1';
+      }
+    }
+
+    if (window.Overlays && typeof window.Overlays.showHalfTimeSubsOverlay === 'function') {
+      const result = window.Overlays.showHalfTimeSubsOverlay(club, match, cb);
+      // Garante que o painel gerado fica opaco e com a cor correta após a delegação
+      if (overlay) {
+        const panel = overlay.querySelector('.subs-panel');
+        if (panel) {
+          panel.style.setProperty('background-color', bg, 'important');
+          panel.style.setProperty('color', fg, 'important');
+          panel.style.setProperty('opacity', '1', 'important');
+        }
+      }
+      return result;
+    }
+
     if (!overlay) {
       if (typeof cb === 'function') cb();
       return;
@@ -135,7 +156,7 @@
       overlay.style.setProperty('align-items', 'center', 'important');
       overlay.style.setProperty(
         'background',
-        'var(--subs-overlay-bg, rgba(0,0,0,0.66))',
+        'var(--subs-overlay-bg, rgba(0, 0, 0, 0.9))',
         'important'
       );
 
@@ -206,8 +227,8 @@
     screens.forEach(id => {
       const el = document.getElementById(id);
       if (el) {
-        el.style.setProperty('display', 'none', 'important');
-        el.style.opacity = '0';
+        el.style.display = 'none';
+        el.style.opacity = '1';
       }
     });
 
@@ -217,8 +238,8 @@
       let styleEl = document.getElementById('hub-layout-adjustment');
       if (styleEl) styleEl.remove(); 
 
-      hubScreen.style.setProperty('display', 'flex', 'important');
-      hubScreen.style.setProperty('flex-direction', 'column', 'important');
+      hubScreen.style.display = 'flex';
+      hubScreen.style.flexDirection = 'column';
       hubScreen.style.opacity = '1';
     }
 

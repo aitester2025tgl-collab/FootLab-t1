@@ -277,12 +277,12 @@
 
     function proceedToMatch() {
       try {
-        document.getElementById('screen-hub').style.display = 'none';
+        document.getElementById('screen-hub').style.setProperty('display', 'none', 'important');
       } catch (e) {
         /* ignore */
       }
       try {
-        document.getElementById('screen-match').style.display = 'flex';
+        document.getElementById('screen-match').style.setProperty('display', 'flex', 'important');
       } catch (e) {
         /* ignore */
       }
@@ -454,8 +454,8 @@
       /* ignore */
     }
     try {
-      document.getElementById('screen-match').style.display = 'none';
-      document.getElementById('screen-hub').style.display = 'flex';
+      document.getElementById('screen-match').style.setProperty('display', 'none', 'important');
+      document.getElementById('screen-hub').style.setProperty('display', 'flex', 'important');
       if (typeof renderHubContent === 'function') renderHubContent('menu-standings');
     } catch (e) {
       try {
@@ -602,8 +602,8 @@
       /* ignore detection errors */
     }
     try {
-      document.getElementById('screen-match').style.display = 'none';
-      document.getElementById('screen-hub').style.display = 'flex';
+      document.getElementById('screen-match').style.setProperty('display', 'none', 'important');
+      document.getElementById('screen-hub').style.setProperty('display', 'flex', 'important');
     } catch (e) {
       /* ignore */
     }

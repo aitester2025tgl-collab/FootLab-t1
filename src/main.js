@@ -202,6 +202,7 @@ function initializeGameSession() {
   window.playerClub = playerClub;
   window.allDivisions = allDivisions;
   window.allClubs = allClubs;
+  window.currentJornada = 1; // Força a variável global da Jornada 1
 
   // Gerar calendários
   if (typeof generateRounds === 'function') {
