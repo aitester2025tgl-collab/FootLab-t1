@@ -491,10 +491,9 @@
         const rosters = rostersSource ? Object.keys(rostersSource) : [];
         const teamColorMapSource = globalObj && globalObj.REAL_TEAM_COLORS || E2 && E2.REAL_TEAM_COLORS || null;
         const rostersArePresent = Array.isArray(rosters) && rosters.length > 0;
-        const colorsArePresent = teamColorMapSource && Object.keys(teamColorMapSource).length > 0;
-        if (!rostersArePresent || !colorsArePresent) {
+        if (!rostersArePresent) {
           throw new Error(
-            `Aguardando dados: Rosters=${rostersArePresent}, Cores=${colorsArePresent}. Verifique se team_colors.js foi carregado.`
+            `Aguardando dados: window.REAL_ROSTERS n\xE3o encontrado. Verifique se real_rosters_2025_26.js foi carregado.`
           );
         }
         function validateRosters(expectedTeams = 72, minPlayers = 18) {
@@ -900,12 +899,48 @@
         }
         return [4, 4, 2];
       };
+      const getPositionCategory = function(pos) {
+        const p = (pos || "").toUpperCase();
+        if (p === "GK" || p === "G" || p === "GOALKEEPER") return "GK";
+        if (["DF", "CB", "LB", "RB", "LWB", "RWB"].includes(p)) return "DEF";
+        if (["MF", "CM", "AM", "DM", "LM", "RM", "M"].includes(p)) return "MID";
+        if (["ST", "FW", "SS", "CF", "LW", "RW", "A", "W"].includes(p)) return "ATT";
+        return "MID";
+      };
       const normalizePosition2 = function(pos) {
         const p = (pos || "").toUpperCase();
         if (p === "DF") return "CB";
         if (p === "MF" || p === "AM" || p === "DM") return "CM";
         if (p === "FW" || p === "SS") return "ST";
         return p;
+      };
+      const getCompatibleTactics = function(team) {
+        if (!team || !Array.isArray(team.players) || !window.TACTICS) return [];
+        const counts = { GK: 0, DEF: 0, MID: 0, ATT: 0 };
+        team.players.forEach((p) => {
+          counts[getPositionCategory(p.position)]++;
+        });
+        return window.TACTICS.filter((tactic) => {
+          const formation = parseFormation(tactic.name);
+          const reqGK = 1;
+          const reqDEF = formation[0];
+          const reqMID = formation[1];
+          const reqATT = formation[2];
+          const hasGK = counts.GK >= reqGK;
+          const hasDef = counts.DEF >= reqDEF - 1;
+          const hasMid = counts.MID >= reqMID - 1;
+          const hasAtt = counts.ATT >= Math.min(reqATT, 1);
+          const totalFieldPlayers = counts.DEF + counts.MID + counts.ATT;
+          const isCompatible = hasGK && hasDef && hasMid && hasAtt && totalFieldPlayers >= 10;
+          if (!isCompatible && team.name === (window.playerClub && window.playerClub.team.name)) {
+            console.log(`T\xE1tica ${tactic.name} rejeitada:`, {
+              reqs: { reqDEF, reqMID, reqATT },
+              tem: counts,
+              checks: { hasGK, hasDef, hasMid, hasAtt }
+            });
+          }
+          return isCompatible;
+        });
       };
       const orderByRoster = function(originalList, listToOrder) {
         if (!Array.isArray(originalList) || !Array.isArray(listToOrder))
@@ -1092,7 +1127,9 @@
       };
       NS.parseFormation = parseFormation;
       NS.normalizePosition = normalizePosition2;
+      NS.getPositionCategory = getPositionCategory;
       NS.chooseStarters = chooseStarters;
+      NS.getCompatibleTactics = getCompatibleTactics;
       NS.orderByRoster = orderByRoster;
       NS.reorderMatchByRoster = reorderMatchByRoster;
     } catch (err) {
@@ -1577,7 +1614,7 @@
     window.generateFreeAgents = generateFreeAgents;
     window.computeMinContractFromSkill = computeMinContractFromSkill;
   }
-  function markSomeContractsExpiring2(allDivisions2, pctExpiring) {
+  function markSomeContractsExpiring(allDivisions2, pctExpiring) {
     pctExpiring = typeof pctExpiring === "number" ? pctExpiring : typeof GameConstants !== "undefined" && GameConstants.CONTRACT_CONFIG && GameConstants.CONTRACT_CONFIG.pctExpiring || 0.12;
     if (!Array.isArray(allDivisions2)) return 0;
     let marked = 0;
@@ -1599,7 +1636,7 @@
     return marked;
   }
   if (typeof window !== "undefined") {
-    window.markSomeContractsExpiring = markSomeContractsExpiring2;
+    window.markSomeContractsExpiring = markSomeContractsExpiring;
   }
   function seasonalSkillDrift2(allDivisions2) {
     if (!Array.isArray(allDivisions2)) return;
@@ -1880,6 +1917,8 @@
     homeAdvantageFactor: 1.15,
     skillExponentialBase: 1.01,
     maxGoalsPerMinute: 2,
+    staminaLossPerMinute: 2e-3,
+    // Perda de ~18% de eficácia até ao fim do jogo
     events: {
       yellowChance: 0.02,
       redChance: 1e-3,
@@ -1930,7 +1969,7 @@
           awayGoals: 0,
           goals: [],
           isFinished: false,
-          division: Number(homeClub.division)
+          division: homeClub.division
         };
         matchesThisRound.push(match);
       }
@@ -1948,7 +1987,7 @@
         awayGoals: 0,
         goals: [],
         isFinished: false,
-        division: Number(m.division)
+        division: m.division
       }));
     });
     return rounds.concat(returnLegs);
@@ -1960,11 +1999,13 @@
       const match = matches[i];
       if (!match || match.isFinished) continue;
       match.goals = Array.isArray(match.goals) ? match.goals : [];
-      if (minute === 1 || !match._homeSkill) {
+      const staminaFactor = 1 - minute * SIM_CONFIG.staminaLossPerMinute;
+      if (minute === 1 || !match._homeSkill || match._needsSkillUpdate) {
         const hp = match.homePlayers || match.home && match.home.players || [];
         const ap = match.awayPlayers || match.away && match.away.players || [];
-        match._homeSkill = hp.reduce((sum, p) => sum + (p.skill || 0), 0) / Math.max(1, hp.length);
-        match._awaySkill = ap.reduce((sum, p) => sum + (p.skill || 0), 0) / Math.max(1, ap.length);
+        match._homeSkill = hp.reduce((sum, p) => sum + (p.skill || 0), 0) / Math.max(1, hp.length) * staminaFactor;
+        match._awaySkill = ap.reduce((sum, p) => sum + (p.skill || 0), 0) / Math.max(1, ap.length) * staminaFactor;
+        match._needsSkillUpdate = false;
       }
       const homePlayers = match.homePlayers && Array.isArray(match.homePlayers) ? match.homePlayers : match.home && match.home.players;
       const awayPlayers = match.awayPlayers && Array.isArray(match.awayPlayers) ? match.awayPlayers : match.away && match.away.players;
@@ -2075,6 +2116,7 @@
               const banGames = SIM_CONFIG.events.suspensionYellows;
               p.suspendedGames = Math.max(p.suspendedGames || 0, banGames);
               p.sentOff = true;
+              match._needsSkillUpdate = true;
             }
           }
           if (Math.random() < redChance) {
@@ -2093,6 +2135,7 @@
             const straightBan = SIM_CONFIG.events.suspensionRed;
             p.suspendedGames = Math.max(p.suspendedGames || 0, straightBan);
             p.sentOff = true;
+            match._needsSkillUpdate = true;
           }
         };
         giveCard(homePlayers, "home");
@@ -2183,6 +2226,16 @@
       });
       return 0.2126 * s[0] + 0.7152 * s[1] + 0.0722 * s[2];
     }
+    function adjustColor(hex, amt) {
+      let c = String(hex).replace("#", "");
+      if (c.length === 3)
+        c = c.split("").map((x) => x + x).join("");
+      let num = parseInt(c, 16);
+      let r = Math.min(255, Math.max(0, (num >> 16 & 255) + amt));
+      let g = Math.min(255, Math.max(0, (num >> 8 & 255) + amt));
+      let b = Math.min(255, Math.max(0, (num & 255) + amt));
+      return `#${((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1)}`;
+    }
     function getReadableTextColor2(bgHex, preferredHex) {
       if (window.ColorUtils && typeof window.ColorUtils.getReadableTextColor === "function")
         return window.ColorUtils.getReadableTextColor(bgHex, preferredHex);
@@ -2223,9 +2276,20 @@
       }, 1200);
     }
     function showHalfTimeSubsOverlay3(club, match, cb) {
+      const overlay = document.getElementById("subs-overlay");
+      if (overlay && club && club.team) {
+        const bg = club.team.bgColor || "#2e2e2e";
+        const fg = club.team.color || "#ffffff";
+        const rgb = hexToRgb2(bg);
+        const lum = rgb ? luminance2(rgb) : 0;
+        const panelBgAdjust = lum < 0.35 ? 20 : -25;
+        const panelBg = adjustColor(bg, panelBgAdjust);
+        overlay.style.setProperty("--subs-overlay-bg", `rgba(${rgb ? rgb.join(",") : "0,0,0"}, 0.8)`, "important");
+        overlay.style.setProperty("--subs-panel-bg", panelBg, "important");
+        overlay.style.setProperty("--subs-fg", fg, "important");
+      }
       if (window.Overlays && typeof window.Overlays.showHalfTimeSubsOverlay === "function")
         return window.Overlays.showHalfTimeSubsOverlay(club, match, cb);
-      const overlay = document.getElementById("subs-overlay");
       if (!overlay) {
         if (typeof cb === "function") cb();
         return;
@@ -2249,19 +2313,23 @@
           "var(--subs-overlay-bg, rgba(0,0,0,0.66))",
           "important"
         );
+        if (!overlay.querySelector(".resume-btn")) {
+          const btn = document.createElement("button");
+          btn.className = "resume-btn";
+          btn.textContent = "Retomar Simula\xE7\xE3o";
+          btn.style.cssText = "position:absolute; bottom:40px; padding:12px 24px; cursor:pointer; background:#4CAF50; color:white; border:none; border-radius:4px; font-weight:bold;";
+          btn.onclick = () => {
+            overlay.style.setProperty("display", "none", "important");
+            overlay.setAttribute("aria-hidden", "true");
+            if (typeof cb === "function") cb();
+          };
+          overlay.appendChild(btn);
+        }
       } catch (e2) {
       }
       overlay.setAttribute("aria-hidden", "false");
-      setTimeout(() => {
-        try {
-          overlay.style.setProperty("display", "none", "important");
-          overlay.setAttribute("aria-hidden", "true");
-        } catch (e2) {
-        }
-        if (typeof cb === "function") cb();
-      }, 800);
     }
-    function initHubUI3() {
+    function initHubUI2() {
       if (window.Hub && typeof window.Hub.initHubUI === "function") return window.Hub.initHubUI();
     }
     function renderHubContent3(menuId) {
@@ -2298,17 +2366,83 @@
         return window.MatchBoard.updateMatchBoardLine(matchIndex, matchResult);
     }
     function startGame2(playerClub2) {
-      const setupScreen = document.getElementById("screen-setup");
+      window.scrollTo(0, 0);
+      const screens = ["screen-setup", "screen-match", "screen-hub", "intro-screen"];
+      screens.forEach((id) => {
+        const el = document.getElementById(id);
+        if (el) {
+          el.style.setProperty("display", "none", "important");
+          el.style.opacity = "0";
+        }
+      });
       const hubScreen = document.getElementById("screen-hub");
-      if (setupScreen) {
-        setupScreen.style.display = "none";
-      }
       if (hubScreen) {
-        hubScreen.style.display = "block";
+        hubScreen.style.setProperty("display", "flex", "important");
+        hubScreen.style.setProperty("flex-direction", "row", "important");
+        hubScreen.style.opacity = "1";
+        let styleEl = document.getElementById("hub-layout-adjustment");
+        if (!styleEl) {
+          styleEl = document.createElement("style");
+          styleEl.id = "hub-layout-adjustment";
+          document.head.appendChild(styleEl);
+        }
+        styleEl.textContent = `
+        #screen-hub { 
+          display: flex !important; 
+          flex-direction: row !important; 
+          height: 100vh !important; 
+          overflow: hidden !important; 
+          width: 100vw !important; 
+          margin: 0 !important; 
+          background: #1a1a1a;
+        }
+        
+        /* \xC1rea Central (Jogadores) - Deve ocupar todo o espa\xE7o restante */
+        #hub-main-content { 
+          flex: 1 !important; 
+          min-width: 0 !important; 
+          overflow-y: auto !important; 
+          padding: 20px !important; 
+        }
+        
+        /* Barras Laterais - For\xE7ar largura fixa e verticalidade */
+        .hub-sidebar, #tactics-panel, .tactics-column, .hub-sidebar-left, .hub-sidebar-right { 
+          display: flex !important; 
+          flex-direction: column !important; 
+          gap: 10px !important; 
+          padding: 10px !important; 
+          background: rgba(0,0,0,0.5) !important;
+          overflow-y: auto !important;
+          box-sizing: border-box !important;
+        }
+        
+        /* Sidebar Esquerda (Treinador, Menu) */
+        .hub-sidebar { flex: 0 0 170px !important; width: 170px !important; border-right: 1px solid rgba(255,255,255,0.1) !important; }
+        
+        /* Sidebar Direita (T\xE1ticas, Finan\xE7as, Advers\xE1rio) */
+        #tactics-panel, .tactics-column { flex: 0 0 210px !important; width: 210px !important; border-left: 1px solid rgba(255,255,255,0.1) !important; }
+
+        /* FOR\xC7AR VERTICALIDADE: Bloquear qualquer tentativa de colocar elementos lado-a-lado nas laterais */
+        .hub-sidebar *, #tactics-panel *, .tactics-column * { 
+          display: flex !important;
+          flex-direction: column !important;
+          width: 100% !important; 
+          float: none !important;
+          box-sizing: border-box !important;
+        }
+
+        /* Bot\xF5es individuais dentro das laterais */
+        .hub-sidebar button, .tactics-column button {
+          margin-bottom: 5px !important;
+          text-align: left !important;
+          padding: 8px !important;
+          white-space: normal !important; /* Permitir que o texto do bot\xE3o quebre linha se for longo */
+        }
+      `;
       }
-      if (typeof initHubUI3 === "function") {
+      if (typeof initHubUI2 === "function") {
         try {
-          initHubUI3(playerClub2);
+          initHubUI2(playerClub2);
         } catch (e2) {
           console.error("Error initializing hub UI:", e2);
         }
@@ -2321,7 +2455,7 @@
     window.setIntroColors = window.setIntroColors || setIntroColors2;
     window.showIntroOverlay = window.showIntroOverlay || showIntroOverlay3;
     window.showHalfTimeSubsOverlay = window.showHalfTimeSubsOverlay || showHalfTimeSubsOverlay3;
-    window.initHubUI = window.initHubUI || initHubUI3;
+    window.initHubUI = window.initHubUI || initHubUI2;
     window.renderHubContent = window.renderHubContent || renderHubContent3;
     window.renderTeamRoster = window.renderTeamRoster || renderTeamRoster3;
     window.buildNextOpponentHtml = window.buildNextOpponentHtml || buildNextOpponentHtml2;
@@ -2340,8 +2474,8 @@
       return typeof window !== "undefined" && window.FootLab && window.FootLab.Logger ? window.FootLab.Logger : typeof window !== "undefined" && window.Elifoot && window.Elifoot.Logger ? window.Elifoot.Logger : console;
     }
     const PersistenceAPI = typeof window !== "undefined" && window.FootLab && window.FootLab.Persistence || typeof window !== "undefined" && window.Elifoot && window.Elifoot.Persistence || null;
-    let isSimulating2 = false;
-    let simIntervalId2 = null;
+    let isSimulating = false;
+    let simIntervalId = null;
     function updateClubStatsAfterMatches(matches) {
       if (!Array.isArray(matches)) return;
       matches.forEach((match) => {
@@ -2444,7 +2578,7 @@
         }
       }
     }
-    function assignStartingLineups(matches) {
+    function assignStartingLineups2(matches) {
       if (!Array.isArray(matches)) return;
       const Lineups = window.FootLab && window.FootLab.Lineups || window.Elifoot && window.Elifoot.Lineups || {};
       function buildFallback(teamObj) {
@@ -2518,7 +2652,7 @@
         }
       });
     }
-    function simulateDay2() {
+    function simulateDay() {
       try {
         const win = typeof window !== "undefined" ? window : null;
         const allowed = win && win.__userInitiatedSim || win && win.__allowProgrammaticSim;
@@ -2529,7 +2663,7 @@
         }
       } catch (e2) {
       }
-      if (isSimulating2) {
+      if (isSimulating) {
         try {
           const L = getLogger6();
           L.warn && L.warn("simulateDay called but already simulating (Jornada", window.currentJornada, ")");
@@ -2537,14 +2671,14 @@
         }
         return;
       }
-      isSimulating2 = true;
+      isSimulating = true;
       try {
         const L = typeof window !== "undefined" && window.Elifoot && window.Elifoot.Logger ? window.Elifoot.Logger : console;
         L.info && L.info("Iniciando simula\xE7\xE3o (Jornada", window.currentJornada, ")...");
       } catch (_) {
       }
       try {
-        assignStartingLineups(window.currentRoundMatches);
+        assignStartingLineups2(window.currentRoundMatches);
       } catch (e2) {
         try {
           const L = getLogger6();
@@ -2570,7 +2704,7 @@
             L.error && L.error("renderInitialMatchBoard not found", e2);
           } catch (_) {
           }
-          isSimulating2 = false;
+          isSimulating = false;
         }
       }
       const HALF_MS = window.GameConfig && window.GameConfig.timing && window.GameConfig.timing.halfDurationMs || 2e4;
@@ -2590,12 +2724,12 @@
               setTimeout(() => {
                 const L2 = getLogger6();
                 L2.info && L2.info("Starting simulation interval, tick=", perMinuteMs);
-                simIntervalId2 = setInterval(simulationTick, perMinuteMs);
+                simIntervalId = setInterval(simulationTick, perMinuteMs);
               }, START_DELAY_MS);
             } catch (e2) {
               const L3 = getLogger6();
               L3.info && L3.info("Starting simulation interval (fallback) tick=", perMinuteMs);
-              simIntervalId2 = setInterval(simulationTick, perMinuteMs);
+              simIntervalId = setInterval(simulationTick, perMinuteMs);
             }
           });
         } catch (e2) {
@@ -2605,13 +2739,13 @@
           setTimeout(() => {
             const L2 = getLogger6();
             L2.info && L2.info("Starting simulation interval, tick=", perMinuteMs);
-            simIntervalId2 = setInterval(simulationTick, perMinuteMs);
+            simIntervalId = setInterval(simulationTick, perMinuteMs);
           }, START_DELAY_MS);
         }
       } else {
         proceedToMatch();
         setTimeout(() => {
-          simIntervalId2 = setInterval(simulationTick, perMinuteMs);
+          simIntervalId = setInterval(simulationTick, perMinuteMs);
         }, START_DELAY_MS);
       }
       let minute = 0;
@@ -2623,24 +2757,24 @@
             (m) => m.homeClub === window.playerClub || m.awayClub === window.playerClub
           );
           if (playerMatch && typeof showHalfTimeSubsOverlay === "function") {
-            if (simIntervalId2) {
-              clearInterval(simIntervalId2);
-              simIntervalId2 = null;
+            if (simIntervalId) {
+              clearInterval(simIntervalId);
+              simIntervalId = null;
             }
             showHalfTimeSubsOverlay(window.playerClub, playerMatch, () => {
-              if (simIntervalId2) {
-                clearInterval(simIntervalId2);
-                simIntervalId2 = null;
+              if (simIntervalId) {
+                clearInterval(simIntervalId);
+                simIntervalId = null;
               }
-              simIntervalId2 = setInterval(simulationTick, perMinuteMs);
+              simIntervalId = setInterval(simulationTick, perMinuteMs);
             });
             return;
           }
         }
         if (minute > 90) {
-          if (simIntervalId2) {
-            clearInterval(simIntervalId2);
-            simIntervalId2 = null;
+          if (simIntervalId) {
+            clearInterval(simIntervalId);
+            simIntervalId = null;
           }
           endSimulation();
           return;
@@ -2666,9 +2800,9 @@
             L.error && L.error("Fun\xE7\xE3o advanceMatchDay n\xE3o encontrada (matches.js).");
           } catch (_) {
           }
-          if (simIntervalId2) {
-            clearInterval(simIntervalId2);
-            simIntervalId2 = null;
+          if (simIntervalId) {
+            clearInterval(simIntervalId);
+            simIntervalId = null;
           }
           endSimulation();
         }
@@ -2676,13 +2810,13 @@
     }
     function endSimulation() {
       try {
-        if (simIntervalId2) {
-          clearInterval(simIntervalId2);
-          simIntervalId2 = null;
+        if (simIntervalId) {
+          clearInterval(simIntervalId);
+          simIntervalId = null;
         }
       } catch (e2) {
       }
-      isSimulating2 = false;
+      isSimulating = false;
       if (typeof updateClubStatsAfterMatches === "function")
         updateClubStatsAfterMatches(window.currentRoundMatches);
       try {
@@ -2691,8 +2825,8 @@
       } catch (e2) {
       }
       try {
-        if (typeof finishDayAndReturnToHub2 === "function") {
-          finishDayAndReturnToHub2();
+        if (typeof finishDayAndReturnToHub === "function") {
+          finishDayAndReturnToHub();
           return;
         }
       } catch (e2) {
@@ -2709,7 +2843,7 @@
         }
       }
     }
-    function finishDayAndReturnToHub2() {
+    function finishDayAndReturnToHub() {
       try {
         if (Array.isArray(window.currentRoundMatches)) {
           window.currentRoundMatches.forEach((m) => {
@@ -2808,13 +2942,13 @@
       } catch (e2) {
       }
       try {
-        if (simIntervalId2) {
-          clearInterval(simIntervalId2);
-          simIntervalId2 = null;
+        if (simIntervalId) {
+          clearInterval(simIntervalId);
+          simIntervalId = null;
         }
       } catch (e2) {
       }
-      isSimulating2 = false;
+      isSimulating = false;
       try {
         if (typeof window.generateRounds === "function") {
           const nextRoundMatches = [];
@@ -2859,7 +2993,7 @@
           });
           window.currentRoundMatches = nextRoundMatches;
           try {
-            assignStartingLineups(window.currentRoundMatches);
+            assignStartingLineups2(window.currentRoundMatches);
           } catch (e2) {
             try {
               const L = getLogger6();
@@ -3017,15 +3151,15 @@
     }
     window.Simulation = window.Simulation || {};
     window.Simulation.updateClubStatsAfterMatches = updateClubStatsAfterMatches;
-    window.Simulation.assignStartingLineups = assignStartingLineups;
-    window.Simulation.simulateDay = simulateDay2;
+    window.Simulation.assignStartingLineups = assignStartingLineups2;
+    window.Simulation.simulateDay = simulateDay;
     window.Simulation.endSimulation = endSimulation;
-    window.Simulation.finishDayAndReturnToHub = finishDayAndReturnToHub2;
+    window.Simulation.finishDayAndReturnToHub = finishDayAndReturnToHub;
     window.updateClubStatsAfterMatches = updateClubStatsAfterMatches;
-    window.assignStartingLineups = assignStartingLineups;
-    window.simulateDay = simulateDay2;
+    window.assignStartingLineups = assignStartingLineups2;
+    window.simulateDay = simulateDay;
     window.endSimulation = endSimulation;
-    window.finishDayAndReturnToHub = finishDayAndReturnToHub2;
+    window.finishDayAndReturnToHub = finishDayAndReturnToHub;
   })();
 
   // src/ui/helpers.mjs
@@ -3113,7 +3247,7 @@
   // src/ui/roster.mjs
   function renderTeamRoster2(club) {
     try {
-      const formatMoney3 = window.FootLab && window.FootLab.formatMoney || window.formatMoney || ((v) => String(v));
+      const formatMoney2 = window.FootLab && window.FootLab.formatMoney || window.formatMoney || ((v) => String(v));
       const content = document.getElementById("hub-main-content");
       if (!content) return;
       if (!club || !club.team || !club.team.players || club.team.players.length === 0) {
@@ -3172,7 +3306,7 @@
                   <div class="skill-bar"><div class="skill-fill" style="width:${skill}%;background:${barColor};"></div></div>
                   <div style="display:flex;justify-content:space-between;align-items:center;font-size:0.92em;">
                     <div style="font-weight:700;color:rgba(255,255,255,0.9);">${skill}</div>
-                    <div class="player-salary" data-player-id="${p.id}">${formatMoney3(salary)}${endsMarker ? " " + endsMarker : ""}</div>
+                    <div class="player-salary" data-player-id="${p.id}">${formatMoney2(salary)}${endsMarker ? " " + endsMarker : ""}</div>
                   </div>
                 </div>`;
         });
@@ -3208,7 +3342,7 @@
               const current = Number(player.salary || 0);
               const proposedStr = window.prompt(
                 `Negociar sal\xE1rio para ${player.name}
-Sal\xE1rio atual: ${formatMoney3(current)}
+Sal\xE1rio atual: ${formatMoney2(current)}
 Introduza sal\xE1rio mensal proposto (n\xFAmero):`,
                 String(current)
               );
@@ -3227,7 +3361,7 @@ Introduza sal\xE1rio mensal proposto (n\xFAmero):`,
                 if (res.accepted)
                   alert(
                     `${player.name} aceitou a oferta!
-Novo sal\xE1rio: ${formatMoney3(player.salary)}
+Novo sal\xE1rio: ${formatMoney2(player.salary)}
 Probabilidade estimada: ${(prob * 100).toFixed(1)}%`
                   );
                 else
@@ -3880,7 +4014,7 @@ Probabilidade estimada: ${(prob * 100).toFixed(1)}%`
   var hub_controller_exports = {};
   __export(hub_controller_exports, {
     default: () => hub_controller_default,
-    initHubUI: () => initHubUI2,
+    initHubUI: () => initHubUI,
     renderHubContent: () => renderHubContent2,
     updateBudgetDisplays: () => updateBudgetDisplays
   });
@@ -4018,7 +4152,7 @@ Probabilidade estimada: ${(prob * 100).toFixed(1)}%`
         content.innerHTML = "<h2>Bem-vindo!</h2><p>Selecione uma op\xE7\xE3o no menu.</p>";
     }
   }
-  function initHubUI2(playerClub2) {
+  function initHubUI(playerClub2) {
     const E = window.FootLab || window.Elifoot || window;
     try {
       const L = E && E.Logger || console;
@@ -4175,7 +4309,7 @@ Probabilidade estimada: ${(prob * 100).toFixed(1)}%`
     }
   }
   window.Hub = window.Hub || {};
-  window.Hub.initHubUI = window.Hub.initHubUI || initHubUI2;
+  window.Hub.initHubUI = window.Hub.initHubUI || initHubUI;
   window.Hub.renderHubContent = window.Hub.renderHubContent || renderHubContent2;
   window.Hub.renderTeamRoster = window.Hub.renderTeamRoster || renderTeamRoster2;
   window.Hub.renderTransfers = window.Hub.renderTransfers || renderTransfers;
@@ -4184,16 +4318,16 @@ Probabilidade estimada: ${(prob * 100).toFixed(1)}%`
   };
   window.FootLab = window.FootLab || window.Elifoot || {};
   window.FootLab.Hub = window.FootLab.Hub || {};
-  window.FootLab.Hub.initHubUI = window.FootLab.Hub.initHubUI || initHubUI2;
+  window.FootLab.Hub.initHubUI = window.FootLab.Hub.initHubUI || initHubUI;
   window.FootLab.Hub.renderHubContent = window.FootLab.Hub.renderHubContent || renderHubContent2;
   window.FootLab.Hub.renderTeamRoster = window.FootLab.Hub.renderTeamRoster || renderTeamRoster2;
   window.FootLab.Hub.renderTransfers = window.FootLab.Hub.renderTransfers || renderTransfers;
   window.FootLab.Hub.renderFinance = window.FootLab.Hub.renderFinance || renderFinance;
   window.Elifoot = window.Elifoot || window.FootLab;
-  window.initHubUI = window.initHubUI || initHubUI2;
+  window.initHubUI = window.initHubUI || initHubUI;
   window.renderHubContent = window.renderHubContent || renderHubContent2;
   window.renderTeamRoster = window.renderTeamRoster || renderTeamRoster2;
-  var hub_controller_default = { initHubUI: initHubUI2, renderHubContent: renderHubContent2 };
+  var hub_controller_default = { initHubUI, renderHubContent: renderHubContent2 };
 
   // src/ui/matchBoard.mjs
   function getFinance() {
@@ -4259,11 +4393,11 @@ Probabilidade estimada: ${(prob * 100).toFixed(1)}%`
           const awayBorder = awaySec;
           html += `
                         <div class="match-line-new" id="match-line-${match.index}" style="display:flex; align-items:center; gap:8px;">
-                            <span class="team-name home" style="display:inline-block; width:16ch; max-width:16ch; min-width:16ch; box-sizing:border-box; text-align:center; vertical-align:middle; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color: ${homeFg}; background-color: ${homeBg}; padding:4px 6px; border-radius:3px; font-weight:bold; border:2px solid ${homeBorder};">${match.home.name}</span>
+                            <span class="team-name home" style="color: ${homeFg}; background-color: ${homeBg}; border:2px solid ${homeBorder};">${match.home.name}</span>
                             <span class="home-goals" style="width:28px; text-align:center; font-weight:700;">0</span>
                             <span class="separator">-</span>
                             <span class="away-goals" style="width:28px; text-align:center; font-weight:700;">0</span>
-                            <span class="team-name away" style="display:inline-block; width:16ch; max-width:16ch; min-width:16ch; box-sizing:border-box; text-align:center; vertical-align:middle; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color: ${awayFg}; background-color: ${awayBg}; padding:4px 6px; border-radius:3px; font-weight:bold; border:2px solid ${awayBorder};">${match.away.name}</span>
+                            <span class="team-name away" style="color: ${awayFg}; background-color: ${awayBg}; border:2px solid ${awayBorder};">${match.away.name}</span>
                             <span class="last-goal" style="flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:inherit; font-size:0.95em;"></span>
                             <span class="spectators" style="display:inline-block; width:6ch; min-width:6ch; max-width:6ch; text-align:right; font-variant-numeric: tabular-nums;">\u2014</span>
                         </div>
@@ -4366,10 +4500,11 @@ Probabilidade estimada: ${(prob * 100).toFixed(1)}%`
     const availableForBoard = Math.max(100, viewportH - boardRect.top - reserved);
     const headers = board.querySelectorAll(".division-title");
     let headersTotal = 0;
-    headers.forEach((h) => headersTotal += h.offsetHeight || 24);
-    const gapTotal = Math.max(0, headers.length - 1) * 12 + headers.length * 12;
-    const availableForLines = Math.max(60, availableForBoard - headersTotal - gapTotal);
-    let target = Math.floor(availableForLines / totalLines);
+    headers.forEach((h) => headersTotal += h.offsetHeight || 30);
+    const verticalHeadersHeight = headersTotal / 2;
+    const gapTotal = 40;
+    const availableForLines = Math.max(60, availableForBoard - verticalHeadersHeight - gapTotal);
+    let target = Math.floor(availableForLines / (totalLines / 2));
     if (target < 16) target = 16;
     if (target > 40) target = 40;
     try {
@@ -4994,11 +5129,6 @@ Probabilidade estimada: ${(prob * 100).toFixed(1)}%`
   var allDivisions = [];
   var playerClub = null;
   var allClubs = [];
-  var coachName = "";
-  var currentJornada = 1;
-  var currentRoundMatches = [];
-  var isSimulating = false;
-  var simIntervalId = null;
   if (typeof window !== "undefined") {
     window.GAME_NAME = typeof GameConstants !== "undefined" && GameConstants.GAME_NAME || "FootLab t1";
     try {
@@ -5065,9 +5195,58 @@ Probabilidade estimada: ${(prob * 100).toFixed(1)}%`
       }
     }
   }
-  function formatMoney2(value) {
-    if (!value && value !== 0) return "0 \u20AC";
-    return Math.floor(value).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".") + " \u20AC";
+  async function validateGameData() {
+    const L = getLogger5();
+    L.info("Waiting for divisions data...");
+    const waitFn = window && window.waitForDivisionsData || window && window.FootLab && window.FootLab.waitForDivisionsData;
+    if (typeof waitFn === "function") {
+      await waitFn(3e3);
+    }
+    const requireArchived = window.FootLab && window.FootLab.GameConfig && window.FootLab.GameConfig.requireArchivedRosters;
+    const realCount = window.REAL_ROSTERS ? Object.keys(window.REAL_ROSTERS).length : 0;
+    if (requireArchived && realCount < 72) {
+      throw new Error("Rosters incompletos ou em falta.");
+    }
+    const totalTeams = (window.divisionsData || []).reduce(
+      (acc, d) => acc + (d && d.teams && d.teams.length || 0),
+      0
+    );
+    if (totalTeams === 0) {
+      throw new Error("Nenhuma equipa carregada em divisionsData.");
+    }
+    return true;
+  }
+  function initializeGameSession() {
+    const L = getLogger5();
+    L.info("Generating all clubs...");
+    allClubs = generateAllClubs();
+    allDivisions = [[], [], [], []];
+    allClubs.forEach((club) => {
+      if (club.division >= 1 && club.division <= 4) {
+        allDivisions[club.division - 1].push(club);
+      }
+    });
+    const division4 = allDivisions[3];
+    if (!division4 || division4.length === 0) {
+      throw new Error("Divis\xE3o 4 est\xE1 vazia.");
+    }
+    if (typeof assignRandomShortContracts === "function") assignRandomShortContracts(allDivisions);
+    if (typeof applySkillCaps === "function") applySkillCaps(allDivisions);
+    const pool = division4.length > 8 ? division4.slice(-8) : division4.slice();
+    playerClub = pool[Math.floor(Math.random() * pool.length)];
+    window.playerClub = playerClub;
+    window.allDivisions = allDivisions;
+    window.allClubs = allClubs;
+    if (typeof generateRounds === "function") {
+      const firstRoundMatches = [];
+      allDivisions.forEach((div) => {
+        const rounds = generateRounds(div);
+        if (rounds.length > 0) firstRoundMatches.push(...rounds[0]);
+      });
+      window.currentRoundMatches = firstRoundMatches;
+      if (typeof assignStartingLineups === "function") assignStartingLineups(window.currentRoundMatches);
+    }
+    return playerClub;
   }
   document.addEventListener("DOMContentLoaded", () => {
     const _startBtn = document.getElementById("startBtn");
@@ -5080,862 +5259,15 @@ Probabilidade estimada: ${(prob * 100).toFixed(1)}%`
       return;
     }
     _startBtn.addEventListener("click", async () => {
-      const L = getLogger5();
-      L.info("Start button clicked.");
-      coachName = document.getElementById("coachName").value.trim();
-      if (!coachName) {
-        alert("Digite o nome do treinador!");
-        return;
-      }
-      if (!window.REAL_TEAM_COLORS) {
-        L.warn("window.REAL_TEAM_COLORS n\xE3o encontrado. O jogo usar\xE1 cores geradas automaticamente.");
-      }
-      L.info("Waiting for divisions data...");
       try {
-        const waitFn = window && window.waitForDivisionsData || window && window.FootLab && window.FootLab.waitForDivisionsData;
-        if (typeof waitFn === "function") {
-          await waitFn(3e3);
-          L.info("Divisions data loaded.");
-        } else {
-          L.warn("waitForDivisionsData function not found.");
-        }
+        await validateGameData();
+        const coachName = document.getElementById("coachName").value.trim();
+        if (!coachName) return alert("Digite o nome do treinador!");
+        const picked = initializeGameSession();
+        if (typeof startGame === "function") startGame(picked);
       } catch (err) {
-        try {
-          let ov = document.getElementById("fatal-rosters-overlay");
-          if (!ov) {
-            ov = document.createElement("div");
-            ov.id = "fatal-rosters-overlay";
-            Object.assign(ov.style, {
-              position: "fixed",
-              left: "0",
-              top: "0",
-              right: "0",
-              bottom: "0",
-              background: "rgba(0,0,0,0.92)",
-              color: "#fff",
-              zIndex: 999999,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              padding: "20px"
-            });
-            const inner = document.createElement("div");
-            inner.style.maxWidth = "820px";
-            inner.style.background = "#7a0000";
-            inner.style.padding = "22px";
-            inner.style.borderRadius = "8px";
-            inner.style.boxShadow = "0 10px 40px rgba(0,0,0,0.6)";
-            inner.innerHTML = '<h2 style="margin-top:0">Falha ao carregar rosters</h2><p>O carregamento dos dados das equipas (rosters) demorou demasiado tempo. Isto acontece quando <code>window.REAL_ROSTERS</code> n\xE3o est\xE1 dispon\xEDvel.</p><p>Verifique se o ficheiro <code>src/data/real_rosters_2025_26.js</code> est\xE1 a ser carregado no <code>index.html</code> <strong>antes</strong> do bundle da aplica\xE7\xE3o.</p><div style="margin-top:12px;text-align:right"><button id="fatal-reload-2" style="padding:8px 12px;border-radius:6px;background:#eee;color:#000;border:0;cursor:pointer">Recarregar</button></div>';
-            ov.appendChild(inner);
-            document.body.appendChild(ov);
-            document.getElementById("fatal-reload-2").onclick = function() {
-              try {
-                location.reload();
-              } catch (_) {
-              }
-            };
-          }
-        } catch (e2) {
-          try {
-            alert("Falha ao carregar rosters: " + String(err));
-          } catch (_) {
-          }
-        }
-        return;
-      }
-      if (typeof generateAllClubs === "function") {
-        try {
-          const requireArchived = window.FootLab && window.FootLab.RequireArchivedRosters || window.FootLab && window.FootLab.GameConfig && window.FootLab.GameConfig.requireArchivedRosters;
-          const realCount = typeof window !== "undefined" && window.REAL_ROSTERS ? Object.keys(window.REAL_ROSTERS).length : 0;
-          if (requireArchived && (!realCount || realCount < 72)) {
-            try {
-              let ov = document.getElementById("fatal-rosters-overlay");
-              if (!ov) {
-                ov = document.createElement("div");
-                ov.id = "fatal-rosters-overlay";
-                Object.assign(ov.style, {
-                  position: "fixed",
-                  left: "0",
-                  top: "0",
-                  right: "0",
-                  bottom: "0",
-                  background: "rgba(0,0,0,0.86)",
-                  color: "#fff",
-                  zIndex: 99999,
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  padding: "20px"
-                });
-                const inner = document.createElement("div");
-                inner.style.maxWidth = "760px";
-                inner.style.background = "#7a0000";
-                inner.style.padding = "22px";
-                inner.style.borderRadius = "8px";
-                inner.style.boxShadow = "0 10px 40px rgba(0,0,0,0.6)";
-                inner.innerHTML = '<h2 style="margin-top:0">Erro cr\xEDtico: rosters em falta</h2><p>O ficheiro de dados das equipas (<code>window.REAL_ROSTERS</code>) n\xE3o foi encontrado ou est\xE1 incompleto.</p><p>Execute <code>npm run build</code> para gerar os ficheiros necess\xE1rios e verifique se <code>src/data/real_rosters_2025_26.js</code> est\xE1 a ser carregado no <code>index.html</code>.</p><div style="margin-top:12px;text-align:right"><button id="fatal-rosters-close" style="padding:8px 12px;border-radius:6px;background:#eee;color:#000;border:0;cursor:pointer">Fechar</button></div>';
-                ov.appendChild(inner);
-                document.body.appendChild(ov);
-                document.getElementById("fatal-rosters-close").onclick = function() {
-                };
-              }
-            } catch (e2) {
-              try {
-                alert("Archived rosters required but not found.");
-              } catch (_) {
-              }
-            }
-            return;
-          }
-        } catch (e2) {
-        }
-        try {
-          const totalTeams = (window.divisionsData || []).reduce(
-            (acc, d) => acc + (d && d.teams && d.teams.length || 0),
-            0
-          );
-          if (totalTeams === 0) {
-            const msg = "No teams available: divisionsData present but contains 0 teams. Likely REAL_ROSTERS failed to load.";
-            try {
-              console.error("TEMP_DEBUG:", msg, {
-                divisionsData: window.divisionsData,
-                realRostersPresent: !!window.REAL_ROSTERS,
-                realRostersCount: window.REAL_ROSTERS ? Object.keys(window.REAL_ROSTERS).length : 0
-              });
-            } catch (_) {
-            }
-            let ov = document.getElementById("fatal-rosters-overlay");
-            if (!ov) {
-              ov = document.createElement("div");
-              ov.id = "fatal-rosters-overlay";
-              Object.assign(ov.style, {
-                position: "fixed",
-                left: "0",
-                top: "0",
-                right: "0",
-                bottom: "0",
-                background: "rgba(0,0,0,0.92)",
-                color: "#fff",
-                zIndex: 999999,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                padding: "20px"
-              });
-              const inner = document.createElement("div");
-              inner.style.maxWidth = "820px";
-              inner.style.background = "#7a0000";
-              inner.style.padding = "22px";
-              inner.style.borderRadius = "8px";
-              inner.style.boxShadow = "0 10px 40px rgba(0,0,0,0.6)";
-              inner.innerHTML = `<h2 style="margin-top:0">Dados em falta: equipas n\xE3o carregadas</h2><p>${msg}</p><p>Verifique se <code>src/data/real_rosters_2025_26.js</code> est\xE1 a ser carregado corretamente no ficheiro <code>index.html</code>.</p><div style="margin-top:12px;text-align:right"><button id="fatal-open-dev" style="margin-right:8px;padding:8px 12px;border-radius:6px;background:#ffd166;color:#000;border:0;cursor:pointer">Abrir DevTools</button><button id="fatal-reload" style="padding:8px 12px;border-radius:6px;background:#eee;color:#000;border:0;cursor:pointer">Recarregar</button></div>`;
-              ov.appendChild(inner);
-              document.body.appendChild(ov);
-              document.getElementById("fatal-open-dev").onclick = function() {
-                try {
-                  if (window && window.require) {
-                    const { remote } = window.require("electron");
-                    remote.getCurrentWindow().webContents.openDevTools();
-                  } else if (window && window.FootLab && window.FootLab.openDevTools) {
-                    window.FootLab.openDevTools();
-                  }
-                } catch (e2) {
-                  console.error("openDevTools failed", e2);
-                }
-              };
-              document.getElementById("fatal-reload").onclick = function() {
-                try {
-                  location.reload();
-                } catch (_) {
-                }
-              };
-            }
-            return;
-          }
-        } catch (diagErr) {
-          try {
-            console.error("TEMP_DEBUG: diagnostic check failed", diagErr);
-          } catch (_) {
-          }
-        }
-        try {
-          L.info("Generating all clubs...");
-          allClubs = generateAllClubs();
-          L.info(`Generated ${allClubs.length} clubs.`);
-        } catch (err) {
-          try {
-            let oval = document.getElementById("startup-error-overlay");
-            if (!oval) {
-              oval = document.createElement("div");
-              oval.id = "startup-error-overlay";
-              Object.assign(oval.style, {
-                position: "fixed",
-                left: "0",
-                top: "0",
-                right: "0",
-                bottom: "0",
-                background: "rgba(0,0,0,0.9)",
-                color: "#fff",
-                zIndex: 999999,
-                overflow: "auto",
-                padding: "24px",
-                fontFamily: "sans-serif"
-              });
-              const inner = document.createElement("div");
-              inner.style.maxWidth = "980px";
-              inner.style.margin = "0 auto";
-              inner.style.background = "#1b1b1b";
-              inner.style.padding = "18px";
-              inner.style.borderRadius = "8px";
-              inner.style.boxShadow = "0 8px 40px rgba(0,0,0,0.6)";
-              const title = document.createElement("h2");
-              title.textContent = "Erro cr\xEDtico ao iniciar: dados de roster inv\xE1lidos";
-              title.style.marginTop = "0";
-              inner.appendChild(title);
-              const msg = document.createElement("pre");
-              msg.style.whiteSpace = "pre-wrap";
-              msg.style.background = "#111";
-              msg.style.padding = "12px";
-              msg.style.borderRadius = "6px";
-              msg.style.maxHeight = "40vh";
-              msg.style.overflow = "auto";
-              msg.textContent = err && err.message || String(err);
-              inner.appendChild(msg);
-              try {
-                const vc = window && window.validateRosterConstraints || null;
-                if (typeof vc === "function") {
-                  const report = vc({ expectedTeams: 72, minPlayers: 18 });
-                  if (report && Array.isArray(report.problems) && report.problems.length) {
-                    const pdiv = document.createElement("div");
-                    pdiv.style.marginTop = "12px";
-                    pdiv.innerHTML = "<strong>Problems detected:</strong>";
-                    const ul = document.createElement("ul");
-                    report.problems.forEach((p) => {
-                      const li = document.createElement("li");
-                      li.textContent = p;
-                      ul.appendChild(li);
-                    });
-                    pdiv.appendChild(ul);
-                    inner.appendChild(pdiv);
-                  }
-                }
-              } catch (e2) {
-              }
-              const controls = document.createElement("div");
-              controls.style.marginTop = "14px";
-              controls.style.textAlign = "right";
-              const reloadBtn = document.createElement("button");
-              reloadBtn.textContent = "Recarregar (Reload)";
-              Object.assign(reloadBtn.style, {
-                marginRight: "8px",
-                padding: "8px 12px",
-                borderRadius: "6px"
-              });
-              reloadBtn.onclick = function() {
-                try {
-                  location.reload();
-                } catch (_) {
-                }
-              };
-              controls.appendChild(reloadBtn);
-              const devBtn = document.createElement("button");
-              devBtn.textContent = "Abrir DevTools";
-              Object.assign(devBtn.style, { padding: "8px 12px", borderRadius: "6px" });
-              devBtn.onclick = function() {
-                try {
-                  if (window && window.require) {
-                    const { remote } = window.require("electron");
-                    remote.getCurrentWindow().webContents.openDevTools();
-                  } else if (window && window.FootLab && window.FootLab.openDevTools) {
-                    window.FootLab.openDevTools();
-                  }
-                } catch (e2) {
-                  try {
-                    console && console.error && console.error("openDevTools failed", e2);
-                  } catch (_) {
-                  }
-                }
-              };
-              controls.appendChild(devBtn);
-              inner.appendChild(controls);
-              oval.appendChild(inner);
-              document.body.appendChild(oval);
-            }
-          } catch (e2) {
-            try {
-              console && console.error && console.error("startup overlay failed", e2);
-            } catch (_) {
-            }
-          }
-          return;
-        }
-        allDivisions = [[], [], [], []];
-        allClubs.forEach((club) => {
-          if (club.division >= 1 && club.division <= 4) {
-            allDivisions[club.division - 1].push(club);
-          }
-        });
-        const division4 = allDivisions[3];
-        if (!Array.isArray(division4) || division4.length === 0) {
-          L.error("Division 4 has no clubs. Cannot assign player club.");
-          alert("N\xE3o existem clubes na Divis\xE3o 4 para escolher o seu clube.");
-          return;
-        }
-        L.info(`Found ${division4.length} clubs in Division 4.`);
-        try {
-          if (typeof assignRandomShortContracts === "function") {
-            assignRandomShortContracts(allDivisions);
-          }
-        } catch (e2) {
-          try {
-            const L2 = getLogger5();
-            L2.warn && L2.warn("assignRandomShortContracts failed", e2);
-          } catch (_) {
-          }
-        }
-        try {
-          if (typeof markSomeContractsExpiring === "function") {
-            markSomeContractsExpiring(allDivisions, 0.12);
-          }
-        } catch (e2) {
-          try {
-            const L2 = getLogger5();
-            L2.warn && L2.warn("markSomeContractsExpiring failed", e2);
-          } catch (_) {
-          }
-        }
-        const pool = division4.length > 8 ? division4.slice(-8) : division4.slice();
-        let pickedClub = pool[Math.floor(Math.random() * pool.length)];
-        playerClub = pickedClub;
-        L.info("Setting window.playerClub and calling startGame...", { playerClubName: playerClub?.team?.name });
-        window.playerClub = playerClub;
-        if (typeof startGame === "function") {
-          L.info("startGame function found. Executing...");
-          startGame(playerClub);
-          L.info("startGame executed.");
-        } else {
-          L.error("startGame function is not defined!");
-        }
-        window.allDivisions = allDivisions;
-        window.FootLab = window.FootLab || window.Elifoot || {};
-        window.FootLab.playerClub = playerClub;
-        window.FootLab.allDivisions = allDivisions;
-        window.Elifoot = window.Elifoot || window.FootLab;
-        try {
-          const L2 = getLogger5();
-          L2.debug && L2.debug("Clube do jogador selecionado:", playerClub);
-        } catch (_) {
-        }
-        try {
-          const L2 = getLogger5();
-          L2.debug && L2.debug("Equipa do clube:", playerClub.team);
-        } catch (_) {
-        }
-        try {
-          const L2 = getLogger5();
-          L2.debug && L2.debug("Jogadores da equipa:", playerClub.team.players);
-        } catch (_) {
-        }
-        try {
-          const L2 = getLogger5();
-          L2.debug && L2.debug(
-            "N\xFAmero de jogadores:",
-            playerClub.team.players ? playerClub.team.players.length : 0
-          );
-        } catch (_) {
-        }
-        if (typeof applySkillCaps === "function") {
-          try {
-            applySkillCaps(allDivisions);
-            try {
-              const L2 = getLogger5();
-              L2.debug && L2.debug("applySkillCaps executed");
-            } catch (_) {
-            }
-          } catch (e2) {
-            try {
-              const L2 = getLogger5();
-              L2.warn && L2.warn("applySkillCaps failed", e2);
-            } catch (_) {
-            }
-          }
-        }
-        if (typeof generateRounds === "function") {
-          const firstRoundMatches = [];
-          allDivisions.forEach((divisionClubs) => {
-            const rounds = generateRounds(divisionClubs);
-            if (rounds.length > 0) {
-              firstRoundMatches.push(...rounds[0]);
-            }
-          });
-          currentRoundMatches = firstRoundMatches;
-          window.currentRoundMatches = currentRoundMatches;
-          window.FootLab = window.FootLab || window.Elifoot || {};
-          window.FootLab.currentRoundMatches = currentRoundMatches;
-          window.Elifoot = window.Elifoot || window.FootLab;
-          if (Array.isArray(currentRoundMatches)) {
-            const _assign = typeof window !== "undefined" && (window.assignStartingLineups || window.FootLab && window.FootLab.assignStartingLineups || window.Elifoot && window.Elifoot.assignStartingLineups);
-            if (typeof _assign === "function") _assign(currentRoundMatches);
-          }
-          window.proceedToMatch = function() {
-            document.getElementById("screen-hub").style.display = "none";
-            document.getElementById("screen-match").style.display = "flex";
-            try {
-              ["nextOpponentFloating", "budgetFloating"].forEach((id) => {
-                const el = document.getElementById(id);
-                if (el && el.parentNode) el.parentNode.removeChild(el);
-              });
-            } catch (e2) {
-            }
-            const matchTeamNameEl = document.getElementById("playerTeamNameMatch");
-            if (matchTeamNameEl && window.playerClub && window.playerClub.team) {
-              matchTeamNameEl.textContent = window.playerClub.team.name;
-            }
-            if (typeof renderInitialMatchBoard === "function") {
-              renderInitialMatchBoard(window.allDivisions);
-            } else {
-              try {
-                const L2 = getLogger5();
-                L2.error && L2.error("Fun\xE7\xE3o renderInitialMatchBoard n\xE3o encontrada (ui.js).");
-              } catch (_) {
-              }
-              isSimulating = false;
-              return;
-            }
-          };
-          try {
-            const setupScreen = document.getElementById("screen-setup");
-            if (setupScreen) setupScreen.style.display = "none";
-            const hubScreen = document.getElementById("screen-hub");
-            if (hubScreen) hubScreen.style.display = "flex";
-            if (typeof initHubUI === "function") {
-              try {
-                initHubUI();
-              } catch (e2) {
-                try {
-                  const L2 = getLogger5();
-                  L2.warn && L2.warn("initHubUI threw during start flow:", e2);
-                } catch (_) {
-                }
-                if (typeof renderHubContent === "function")
-                  try {
-                    renderHubContent("menu-team");
-                  } catch (_) {
-                  }
-              }
-            } else if (typeof renderHubContent === "function") {
-              try {
-                renderHubContent("menu-team");
-              } catch (e2) {
-                try {
-                  const L2 = getLogger5();
-                  L2.warn && L2.warn("renderHubContent failed during start flow:", e2);
-                } catch (_) {
-                }
-              }
-            }
-          } catch (e2) {
-            try {
-              const L2 = getLogger5();
-              L2.warn && L2.warn("Failed to show hub after team selection:", e2);
-            } catch (_) {
-            }
-          }
-        }
-        const endSimulation = function() {
-          if (simIntervalId) {
-            clearInterval(simIntervalId);
-            simIntervalId = null;
-          }
-          {
-            const _updateClubStats = typeof window !== "undefined" && (window.updateClubStatsAfterMatches || window.FootLab && window.FootLab.updateClubStatsAfterMatches || window.Elifoot && window.Elifoot.updateClubStatsAfterMatches);
-            if (typeof _updateClubStats === "function") {
-              _updateClubStats(currentRoundMatches);
-            } else {
-              try {
-                const L2 = getLogger5();
-                L2.error && L2.error("Fun\xE7\xE3o updateClubStatsAfterMatches n\xE3o encontrada (matches.js).");
-              } catch (_) {
-              }
-            }
-          }
-          const progressContainer = document.getElementById("progress-container");
-          if (progressContainer) progressContainer.style.display = "none";
-          try {
-            isSimulating = false;
-            if (typeof finishDayAndReturnToHub === "function") {
-              finishDayAndReturnToHub();
-              return;
-            }
-            document.getElementById("screen-match").style.display = "none";
-            document.getElementById("screen-hub").style.display = "flex";
-            if (typeof renderHubContent === "function") renderHubContent("menu-standings");
-          } catch (err) {
-            try {
-              const L2 = getLogger5();
-              L2.warn && L2.warn("endSimulation: could not switch to standings view", err);
-            } catch (_) {
-            }
-          }
-        };
-        window.endSimulation = endSimulation;
-        window.finishDayAndReturnToHub = function() {
-          try {
-            if (Array.isArray(currentRoundMatches)) {
-              currentRoundMatches.forEach((m) => {
-                if (m) m.isFinished = true;
-              });
-              {
-                const _updateClubStats = typeof window !== "undefined" && (window.updateClubStatsAfterMatches || window.FootLab && window.FootLab.updateClubStatsAfterMatches || window.Elifoot && window.Elifoot.updateClubStatsAfterMatches);
-                if (typeof _updateClubStats === "function") {
-                  _updateClubStats(currentRoundMatches);
-                  try {
-                    const L2 = getLogger5();
-                    L2.debug && L2.debug(
-                      "finishDayAndReturnToHub: updateClubStatsAfterMatches executed for current round"
-                    );
-                  } catch (_) {
-                  }
-                }
-              }
-            }
-          } catch (e2) {
-            try {
-              const L2 = getLogger5();
-              L2.warn && L2.warn("finishDayAndReturnToHub: error finalizing matches", e2);
-            } catch (_) {
-            }
-          }
-          currentJornada++;
-          if (typeof window !== "undefined") window.currentJornada = currentJornada;
-          document.getElementById("screen-match").style.display = "none";
-          document.getElementById("screen-hub").style.display = "flex";
-          isSimulating = false;
-          const jornadaDisplayEl = document.getElementById("currentJornadaDisplay");
-          if (jornadaDisplayEl) jornadaDisplayEl.textContent = `${currentJornada}\xAA JORNADA`;
-          const hubTeamNameEl = document.getElementById("playerTeamNameHub");
-          if (hubTeamNameEl && playerClub && playerClub.team)
-            hubTeamNameEl.textContent = playerClub.team.name;
-          const teamFooterEl = document.getElementById("playerTeamNameFooter");
-          if (teamFooterEl && playerClub && playerClub.team)
-            teamFooterEl.textContent = playerClub.team.name;
-          const progressContainer = document.getElementById("progress-container");
-          if (progressContainer) progressContainer.style.display = "block";
-          const finishBtn = document.getElementById("finishSimBtn");
-          if (finishBtn) finishBtn.style.display = "none";
-          if (typeof generateRounds === "function") {
-            const nextRoundMatches = [];
-            allDivisions.forEach((divisionClubs) => {
-              const rounds = generateRounds(divisionClubs);
-              if (!Array.isArray(rounds) || rounds.length === 0) {
-                try {
-                  const L2 = getLogger5();
-                  L2.warn && L2.warn("generateRounds retornou vazio para uma divis\xE3o");
-                } catch (_) {
-                }
-                return;
-              }
-              let roundIndex = (currentJornada - 1) % rounds.length;
-              try {
-                if (playerClub && Array.isArray(currentRoundMatches) && currentRoundMatches.length) {
-                  const isPlayerInThisDivision = divisionClubs.some((dc) => dc === playerClub);
-                  if (isPlayerInThisDivision) {
-                    const lastMatch = currentRoundMatches.find(
-                      (m) => m && (m.homeClub === playerClub || m.awayClub === playerClub)
-                    );
-                    const lastOpponent = lastMatch ? lastMatch.homeClub === playerClub ? lastMatch.awayClub : lastMatch.homeClub : null;
-                    if (lastOpponent) {
-                      let tries = 0;
-                      while (tries < rounds.length) {
-                        const candidateRound = rounds[roundIndex];
-                        if (!Array.isArray(candidateRound)) break;
-                        const candidateMatch = candidateRound.find(
-                          (m) => m && (m.homeClub === playerClub || m.awayClub === playerClub)
-                        );
-                        if (!candidateMatch) break;
-                        const candidateOpp = candidateMatch.homeClub === playerClub ? candidateMatch.awayClub : candidateMatch.homeClub;
-                        if (!candidateOpp || !candidateOpp.team || !lastOpponent.team) break;
-                        if (candidateOpp.team.name !== lastOpponent.team.name) {
-                          break;
-                        }
-                        roundIndex = (roundIndex + 1) % rounds.length;
-                        tries++;
-                      }
-                    }
-                  }
-                }
-              } catch (e2) {
-                try {
-                  const L2 = getLogger5();
-                  L2.warn && L2.warn("Erro ao evitar repeti\xE7\xE3o de advers\xE1rio na gera\xE7\xE3o de rondas:", e2);
-                } catch (_) {
-                }
-              }
-              if (rounds[roundIndex]) {
-                nextRoundMatches.push(...rounds[roundIndex]);
-              } else {
-                try {
-                  const L2 = getLogger5();
-                  L2.warn && L2.warn("\xCDndice de jornada fora de alcance:", roundIndex, "de", rounds.length);
-                } catch (_) {
-                }
-              }
-            });
-            currentRoundMatches = nextRoundMatches;
-            window.currentRoundMatches = currentRoundMatches;
-            try {
-              const L2 = getLogger5();
-              L2.info && L2.info(
-                "finishDayAndReturnToHub: jornada",
-                currentJornada,
-                "gerou",
-                currentRoundMatches.length,
-                "jogos"
-              );
-            } catch (_) {
-            }
-            const sampleMatch = currentRoundMatches[0];
-            if (sampleMatch) {
-              try {
-                const L2 = getLogger5();
-                L2.debug && L2.debug("Exemplo de jogo gerado:", {
-                  home: sampleMatch.homeClub?.team?.name,
-                  away: sampleMatch.awayClub?.team?.name,
-                  homePlayers: sampleMatch.homePlayers?.length,
-                  awayPlayers: sampleMatch.awayPlayers?.length
-                });
-              } catch (_) {
-              }
-            }
-            try {
-              const _assign = typeof window !== "undefined" && (window.assignStartingLineups || window.FootLab && window.FootLab.assignStartingLineups || window.Elifoot && window.Elifoot.assignStartingLineups);
-              if (typeof _assign === "function") _assign(currentRoundMatches);
-              try {
-                const L2 = getLogger5();
-                L2.info && L2.info("Lineups atribu\xEDdas para pr\xF3xima jornada");
-              } catch (_) {
-              }
-            } catch (e2) {
-              try {
-                const L2 = getLogger5();
-                L2.error && L2.error("ERRO ao atribuir lineups:", e2);
-              } catch (_) {
-              }
-            }
-            try {
-              const dbg = {
-                currentJornada,
-                generatedMatchesCount: currentRoundMatches.length,
-                matches: currentRoundMatches
-              };
-              if ((window.FootLab || window.Elifoot) && (window.FootLab || window.Elifoot).Persistence && typeof (window.FootLab || window.Elifoot).Persistence.saveDebugSnapshot === "function") {
-                try {
-                  (window.FootLab || window.Elifoot).Persistence.saveDebugSnapshot(dbg);
-                } catch (e2) {
-                }
-              } else {
-                try {
-                  try {
-                    localStorage.setItem("footlab_t1_debug_snapshot", JSON.stringify(dbg));
-                  } catch (_) {
-                  }
-                  try {
-                    localStorage.setItem("elifoot_debug_snapshot", JSON.stringify(dbg));
-                  } catch (_) {
-                  }
-                } catch (e2) {
-                  try {
-                    const L2 = getLogger5();
-                    L2.warn && L2.warn("Could not write debug snapshot to localStorage", e2);
-                  } catch (_) {
-                  }
-                }
-              }
-            } catch (e2) {
-              try {
-                const L2 = getLogger5();
-                L2.warn && L2.warn("Could not write debug snapshot", e2);
-              } catch (_) {
-              }
-            }
-            try {
-              const snap = {
-                currentJornada,
-                playerClub,
-                allDivisions,
-                allClubs,
-                currentRoundMatches
-              };
-              if ((window.FootLab || window.Elifoot) && (window.FootLab || window.Elifoot).Persistence && typeof (window.FootLab || window.Elifoot).Persistence.saveSnapshot === "function") {
-                try {
-                  (window.FootLab || window.Elifoot).Persistence.saveSnapshot(snap);
-                } catch (e2) {
-                }
-              } else {
-                try {
-                  try {
-                    localStorage.setItem("footlab_t1_save_snapshot", JSON.stringify(snap));
-                  } catch (_) {
-                  }
-                  try {
-                    localStorage.setItem("elifoot_save_snapshot", JSON.stringify(snap));
-                  } catch (_) {
-                  }
-                } catch (err) {
-                  try {
-                    const L2 = getLogger5();
-                    L2.warn && L2.warn("Could not write snapshot to localStorage", err);
-                  } catch (_) {
-                  }
-                }
-              }
-            } catch (err) {
-              try {
-                const L2 = getLogger5();
-                L2.warn && L2.warn("Erro ao guardar snapshot:", err);
-              } catch (_) {
-              }
-            }
-          }
-          try {
-            if (typeof seasonalSkillDrift === "function") {
-              seasonalSkillDrift(allDivisions);
-            }
-          } catch (err) {
-            try {
-              const L2 = getLogger5();
-              L2.warn && L2.warn("Erro em seasonalSkillDrift:", err);
-            } catch (_) {
-            }
-          }
-          try {
-            if (typeof selectExpiringPlayersToLeave === "function") {
-              selectExpiringPlayersToLeave(allDivisions, { probability: 0.35, maxPerClub: 1 });
-            }
-          } catch (err) {
-            try {
-              const L2 = getLogger5();
-              L2.warn && L2.warn("selectExpiringPlayersToLeave failed:", err);
-            } catch (_) {
-            }
-          }
-          try {
-            if (typeof selectPlayersForRelease === "function") {
-              selectPlayersForRelease(allDivisions, { probability: 0.02, maxPerClub: 1 });
-            }
-          } catch (err) {
-            try {
-              const L2 = getLogger5();
-              L2.warn && L2.warn("selectPlayersForRelease failed:", err);
-            } catch (_) {
-            }
-          }
-          if (typeof renderHubContent === "function") {
-            if (window._offersPendingOnNextTeamEntry && window.Offers && typeof window.Offers.showPendingReleasesPopup === "function") {
-              try {
-                window._offersPendingOnNextTeamEntry = false;
-              } catch (_) {
-              }
-              window.Offers.showPendingReleasesPopup(() => {
-                try {
-                  renderHubContent("menu-team");
-                } catch (e2) {
-                  try {
-                    const L2 = getLogger5();
-                    L2.warn && L2.warn("renderHubContent failed after offers popup", e2);
-                  } catch (_) {
-                  }
-                }
-                try {
-                  if (typeof window.updateBudgetDisplays === "function")
-                    window.updateBudgetDisplays(playerClub);
-                } catch (e2) {
-                }
-              });
-            } else {
-              renderHubContent("menu-team");
-              try {
-                if (typeof window.updateBudgetDisplays === "function")
-                  window.updateBudgetDisplays(playerClub);
-              } catch (e2) {
-              }
-            }
-          }
-          try {
-            if (Array.isArray(allClubs)) {
-              allClubs.forEach((club) => {
-                if (club && club.team && Array.isArray(club.team.players)) {
-                  club.team.players.forEach((p) => {
-                    if (p && typeof p.suspendedGames === "number" && p.suspendedGames > 0) {
-                      p.suspendedGames = Math.max(0, p.suspendedGames - 1);
-                    }
-                    if (p) p.yellowCards = 0;
-                    if (p) p.sentOff = false;
-                  });
-                }
-              });
-            }
-          } catch (e2) {
-            try {
-              const L2 = getLogger5();
-              L2.warn && L2.warn("Erro ao decrementar suspens\xF5es:", e2);
-            } catch (_) {
-            }
-          }
-        };
-        window.formatMoney = formatMoney2;
-        window.simulateDay = simulateDay;
-        window.Elifoot = window.Elifoot || {};
-        window.Elifoot.formatMoney = formatMoney2;
-        window.Elifoot.simulateDay = simulateDay;
-        const loadSavedGame = function() {
-          try {
-            const snap = (window.FootLab || window.Elifoot) && (window.FootLab || window.Elifoot).Persistence && typeof (window.FootLab || window.Elifoot).Persistence.loadSnapshot === "function" ? (window.FootLab || window.Elifoot).Persistence.loadSnapshot() : (function() {
-              try {
-                const raw = localStorage.getItem("footlab_t1_save_snapshot") || localStorage.getItem("elifoot_save_snapshot");
-                return raw ? JSON.parse(raw) : null;
-              } catch (e2) {
-                return null;
-              }
-            })();
-            if (!snap) {
-              alert("Nenhum jogo salvo encontrado.");
-              return;
-            }
-            allDivisions = snap.allDivisions || allDivisions;
-            allClubs = snap.allClubs || allClubs;
-            currentRoundMatches = snap.currentRoundMatches || currentRoundMatches;
-            playerClub = snap.playerClub || playerClub;
-            currentJornada = snap.currentJornada || currentJornada;
-            if (typeof window !== "undefined") window.currentJornada = currentJornada;
-            try {
-              const jornadaDisplayEl = document.getElementById("currentJornadaDisplay");
-              if (jornadaDisplayEl) jornadaDisplayEl.textContent = `${currentJornada}\xAA JORNADA`;
-            } catch (_) {
-            }
-            window.playerClub = playerClub;
-            window.allDivisions = allDivisions;
-            window.currentRoundMatches = currentRoundMatches;
-            window.Elifoot = window.Elifoot || {};
-            window.Elifoot.playerClub = playerClub;
-            window.Elifoot.allDivisions = allDivisions;
-            window.Elifoot.currentRoundMatches = currentRoundMatches;
-            try {
-              const _assign = typeof window !== "undefined" && (window.assignStartingLineups || window.FootLab && window.FootLab.assignStartingLineups || window.Elifoot && window.Elifoot.assignStartingLineups);
-              if (typeof _assign === "function") _assign(currentRoundMatches);
-            } catch (e2) {
-            }
-            startGame();
-          } catch (err) {
-            try {
-              const L2 = getLogger5();
-              L2.error && L2.error("Erro ao carregar jogo salvo:", err);
-            } catch (_) {
-            }
-            alert("Erro ao carregar o jogo salvo. Verifica o console.");
-          }
-        };
-        window.loadSavedGame = loadSavedGame;
+        getLogger5().error("Falha ao iniciar jogo:", err);
+        alert("Erro cr\xEDtico: " + err.message);
       }
     });
   });

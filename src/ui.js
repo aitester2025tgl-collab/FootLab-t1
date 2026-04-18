@@ -36,6 +36,20 @@
     return 0.2126 * s[0] + 0.7152 * s[1] + 0.0722 * s[2];
   }
 
+  function adjustColor(hex, amt) {
+    let c = String(hex).replace('#', '');
+    if (c.length === 3)
+      c = c
+        .split('')
+        .map((x) => x + x)
+        .join('');
+    let num = parseInt(c, 16);
+    let r = Math.min(255, Math.max(0, ((num >> 16) & 0xff) + amt));
+    let g = Math.min(255, Math.max(0, ((num >> 8) & 0xff) + amt));
+    let b = Math.min(255, Math.max(0, (num & 0xff) + amt));
+    return `#${((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1)}`;
+  }
+
   function getReadableTextColor(bgHex, preferredHex) {
     if (window.ColorUtils && typeof window.ColorUtils.getReadableTextColor === 'function')
       return window.ColorUtils.getReadableTextColor(bgHex, preferredHex);
@@ -82,9 +96,23 @@
   }
 
   function showHalfTimeSubsOverlay(club, match, cb) {
+    // CRÍTICO: Aplicar as cores no elemento ANTES de qualquer delegação ou retorno
+    const overlay = document.getElementById('subs-overlay');
+    if (overlay && club && club.team) {
+      const bg = club.team.bgColor || '#2e2e2e';
+      const fg = club.team.color || '#ffffff';
+      const rgb = hexToRgb(bg);
+      const lum = rgb ? luminance(rgb) : 0;
+      const panelBgAdjust = lum < 0.35 ? 20 : -25;
+      const panelBg = adjustColor(bg, panelBgAdjust);
+      
+      overlay.style.setProperty('--subs-overlay-bg', `rgba(${rgb ? rgb.join(',') : '0,0,0'}, 0.8)`, 'important');
+      overlay.style.setProperty('--subs-panel-bg', panelBg, 'important');
+      overlay.style.setProperty('--subs-fg', fg, 'important');
+    }
+
     if (window.Overlays && typeof window.Overlays.showHalfTimeSubsOverlay === 'function')
       return window.Overlays.showHalfTimeSubsOverlay(club, match, cb);
-    const overlay = document.getElementById('subs-overlay');
     if (!overlay) {
       if (typeof cb === 'function') cb();
       return;
@@ -110,16 +138,22 @@
         'var(--subs-overlay-bg, rgba(0,0,0,0.66))',
         'important'
       );
+
+      // Adicionar botão de fecho se não existir
+      if (!overlay.querySelector('.resume-btn')) {
+        const btn = document.createElement('button');
+        btn.className = 'resume-btn';
+        btn.textContent = 'Retomar Simulação';
+        btn.style.cssText = 'position:absolute; bottom:40px; padding:12px 24px; cursor:pointer; background:#4CAF50; color:white; border:none; border-radius:4px; font-weight:bold;';
+        btn.onclick = () => {
+          overlay.style.setProperty('display', 'none', 'important');
+          overlay.setAttribute('aria-hidden', 'true');
+          if (typeof cb === 'function') cb();
+        };
+        overlay.appendChild(btn);
+      }
     } catch (e) {}
     overlay.setAttribute('aria-hidden', 'false');
-    // hide after a short timeout if caller didn't manage lifecycle
-    setTimeout(() => {
-      try {
-        overlay.style.setProperty('display', 'none', 'important');
-        overlay.setAttribute('aria-hidden', 'true');
-      } catch (e) {}
-      if (typeof cb === 'function') cb();
-    }, 800);
   }
 
   // Delegators to the extracted modules (Hub, MatchBoard, Tactics)
@@ -163,17 +197,75 @@
   }
 
   // --- Game Start ---
-  // This function was missing, causing the game to not transition from setup to the main hub.
   function startGame(playerClub) {
-    const setupScreen = document.getElementById('screen-setup');
+    // Garantir que o scroll volta ao topo para evitar o efeito de "páginas empilhadas"
+    window.scrollTo(0, 0);
+
+    // Esconder TODOS os ecrãs principais de forma absoluta para evitar sobreposições
+    const screens = ['screen-setup', 'screen-match', 'screen-hub', 'intro-screen'];
+    screens.forEach(id => {
+      const el = document.getElementById(id);
+      if (el) {
+        el.style.setProperty('display', 'none', 'important');
+        el.style.opacity = '0';
+      }
+    });
+
     const hubScreen = document.getElementById('screen-hub');
-
-    if (setupScreen) {
-      setupScreen.style.display = 'none';
-    }
-
     if (hubScreen) {
-      hubScreen.style.display = 'block';
+      // Injetar CSS para corrigir as proporções e forçar a verticalidade das laterais
+      let styleEl = document.getElementById('hub-layout-adjustment');
+      if (styleEl) styleEl.remove(); // Limpa o anterior se existir para evitar duplicação
+      
+      styleEl = document.createElement('style');
+      styleEl.id = 'hub-layout-adjustment';
+      document.head.appendChild(styleEl);
+      
+      styleEl.textContent = `
+        /* O Hub principal é uma linha com 3 colunas */
+        #screen-hub { 
+          display: flex !important; 
+          flex-direction: row !important; 
+          width: 100vw !important; 
+          height: 100vh !important; 
+          overflow: hidden !important;
+        }
+
+        /* FORÇAR VERTICALIDADE NAS LATERAIS */
+        .hub-sidebar, .hub-sidebar-left, .hub-sidebar-right, #tactics-panel, .tactics-column, .sidebar {
+          display: flex !important;
+          flex-direction: column !important; /* Empilha os blocos verticalmente */
+          flex: 0 0 220px !important; /* Largura fixa e estreita para as laterais */
+          width: 220px !important;
+          gap: 30px !important; /* Espaço entre o bloco do treinador e os botões */
+          padding: 15px !important;
+          box-sizing: border-box !important;
+          overflow-y: auto !important;
+          background: rgba(0,0,0,0.2);
+        }
+
+        /* O PLANTEL (MEIO) - Prioridade Total */
+        #hub-main-content {
+          flex: 1 !important; /* Ocupa todo o espaço que sobra */
+          display: block !important;
+          min-width: 0 !important;
+          overflow-y: auto !important;
+          padding: 20px !important;
+        }
+
+        /* Forçar que cada grupo (Treinador, Finanças, Próximo Jogo) ocupe a largura total */
+        .hub-sidebar > *, .hub-sidebar-left > *, #tactics-panel > *, .tactics-column > * {
+          width: 100% !important;
+          display: flex !important;
+          flex-direction: column !important; /* Garante que o conteúdo dentro destes blocos também seja vertical */
+          margin-bottom: 10px !important;
+          flex-shrink: 0 !important;
+        }
+      `;
+
+      hubScreen.style.setProperty('display', 'flex', 'important');
+      hubScreen.style.setProperty('flex-direction', 'row', 'important');
+      hubScreen.style.opacity = '1';
     }
 
     // Also initialize the hub UI if the function exists

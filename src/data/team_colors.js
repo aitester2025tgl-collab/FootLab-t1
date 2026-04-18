@@ -75,6 +75,6 @@ window.REAL_TEAM_COLORS = window.REAL_TEAM_COLORS || {
   'FC Arouca': { bgColor: '#ffc800', color: '#000064' },
   'CD Tondela': { bgColor: '#ffc800', color: '#007800' },
   'AVS Futebol SAD': { bgColor: '#640064', color: '#000000' },
-  'CF Estrela Amadora': { bgColor: '#c80000', color: '#000096' },
+  'CF Estrela Amadora': { bgColor: '#e31e24', color: '#009345' },
   'CD Nacional': { bgColor: '#ffffff', color: '#000000' },
 };

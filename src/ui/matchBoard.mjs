@@ -81,11 +81,11 @@ function renderInitialMatchBoard(allDivisions) {
 
         html += `
                         <div class="match-line-new" id="match-line-${match.index}" style="display:flex; align-items:center; gap:8px;">
-                            <span class="team-name home" style="display:inline-block; width:16ch; max-width:16ch; min-width:16ch; box-sizing:border-box; text-align:center; vertical-align:middle; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color: ${homeFg}; background-color: ${homeBg}; padding:4px 6px; border-radius:3px; font-weight:bold; border:2px solid ${homeBorder};">${match.home.name}</span>
+                            <span class="team-name home" style="color: ${homeFg}; background-color: ${homeBg}; border:2px solid ${homeBorder};">${match.home.name}</span>
                             <span class="home-goals" style="width:28px; text-align:center; font-weight:700;">0</span>
                             <span class="separator">-</span>
                             <span class="away-goals" style="width:28px; text-align:center; font-weight:700;">0</span>
-                            <span class="team-name away" style="display:inline-block; width:16ch; max-width:16ch; min-width:16ch; box-sizing:border-box; text-align:center; vertical-align:middle; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color: ${awayFg}; background-color: ${awayBg}; padding:4px 6px; border-radius:3px; font-weight:bold; border:2px solid ${awayBorder};">${match.away.name}</span>
+                            <span class="team-name away" style="color: ${awayFg}; background-color: ${awayBg}; border:2px solid ${awayBorder};">${match.away.name}</span>
                             <span class="last-goal" style="flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:inherit; font-size:0.95em;"></span>
                             <span class="spectators" style="display:inline-block; width:6ch; min-width:6ch; max-width:6ch; text-align:right; font-variant-numeric: tabular-nums;">—</span>
                         </div>
@@ -219,12 +219,15 @@ function adjustMatchBoardSizing() {
 
   const headers = board.querySelectorAll('.division-title');
   let headersTotal = 0;
-  headers.forEach((h) => (headersTotal += h.offsetHeight || 24));
+  headers.forEach((h) => (headersTotal += h.offsetHeight || 30));
 
-  const gapTotal = Math.max(0, headers.length - 1) * 12 + headers.length * 12;
-  const availableForLines = Math.max(60, availableForBoard - headersTotal - gapTotal);
+  // Como é uma grelha 2x2, apenas 2 headers e os seus respetivos gaps ocupam espaço vertical numa coluna
+  const verticalHeadersHeight = headersTotal / 2;
+  const gapTotal = 40; 
+  const availableForLines = Math.max(60, availableForBoard - verticalHeadersHeight - gapTotal);
 
-  let target = Math.floor(availableForLines / totalLines);
+  // Divide apenas pelo número de jogos que estão um por cima do outro (total / 2 colunas)
+  let target = Math.floor(availableForLines / (totalLines / 2));
   if (target < 16) target = 16;
   if (target > 40) target = 40;
 

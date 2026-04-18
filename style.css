@@ -237,10 +237,10 @@ html {
   flex-direction: column;
   justify-content: space-between; /* keep save/load at the bottom */
   width: 100%; /* fill the left column so left and right columns are symmetric */
-  padding: 18px 12px; /* increased padding for a larger touch/click area */
+  padding: 10px 10px; 
   gap: 10px;
   background: linear-gradient(180deg, var(--hub-panel-bg, #23272b), rgba(0, 0, 0, 0.02));
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.28);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
   color: var(--team-menu-fg, #fff);
   box-sizing: border-box;
   min-height: auto;
@@ -260,19 +260,19 @@ html {
   background: rgba(255, 255, 255, 0.06);
   color: var(--team-menu-fg, #fff);
   border: none;
-  margin: 10px 0;
-  padding: 20px 20px; /* larger padding for more prominent menu */
+  margin: 3px 0;
+  padding: 10px 16px; 
   width: 100%;
   box-sizing: border-box;
   text-align: left;
-  font-size: 1.18em; /* slightly larger to improve readability */
-  font-weight: 800;
-  border-radius: 14px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  border-radius: 6px;
   cursor: pointer;
   transition:
     background 0.15s,
     transform 0.08s;
-  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.18);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
 }
 
 .hub-menu-btn:hover {
@@ -503,12 +503,11 @@ html {
 }
 .division-board {
   background: var(--hub-panel-bg, rgba(0, 0, 0, 0.06));
-  border-radius: 8px;
-  padding: 10px;
+  border-radius: 6px;
+  padding: 8px;
   overflow: hidden; /* prevent page scroll; match lines are sized by JS */
   display: flex;
   flex-direction: column;
-  gap: 8px;
   /* ensure the division box stretches to fill its grid cell */
   min-height: 0;
   /* allow division boxes to expand vertically inside the grid cell */
@@ -516,8 +515,26 @@ html {
   justify-self: stretch;
 }
 .division-board .division-title {
-  margin: 0 0 6px 0;
-  font-size: 1.05em;
+  margin: 0 0 10px 0;
+  font-size: 1.2em;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+  padding-bottom: 4px;
+  color: #ffeb3b;
+}
+
+.match-line-new .team-name {
+  flex: 0 0 145px;
+  text-align: center;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: 700;
+  font-size: 0.9em;
 }
 
 /* Ensure individual match lines don't force the page to scroll */
@@ -738,7 +755,9 @@ html {
   box-shadow: 0 18px 48px rgba(0, 0, 0, 0.6);
   padding: 0; /* header and body control their own padding */
   box-sizing: border-box;
-  background: var(--subs-panel-bg, rgba(20, 20, 20, 0.98));
+  background: linear-gradient(180deg, var(--subs-panel-bg, #23272b), rgba(0, 0, 0, 0.05));
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.7);
   color: var(--subs-fg, #fff);
   display: flex;
   flex-direction: column;
@@ -765,6 +784,8 @@ html {
   border-radius: 8px;
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25);
   flex-shrink: 0;
+  background-color: var(--subs-panel-bg, #333);
+  border: 2px solid var(--subs-fg, #fff);
 }
 .subs-meta {
   font-size: 0.95rem;
@@ -837,7 +858,8 @@ html {
     transform 140ms ease,
     box-shadow 140ms ease,
     background 140ms ease;
-  background: rgba(0, 0, 0, 0.02);
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.03);
 }
 .starters-list li:hover,
 .subs-list li:hover {

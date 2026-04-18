@@ -8,6 +8,7 @@ const SIM_CONFIG = {
   homeAdvantageFactor: 1.15,
   skillExponentialBase: 1.01,
   maxGoalsPerMinute: 2,
+  staminaLossPerMinute: 0.002, // Perda de ~18% de eficácia até ao fim do jogo
   events: {
     yellowChance: 0.02,
     redChance: 0.001,
@@ -77,7 +78,7 @@ function generateRounds(clubs) {
         awayGoals: 0,
         goals: [],
         isFinished: false,
-        division: Number(homeClub.division),
+        division: homeClub.division,
       };
       matchesThisRound.push(match);
     }
@@ -100,7 +101,7 @@ function generateRounds(clubs) {
       awayGoals: 0,
       goals: [],
       isFinished: false,
-      division: Number(m.division),
+      division: m.division,
     }));
   });
 
@@ -125,13 +126,18 @@ function advanceMatchDay(matches, minute) {
     // ensure goals array exists
     match.goals = Array.isArray(match.goals) ? match.goals : [];
 
-    // Verificar se as equipas têm jogadores (prefere lineups definidas por match.homePlayers/match.awayPlayers)
-    // Pré-cálculo de skills no minuto 1 para evitar cálculos repetitivos
-    if (minute === 1 || !match._homeSkill) {
+    // Fator de cansaço: diminui a skill efetiva conforme o tempo passa
+    const staminaFactor = 1.0 - (minute * SIM_CONFIG.staminaLossPerMinute);
+
+    // Pré-cálculo de skills (recalcula no início, após expulsões ou para aplicar fadiga)
+    if (minute === 1 || !match._homeSkill || match._needsSkillUpdate) {
       const hp = match.homePlayers || (match.home && match.home.players) || [];
       const ap = match.awayPlayers || (match.away && match.away.players) || [];
-      match._homeSkill = hp.reduce((sum, p) => sum + (p.skill || 0), 0) / Math.max(1, hp.length);
-      match._awaySkill = ap.reduce((sum, p) => sum + (p.skill || 0), 0) / Math.max(1, ap.length);
+      
+      // Aplicar stamina à média de skill
+      match._homeSkill = (hp.reduce((sum, p) => sum + (p.skill || 0), 0) / Math.max(1, hp.length)) * staminaFactor;
+      match._awaySkill = (ap.reduce((sum, p) => sum + (p.skill || 0), 0) / Math.max(1, ap.length)) * staminaFactor;
+      match._needsSkillUpdate = false;
     }
 
     const homePlayers =
@@ -284,6 +290,7 @@ function advanceMatchDay(matches, minute) {
             const banGames = SIM_CONFIG.events.suspensionYellows;
             p.suspendedGames = Math.max(p.suspendedGames || 0, banGames);
             p.sentOff = true;
+            match._needsSkillUpdate = true;
           }
         }
 
@@ -304,6 +311,7 @@ function advanceMatchDay(matches, minute) {
           const straightBan = SIM_CONFIG.events.suspensionRed;
           p.suspendedGames = Math.max(p.suspendedGames || 0, straightBan);
           p.sentOff = true;
+          match._needsSkillUpdate = true;
         }
       };
 

@@ -29,12 +29,65 @@
       return [4, 4, 2];
     };
 
+    /**
+     * Mapeia uma posição específica para uma categoria tática simplificada.
+     */
+    const getPositionCategory = function (pos) {
+      const p = (pos || '').toUpperCase();
+      if (p === 'GK' || p === 'G' || p === 'GOALKEEPER') return 'GK';
+      if (['DF', 'CB', 'LB', 'RB', 'LWB', 'RWB'].includes(p)) return 'DEF';
+      if (['MF', 'CM', 'AM', 'DM', 'LM', 'RM', 'M'].includes(p)) return 'MID';
+      if (['ST', 'FW', 'SS', 'CF', 'LW', 'RW', 'A', 'W'].includes(p)) return 'ATT';
+      return 'MID';
+    };
+
     const normalizePosition = function (pos) {
       const p = (pos || '').toUpperCase();
       if (p === 'DF') return 'CB';
       if (p === 'MF' || p === 'AM' || p === 'DM') return 'CM';
       if (p === 'FW' || p === 'SS') return 'ST';
       return p;
+    };
+
+    /**
+     * Retorna a lista de táticas (de window.TACTICS) que a equipa pode utilizar
+     * com base nos jogadores disponíveis no plantel.
+     */
+    const getCompatibleTactics = function (team) {
+      if (!team || !Array.isArray(team.players) || !window.TACTICS) return [];
+
+      const counts = { GK: 0, DEF: 0, MID: 0, ATT: 0 };
+      team.players.forEach(p => {
+        counts[getPositionCategory(p.position)]++;
+      });
+
+      return window.TACTICS.filter(tactic => {
+        const formation = parseFormation(tactic.name);
+        const reqGK = 1;
+        const reqDEF = formation[0];
+        const reqMID = formation[1];
+        const reqATT = formation[2];
+
+        const hasGK = counts.GK >= reqGK;
+        const hasDef = counts.DEF >= (reqDEF - 1);
+        const hasMid = counts.MID >= (reqMID - 1);
+        // Para o ataque (4-3-3 precisa de 3), permitimos que apareça se tiveres pelo menos 1.
+        const hasAtt = counts.ATT >= Math.min(reqATT, 1);
+        
+        const totalFieldPlayers = counts.DEF + counts.MID + counts.ATT;
+        const isCompatible = hasGK && hasDef && hasMid && hasAtt && totalFieldPlayers >= 10;
+
+        if (!isCompatible && team.name === (window.playerClub && window.playerClub.team.name)) {
+           // Log apenas para a equipa do jogador para não inundar a consola
+           console.log(`Tática ${tactic.name} rejeitada:`, { 
+             reqs: { reqDEF, reqMID, reqATT }, 
+             tem: counts,
+             checks: { hasGK, hasDef, hasMid, hasAtt }
+           });
+        }
+
+        return isCompatible;
+      });
     };
 
     const orderByRoster = function (originalList, listToOrder) {
@@ -272,7 +325,9 @@
     // expose API
     NS.parseFormation = parseFormation;
     NS.normalizePosition = normalizePosition;
+    NS.getPositionCategory = getPositionCategory;
     NS.chooseStarters = chooseStarters;
+    NS.getCompatibleTactics = getCompatibleTactics;
     NS.orderByRoster = orderByRoster;
     NS.reorderMatchByRoster = reorderMatchByRoster;
   } catch (err) {
