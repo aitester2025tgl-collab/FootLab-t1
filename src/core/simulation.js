@@ -197,9 +197,34 @@
             }
           } catch (e) { /* ignore */ }
           
-          // Equipas no topo enchem 70-100% dos lugares livres, no fundo enchem 0-30%
-          const baseFill = performanceFactor * 0.7;
-          const randomFill = Math.random() * 0.3;
+          // Avaliar o "peso" do adversário para a Lei da Oferta e da Procura (Jogos Grandes)
+          let awayAvgSkill = 50;
+          try {
+            if (match.awayClub && match.awayClub.team && Array.isArray(match.awayClub.team.players)) {
+              const ap = match.awayClub.team.players;
+              const top11 = [...ap].sort((a,b) => (b.skill||0) - (a.skill||0)).slice(0, 11);
+              awayAvgSkill = top11.reduce((sum, p) => sum + (p.skill || 0), 0) / Math.max(1, top11.length);
+            }
+          } catch(e) { /* ignore */ }
+          
+          // Fator Preço: Lei da Oferta e da Procura
+          const divNum = match.homeClub.division || 4;
+          let basePrice = divNum === 1 ? 30 : divNum === 2 ? 25 : divNum === 3 ? 18 : 12;
+          
+          // Jogos contra equipas fortes aumentam o interesse (o preço aceitável sobe)
+          if (awayAvgSkill >= 85) basePrice *= 1.5;       // Jogo de Cartaz (ex: contra equipas de topo)
+          else if (awayAvgSkill >= 75) basePrice *= 1.25; // Jogo Muito Importante
+          else if (awayAvgSkill >= 65) basePrice *= 1.1;  // Jogo Interessante
+          
+          const actualPrice = Number(match.homeClub.ticketPrice || (match.homeClub.team && match.homeClub.team.ticketPrice) || 20);
+          
+          let priceFactor = basePrice / Math.max(1, actualPrice);
+          priceFactor = Math.max(0.2, Math.min(1.5, priceFactor));
+          
+          // Cálculo Final
+          const baseFill = performanceFactor * 0.7 * priceFactor;
+          const randomFill = (Math.random() * 0.3) * priceFactor;
+          
           let att = members + Math.floor((cap - members) * (baseFill + randomFill));
           if (att > cap) att = cap;
           match.attendance = att;

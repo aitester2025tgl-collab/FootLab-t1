@@ -5,6 +5,7 @@ import { renderTeamRoster } from './roster.mjs';
 import { renderTransfers, showBuyFreePlayerMenu } from './transfers.mjs';
 import { renderFinance } from './finance.mjs';
 import { initTacticPanel } from './tactics.mjs';
+import { renderHistory } from './history.mjs';
 
 const FootLab = window.FootLab || window.Elifoot || window;
 
@@ -99,6 +100,13 @@ export function renderHubContent(menuId) {
           window.renderAllDivisionsTables();
       } catch (e) {
         /* ignore */
+      }
+      break;
+    case 'menu-history':
+      try {
+        renderHistory();
+      } catch (e) {
+        if (typeof window.renderHistory === 'function') window.renderHistory();
       }
       break;
     case 'menu-load':

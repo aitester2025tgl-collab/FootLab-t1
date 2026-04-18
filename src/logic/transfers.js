@@ -54,6 +54,20 @@ export function executeTransfer(player, sellerClub, buyerClub, fee, salary) {
     transferredPlayer.contractYears = 1;
     transferredPlayer.contractYearsLeft = 1;
     buyerClub.team.players.push(transferredPlayer);
+    
+    // Adicionar ao histórico global
+    window.TRANSFER_HISTORY = window.TRANSFER_HISTORY || [];
+    window.TRANSFER_HISTORY.push({
+      player: transferredPlayer.name,
+      from: sellerClub.team ? sellerClub.team.name : sellerClub.name,
+      to: buyerClub.team ? buyerClub.team.name : buyerClub.name,
+      fee: fee,
+      salary: salary,
+      type: 'purchase',
+      jornada: typeof window.currentJornada !== 'undefined' ? window.currentJornada : null,
+      time: Date.now()
+    });
+
     return true;
   }
   return false;

@@ -291,7 +291,7 @@ const TACTICS = [
     attack: 4,
     defense: 2,
     midfield: 3,
-    requires: { wingers: true, threeAtBack: false },
+    requires: { wingers: true, threeAtBack: false, strikers: 1 },
   },
   {
     name: '3-5-2',
@@ -323,7 +323,7 @@ const TACTICS = [
     attack: 5,
     defense: 2,
     midfield: 4,
-    requires: { wingers: true, threeAtBack: true },
+    requires: { wingers: true, threeAtBack: true, strikers: 1 },
   },
   {
     name: '5-4-1',
@@ -332,6 +332,30 @@ const TACTICS = [
     defense: 5,
     midfield: 4,
     requires: { wingers: false, threeAtBack: false },
+  },
+  {
+    name: '4-2-3-1',
+    description: 'Moderna - Controle e Transição',
+    attack: 4,
+    defense: 3,
+    midfield: 5,
+    requires: { wingers: true, threeAtBack: false, strikers: 1 },
+  },
+  {
+    name: '4-1-4-1',
+    description: 'Posicional - Trinco e Linha Média',
+    attack: 3,
+    defense: 4,
+    midfield: 5,
+    requires: { wingers: true, threeAtBack: false, strikers: 1 },
+  },
+  {
+    name: '4-2-4',
+    description: 'Ultra Ofensiva - Risco Máximo',
+    attack: 5,
+    defense: 3,
+    midfield: 2,
+    requires: { wingers: true, threeAtBack: false, strikers: 2 },
   },
 ];
 

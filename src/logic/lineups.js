@@ -22,7 +22,13 @@
     const parseFormation = function (tacticName) {
       try {
         const nums = (tacticName || '4-4-2').split('-').map((n) => parseInt(n, 10));
-        if (nums.length === 3 && nums.every((n) => !isNaN(n))) return nums;
+        if (nums.length >= 3 && nums.every((n) => !isNaN(n))) {
+          if (nums.length === 4) {
+             // Converte 4-2-3-1 em [4, 5, 1] ou 4-1-4-1 em [4, 5, 1] para cálculos internos
+             return [nums[0], nums[1] + nums[2], nums[3]];
+          }
+          return nums;
+        }
       } catch (e) {
         /* ignore */
       }

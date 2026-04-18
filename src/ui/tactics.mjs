@@ -9,49 +9,13 @@ export function initTacticPanel() {
 
   // Compute team positional profile to determine which tactics are valid
   const team = window.FootLab && window.FootLab.playerClub && window.FootLab.playerClub.team;
-  const profile = { CB: 0, LB: 0, RB: 0, CM: 0, LW: 0, RW: 0, ST: 0, GK: 0 };
-  if (team && Array.isArray(team.players)) {
-    team.players.forEach((p) => {
-      const pos = (p.position || '').toUpperCase();
-      if (Object.prototype.hasOwnProperty.call(profile, pos)) profile[pos]++;
-      else if (pos === 'DF') profile.CB++;
-      else if (pos === 'MF' || pos === 'AM' || pos === 'DM') profile.CM++;
-      else if (pos === 'FW' || pos === 'SS') profile.ST++;
-    });
+  
+  let validTactics = tactics;
+  if (team && window.FootLab && window.FootLab.Lineups && typeof window.FootLab.Lineups.getCompatibleTactics === 'function') {
+    validTactics = window.FootLab.Lineups.getCompatibleTactics(team);
   }
 
-  function tacticCompatible(tactic) {
-    if (!tactic || !tactic.requires) return true;
-    const req = tactic.requires;
-    if (req.threeAtBack) {
-      if ((profile.CB || 0) < 3) return false;
-    }
-    if (req.wingers) {
-      const wide = (profile.LW || 0) + (profile.RW || 0);
-      if (wide < 2) return false;
-    }
-    // Check striker/forward count requirement. Prefer explicit `requires.strikers` if present,
-    // otherwise infer required forwards from tactic name (last number in formation, e.g. '4-3-3' -> 3).
-    const reqStrikers =
-      typeof req.strikers === 'number'
-        ? req.strikers
-        : (function () {
-            try {
-              const parts = (tactic && tactic.name && tactic.name.match(/\d+/g)) || [];
-              if (parts.length === 0) return null;
-              return parseInt(parts[parts.length - 1], 10);
-            } catch (e) {
-              return null;
-            }
-          })();
-    if (reqStrikers != null) {
-      if ((profile.ST || 0) < reqStrikers) return false;
-    }
-    return true;
-  }
-
-  tactics.forEach((tactic) => {
-    if (!tacticCompatible(tactic)) return;
+  validTactics.forEach((tactic) => {
     const tacticItem = document.createElement('div');
     tacticItem.className = 'tactic-item';
     tacticItem.textContent = `${tactic.name}`;

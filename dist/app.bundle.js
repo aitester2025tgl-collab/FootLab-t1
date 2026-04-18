@@ -681,7 +681,7 @@
           attack: 4,
           defense: 2,
           midfield: 3,
-          requires: { wingers: true, threeAtBack: false }
+          requires: { wingers: true, threeAtBack: false, strikers: 1 }
         },
         {
           name: "3-5-2",
@@ -713,7 +713,7 @@
           attack: 5,
           defense: 2,
           midfield: 4,
-          requires: { wingers: true, threeAtBack: true }
+          requires: { wingers: true, threeAtBack: true, strikers: 1 }
         },
         {
           name: "5-4-1",
@@ -722,6 +722,30 @@
           defense: 5,
           midfield: 4,
           requires: { wingers: false, threeAtBack: false }
+        },
+        {
+          name: "4-2-3-1",
+          description: "Moderna - Controle e Transi\xE7\xE3o",
+          attack: 4,
+          defense: 3,
+          midfield: 5,
+          requires: { wingers: true, threeAtBack: false, strikers: 1 }
+        },
+        {
+          name: "4-1-4-1",
+          description: "Posicional - Trinco e Linha M\xE9dia",
+          attack: 3,
+          defense: 4,
+          midfield: 5,
+          requires: { wingers: true, threeAtBack: false, strikers: 1 }
+        },
+        {
+          name: "4-2-4",
+          description: "Ultra Ofensiva - Risco M\xE1ximo",
+          attack: 5,
+          defense: 3,
+          midfield: 2,
+          requires: { wingers: true, threeAtBack: false, strikers: 2 }
         }
       ];
       try {
@@ -894,7 +918,12 @@
       const parseFormation = function(tacticName) {
         try {
           const nums = (tacticName || "4-4-2").split("-").map((n) => parseInt(n, 10));
-          if (nums.length === 3 && nums.every((n) => !isNaN(n))) return nums;
+          if (nums.length >= 3 && nums.every((n) => !isNaN(n))) {
+            if (nums.length === 4) {
+              return [nums[0], nums[1] + nums[2], nums[3]];
+            }
+            return nums;
+          }
         } catch (e2) {
         }
         return [4, 4, 2];
@@ -2731,8 +2760,25 @@
               }
             } catch (e2) {
             }
-            const baseFill = performanceFactor * 0.7;
-            const randomFill = Math.random() * 0.3;
+            let awayAvgSkill = 50;
+            try {
+              if (match.awayClub && match.awayClub.team && Array.isArray(match.awayClub.team.players)) {
+                const ap = match.awayClub.team.players;
+                const top11 = [...ap].sort((a, b) => (b.skill || 0) - (a.skill || 0)).slice(0, 11);
+                awayAvgSkill = top11.reduce((sum, p) => sum + (p.skill || 0), 0) / Math.max(1, top11.length);
+              }
+            } catch (e2) {
+            }
+            const divNum = match.homeClub.division || 4;
+            let basePrice = divNum === 1 ? 30 : divNum === 2 ? 25 : divNum === 3 ? 18 : 12;
+            if (awayAvgSkill >= 85) basePrice *= 1.5;
+            else if (awayAvgSkill >= 75) basePrice *= 1.25;
+            else if (awayAvgSkill >= 65) basePrice *= 1.1;
+            const actualPrice = Number(match.homeClub.ticketPrice || match.homeClub.team && match.homeClub.team.ticketPrice || 20);
+            let priceFactor = basePrice / Math.max(1, actualPrice);
+            priceFactor = Math.max(0.2, Math.min(1.5, priceFactor));
+            const baseFill = performanceFactor * 0.7 * priceFactor;
+            const randomFill = Math.random() * 0.3 * priceFactor;
             let att = members + Math.floor((cap - members) * (baseFill + randomFill));
             if (att > cap) att = cap;
             match.attendance = att;
@@ -3498,7 +3544,7 @@
         const list = groups[k];
         if (!list || list.length === 0) return;
         html += `<div class="player-group">`;
-        html += `<h4 class="lane-title" style="margin:6px 0 8px 0;">${groupLabels[k]} (${list.length})</h4>`;
+        html += `<h4 class="lane-title" style="margin:2px 0 6px 0;">${groupLabels[k]} (${list.length})</h4>`;
         html += `<div class="lane-slots" data-pos="${k}">`;
         (list || []).forEach((p) => {
           const skill = p.skill || 0;
@@ -3556,7 +3602,13 @@
             }
             r.addEventListener("click", (ev) => {
               if (hasContract) return;
-              const minDemanded = typeof window.computeMinContractFromSkill === "function" ? window.computeMinContractFromSkill(player.skill) : Math.max(300, Math.round((player.skill || 40) * 25));
+              const currentSalary = Number(player.salary || 300);
+              const skillLvl = Number(player.skill || 40);
+              const raisePercentage = 0.05 + skillLvl / 100 * 0.2;
+              let minDemanded = Math.round(currentSalary * (1 + raisePercentage));
+              minDemanded = Math.ceil(minDemanded / 10) * 10;
+              const absoluteMin = Math.max(300, Math.round(skillLvl * 5));
+              minDemanded = Math.max(minDemanded, absoluteMin);
               showRenewContractMenu(player, club, minDemanded, formatMoney3, renderTeamRoster2);
             });
           });
@@ -3910,24 +3962,40 @@
       const ticketPrice = Number(c.ticketPrice || c.ticket || 20) || 20;
       const bud = Number(c.budget || 0) || 0;
       content.innerHTML = `
-      <h2>Finan\xE7as</h2>
-      <div style="display:flex;flex-direction:column;gap:10px;max-width:640px;">
-          <div><strong>Or\xE7amento:</strong> <span id="clubBudgetDisplay">${formatMoney(bud)}</span></div>
-          <div><strong>Capacidade do Est\xE1dio (atual):</strong> <span id="stadiumCapacityDisplay">${stadiumCap.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".")}</span> lugares</div>
-          <div><strong>Limite atual do motor:</strong> 65.000 lugares (pode expandir at\xE9 100.000)</div>
-          <div style="display:flex;gap:12px;align-items:center;">
-              <label style="min-width:160px;">Aumentar est\xE1dio (%)</label>
-              <input id="upgradePercentInput" type="number" min="1" max="100" value="10" style="width:80px;padding:6px;border-radius:6px;border:1px solid #ccc;" />
-              <button id="upgradeStadiumBtn" style="padding:8px 12px;border-radius:8px;background:#2b7; border:none; cursor:pointer;">Aumentar</button>
-              <div id="upgradeCostDisplay" style="margin-left:8px;color:rgba(0,0,0,0.6)"></div>
+      <h2>Finan\xE7as do Clube</h2>
+      
+      <div class="hub-box" style="margin-bottom: 20px; max-width: 800px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.05);">
+        <h3 style="margin-top:0; margin-bottom: 15px; color:#ffeb3b; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 8px;">Est\xE1dio & Infraestruturas</h3>
+        
+        <div style="margin-bottom: 20px;">
+          <div style="display:flex; justify-content: space-between;">
+            <span>Capacidade Atual: <strong><span id="stadiumCapacityDisplay">${stadiumCap.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".")}</span> lugares</strong></span>
+            <span style="color:#aaa; font-size: 0.85em;">M\xE1x: 100.000 lugares</span>
           </div>
-          <div style="display:flex;gap:12px;align-items:center;">
-              <label style="min-width:160px;">Pre\xE7o do bilhete (\u20AC)</label>
-              <input id="ticketPriceInput" type="number" min="1" value="${ticketPrice}" style="width:100px;padding:6px;border-radius:6px;border:1px solid #ccc;" />
-              <button id="setTicketBtn" style="padding:8px 12px;border-radius:8px;background:#58a; border:none; cursor:pointer;color:#fff;">Guardar</button>
-              <div id="estRevenueDisplay" style="margin-left:8px;color:rgba(0,0,0,0.6)"></div>
+          <div style="width: 100%; height: 12px; background: rgba(0,0,0,0.4); border-radius: 6px; margin: 8px 0; overflow:hidden;">
+            <div style="width: ${Math.min(100, stadiumCap / 1e5 * 100)}%; height: 100%; background: linear-gradient(90deg, #4CAF50, #8BC34A); border-radius: 6px; transition: width 0.3s;"></div>
           </div>
-          <div style="opacity:0.9;font-size:0.92em;color:rgba(0,0,0,0.7);">Notas: o custo por lugar aumenta com o tamanho atual do est\xE1dio. A receita dos jogos entra no or\xE7amento do clube ap\xF3s o fim de cada jogo.</div>
+          <div style="font-size:0.85em; color:#999; margin-bottom: 12px;">O custo por lugar aumenta \xE0 medida que o est\xE1dio cresce. O limite m\xE1ximo permitido pela c\xE2mara \xE9 de 100.000 lugares.</div>
+          <div style="display:flex; gap:12px; align-items:center; margin-top: 12px;">
+            <label style="font-size:0.9em; color:#ccc;">Expandir est\xE1dio (%):</label>
+            <input id="upgradePercentInput" type="number" min="1" max="100" value="5" style="width:70px; padding:6px; border-radius:4px; border:1px solid #555; background:#222; color:#fff;" />
+            <button id="upgradeStadiumBtn" style="padding:6px 12px; border-radius:4px; background:#4CAF50; color:white; border:none; cursor:pointer; font-weight:bold;">Aumentar</button>
+            <span id="upgradeCostDisplay" style="font-size:0.9em; color:#bbb; margin-left:10px;"></span>
+          </div>
+        </div>
+      </div>
+      
+      <div class="hub-box" style="max-width: 800px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.05);">
+        <h3 style="margin-top:0; margin-bottom: 15px; color:#ffeb3b; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 8px;">Bilheteira & Tesouraria</h3>
+        <div style="font-size: 1.2em; margin-bottom: 15px;">Saldo Atual: <strong style="color:#4CAF50;" id="clubBudgetDisplay">${formatMoney(bud)}</strong></div>
+        
+        <div style="display:flex; gap:12px; align-items:center;">
+            <label style="min-width:140px; color:#ccc;">Pre\xE7o do Bilhete (\u20AC):</label>
+            <input id="ticketPriceInput" type="number" min="1" value="${ticketPrice}" style="width:90px; padding:8px; border-radius:4px; border:1px solid #555; background:#222; color:#fff; font-weight:bold;" />
+            <button id="setTicketBtn" style="padding:8px 16px; border-radius:4px; background:#2196F3; border:none; cursor:pointer; color:#fff; font-weight:bold;">Aplicar Novo Pre\xE7o</button>
+        </div>
+        <div style="margin-top:8px; font-size:0.85em; color:#999;">Pre\xE7os altos afastam os adeptos em jogos normais, mas jogos grandes (contra equipas de topo) suportam bilhetes mais caros!</div>
+        <div id="estRevenueDisplay" style="margin-top:12px; font-size:0.95em; color:#bbb; background:rgba(0,0,0,0.2); padding:10px; border-radius:6px;"></div>
       </div>
     `;
       setTimeout(() => {
@@ -3942,8 +4010,17 @@
             const pct = Math.max(1, Math.min(100, Number(pctIn.value || 10)));
             const cc = calcCostForPercent(pct);
             costDisp.textContent = `${cc.seatsAdded} lugares \u2192 custo aprox. ${formatMoney(cc.total)} (${cc.costPerSeat}\u20AC/lugar)`;
-            const estAttendance = FootLab2 && FootLab2.Finance && typeof FootLab2.Finance.computeMatchAttendance === "function" ? FootLab2.Finance.computeMatchAttendance({ homeClub: c, awayClub: {} }).attendance : Math.min(Number(c.stadiumCapacity || 1e4), 1e4);
-            estDisp.textContent = estAttendance ? `Estimativa por jogo: ${estAttendance} espectadores \u2192 receita ~ ${formatMoney(Math.round(estAttendance * Number(priceIn.value || c.ticketPrice || 20)))} ` : "";
+            const basePrice = (c.division || 4) === 1 ? 30 : (c.division || 4) === 2 ? 25 : (c.division || 4) === 3 ? 18 : 12;
+            const selectedPrice = Math.max(1, Number(priceIn.value || 20));
+            let priceFactor = basePrice / selectedPrice;
+            priceFactor = Math.max(0.2, Math.min(1.5, priceFactor));
+            const cap = Number(c.stadiumCapacity || 1e4);
+            const members = Number(c.members || Math.floor(cap * 0.5));
+            const baseFill = 0.5 * 0.7 * priceFactor;
+            let estAttendance = members + Math.floor((cap - members) * baseFill);
+            if (estAttendance > cap) estAttendance = cap;
+            estDisp.innerHTML = `Estimativa Assist\xEAncia (Meio da Tabela): <strong>${estAttendance.toLocaleString()} espectadores</strong><br/>
+                               Estimativa Receita por Jogo: <strong style="color:#4CAF50;">${formatMoney(Math.round(estAttendance * selectedPrice))}</strong>`;
           };
           const pctIn = document.getElementById("upgradePercentInput");
           const upgradeBtn = document.getElementById("upgradeStadiumBtn");
@@ -4057,42 +4134,11 @@
     if (!tacticList || !tactics) return;
     tacticList.innerHTML = "";
     const team = window.FootLab && window.FootLab.playerClub && window.FootLab.playerClub.team;
-    const profile = { CB: 0, LB: 0, RB: 0, CM: 0, LW: 0, RW: 0, ST: 0, GK: 0 };
-    if (team && Array.isArray(team.players)) {
-      team.players.forEach((p) => {
-        const pos = (p.position || "").toUpperCase();
-        if (Object.prototype.hasOwnProperty.call(profile, pos)) profile[pos]++;
-        else if (pos === "DF") profile.CB++;
-        else if (pos === "MF" || pos === "AM" || pos === "DM") profile.CM++;
-        else if (pos === "FW" || pos === "SS") profile.ST++;
-      });
+    let validTactics = tactics;
+    if (team && window.FootLab && window.FootLab.Lineups && typeof window.FootLab.Lineups.getCompatibleTactics === "function") {
+      validTactics = window.FootLab.Lineups.getCompatibleTactics(team);
     }
-    function tacticCompatible(tactic) {
-      if (!tactic || !tactic.requires) return true;
-      const req = tactic.requires;
-      if (req.threeAtBack) {
-        if ((profile.CB || 0) < 3) return false;
-      }
-      if (req.wingers) {
-        const wide = (profile.LW || 0) + (profile.RW || 0);
-        if (wide < 2) return false;
-      }
-      const reqStrikers = typeof req.strikers === "number" ? req.strikers : (function() {
-        try {
-          const parts = tactic && tactic.name && tactic.name.match(/\d+/g) || [];
-          if (parts.length === 0) return null;
-          return parseInt(parts[parts.length - 1], 10);
-        } catch (e2) {
-          return null;
-        }
-      })();
-      if (reqStrikers != null) {
-        if ((profile.ST || 0) < reqStrikers) return false;
-      }
-      return true;
-    }
-    tactics.forEach((tactic) => {
-      if (!tacticCompatible(tactic)) return;
+    validTactics.forEach((tactic) => {
       const tacticItem = document.createElement("div");
       tacticItem.className = "tactic-item";
       tacticItem.textContent = `${tactic.name}`;
@@ -4184,6 +4230,54 @@
     renderHubContent: () => renderHubContent2,
     updateBudgetDisplays: () => updateBudgetDisplays
   });
+
+  // src/ui/history.mjs
+  function renderHistory() {
+    const content = document.getElementById("hub-main-content");
+    if (!content) return;
+    const history = window.TRANSFER_HISTORY || [];
+    const formatMoney3 = window.formatMoney || ((v) => v + " \u20AC");
+    if (history.length === 0) {
+      content.innerHTML = `
+      <h2>Hist\xF3rico de Transfer\xEAncias</h2>
+      <div class="hub-box" style="padding: 30px; text-align: center; color: #aaa;">
+        Nenhuma transfer\xEAncia registada at\xE9 ao momento.<br>
+        <span style="font-size:0.85em; color: #777;">As movimenta\xE7\xF5es do mercado (compras, vendas e dispensas) aparecer\xE3o aqui \xE0 medida que a \xE9poca avan\xE7a.</span>
+      </div>`;
+      return;
+    }
+    const sorted = history.slice().reverse();
+    let html = `<h2>Hist\xF3rico de Transfer\xEAncias</h2>
+    <div class="hub-box" style="padding: 0; overflow: hidden;">
+      <table style="width:100%; border-collapse: collapse; text-align: left;">
+        <thead>
+          <tr>
+            <th style="padding:14px 16px; background:rgba(0,0,0,0.4); border-bottom:2px solid #444; color:#888; width: 60px;">Jor.</th>
+            <th style="padding:14px 16px; background:rgba(0,0,0,0.4); border-bottom:2px solid #444; color:#888;">Jogador</th>
+            <th style="padding:14px 16px; background:rgba(0,0,0,0.4); border-bottom:2px solid #444; color:#888;">De</th>
+            <th style="padding:14px 16px; background:rgba(0,0,0,0.4); border-bottom:2px solid #444; color:#888;">Para</th>
+            <th style="padding:14px 16px; background:rgba(0,0,0,0.4); border-bottom:2px solid #444; color:#888; text-align:right;">Valor</th>
+          </tr>
+        </thead>
+        <tbody>`;
+    sorted.forEach((t, i) => {
+      const isPurchase = t.type === "purchase";
+      const feeColor = isPurchase && t.fee > 0 ? "#4CAF50" : "#aaa";
+      const feeStr = t.fee > 0 ? formatMoney3(t.fee) : "Custo Zero";
+      const rowBg = i % 2 === 0 ? "rgba(255,255,255,0.02)" : "transparent";
+      html += `<tr style="background: ${rowBg}; border-bottom: 1px solid rgba(255,255,255,0.05); transition: background 0.2s;">
+        <td style="padding:12px 16px; color:#ccc;">${t.jornada || "-"}</td>
+        <td style="padding:12px 16px; font-weight:bold; color:#fff;">${t.player}</td>
+        <td style="padding:12px 16px; color:#bbb;">${t.from || "Livre"}</td>
+        <td style="padding:12px 16px; color:#bbb;">${t.to || "Livre"}</td>
+        <td style="padding:12px 16px; text-align:right; font-weight:bold; color:${feeColor};">${feeStr}</td>
+      </tr>`;
+    });
+    html += `</tbody></table></div>`;
+    content.innerHTML = html;
+  }
+
+  // src/ui/hub-controller.mjs
   var FootLab = window.FootLab || window.Elifoot || window;
   function updateBudgetDisplays(club) {
     try {
@@ -4255,6 +4349,13 @@
           if (typeof window.renderAllDivisionsTables === "function")
             window.renderAllDivisionsTables();
         } catch (e2) {
+        }
+        break;
+      case "menu-history":
+        try {
+          renderHistory();
+        } catch (e2) {
+          if (typeof window.renderHistory === "function") window.renderHistory();
         }
         break;
       case "menu-load":

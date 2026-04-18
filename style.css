@@ -461,8 +461,8 @@ html {
 
 /* Style for each position group (GK, DEF, etc.) */
 .player-group {
-  margin-bottom: 24px; /* Space between position groups */
-  padding-bottom: 16px;
+  margin-bottom: 10px; /* Reduzido para compactar */
+  padding-bottom: 10px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
@@ -495,7 +495,7 @@ html {
 .lane-slots {
   display: grid !important;
   grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)) !important;
-  gap: 12px !important;
+  gap: 8px !important; /* Mais perto uns dos outros */
   width: 100% !important;
   box-sizing: border-box !important;
 }
@@ -635,9 +635,9 @@ html {
 .player-box,
 .player-slot {
   height: auto !important;
-  min-height: 68px !important;
+  min-height: 56px !important; /* Cartas ligeiramente mais baixas */
   box-sizing: border-box !important;
-  padding: 10px !important;
+  padding: 8px 10px !important; /* Menos espaço vazio dentro da carta */
   cursor: pointer !important;
   width: 100% !important;
   display: flex !important;

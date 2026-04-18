@@ -32,6 +32,7 @@ window.ALL_CLUBS = [seller, buyer];
 window.PENDING_RELEASES = [Object.assign({}, sellerPlayer, { originalClubRef: seller })];
 // buyer will act as window.playerClub
 window.playerClub = buyer;
+window.TRANSFER_HISTORY = [];
 
 const logger = require('./testLogger').getLogger();
 logger.info('--- BEFORE TRANSFER ---');
@@ -99,6 +100,19 @@ function executePendingPurchase(pendingIdx, offerSalary = 30000, offerYears = 1)
   buyerClub.team.players = buyerClub.team.players || [];
   buyerClub.team.players.push(playerToAdd);
 
+  // Register transfer history (simulating logic from transfers.js)
+  window.TRANSFER_HISTORY = window.TRANSFER_HISTORY || [];
+  window.TRANSFER_HISTORY.push({
+    player: playerToAdd.name,
+    from: sellerClub ? sellerClub.team.name : 'FREE',
+    to: buyerClub.team.name,
+    fee: fee,
+    salary: offerSalary,
+    type: 'purchase',
+    jornada: 1,
+    time: Date.now()
+  });
+
   // remove from pending releases
   window.PENDING_RELEASES.splice(pendingIdx, 1);
 
@@ -137,6 +151,13 @@ try {
     seller.budget,
     500000 + 200000,
     'Seller budget should have increased by the leaving fee'
+  );
+  
+  assert.strictEqual(window.TRANSFER_HISTORY.length, 1, 'Transfer history should have 1 entry');
+  assert.strictEqual(
+    window.TRANSFER_HISTORY[0].player,
+    'Test Striker',
+    'Transfer history should record the correct player name'
   );
 
   logger.info('\nIntegration test PASSED');

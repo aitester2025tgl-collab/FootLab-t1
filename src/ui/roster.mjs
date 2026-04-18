@@ -129,7 +129,7 @@ export function renderTeamRoster(club) {
       if (!list || list.length === 0) return;
       html += `<div class="player-group">`;
       // Render a single group title for all lanes of this position
-      html += `<h4 class="lane-title" style="margin:6px 0 8px 0;">${groupLabels[k]} (${list.length})</h4>`;
+      html += `<h4 class="lane-title" style="margin:2px 0 6px 0;">${groupLabels[k]} (${list.length})</h4>`;
       // Render all players into a single wrapping container; CSS will ensure 5 per visual row
       html += `<div class="lane-slots" data-pos="${k}">`;
       (list || []).forEach((p) => {
@@ -217,7 +217,7 @@ export function renderTeamRoster(club) {
             minDemanded = Math.ceil(minDemanded / 10) * 10;
             
             // Piso mínimo absoluto para garantir que não há valores absurdamente baixos
-            const absoluteMin = Math.max(300, Math.round(skillLvl * 8)); 
+            const absoluteMin = Math.max(300, Math.round(skillLvl * 5)); 
             minDemanded = Math.max(minDemanded, absoluteMin);
               
             // Abre a janela personalizada de renovação

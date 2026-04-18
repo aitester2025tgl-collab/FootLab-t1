@@ -14,25 +14,42 @@ export function renderFinance(club) {
     const stadiumCap = Number(c.stadiumCapacity || c.stadium || 10000) || 10000;
     const ticketPrice = Number(c.ticketPrice || c.ticket || 20) || 20;
     const bud = Number(c.budget || 0) || 0;
+    
     content.innerHTML = `
-      <h2>Finanças</h2>
-      <div style="display:flex;flex-direction:column;gap:10px;max-width:640px;">
-          <div><strong>Orçamento:</strong> <span id="clubBudgetDisplay">${formatMoney(bud)}</span></div>
-          <div><strong>Capacidade do Estádio (atual):</strong> <span id="stadiumCapacityDisplay">${stadiumCap.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.')}</span> lugares</div>
-          <div><strong>Limite atual do motor:</strong> 65.000 lugares (pode expandir até 100.000)</div>
-          <div style="display:flex;gap:12px;align-items:center;">
-              <label style="min-width:160px;">Aumentar estádio (%)</label>
-              <input id="upgradePercentInput" type="number" min="1" max="100" value="10" style="width:80px;padding:6px;border-radius:6px;border:1px solid #ccc;" />
-              <button id="upgradeStadiumBtn" style="padding:8px 12px;border-radius:8px;background:#2b7; border:none; cursor:pointer;">Aumentar</button>
-              <div id="upgradeCostDisplay" style="margin-left:8px;color:rgba(0,0,0,0.6)"></div>
+      <h2>Finanças do Clube</h2>
+      
+      <div class="hub-box" style="margin-bottom: 20px; max-width: 800px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.05);">
+        <h3 style="margin-top:0; margin-bottom: 15px; color:#ffeb3b; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 8px;">Estádio & Infraestruturas</h3>
+        
+        <div style="margin-bottom: 20px;">
+          <div style="display:flex; justify-content: space-between;">
+            <span>Capacidade Atual: <strong><span id="stadiumCapacityDisplay">${stadiumCap.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.')}</span> lugares</strong></span>
+            <span style="color:#aaa; font-size: 0.85em;">Máx: 100.000 lugares</span>
           </div>
-          <div style="display:flex;gap:12px;align-items:center;">
-              <label style="min-width:160px;">Preço do bilhete (€)</label>
-              <input id="ticketPriceInput" type="number" min="1" value="${ticketPrice}" style="width:100px;padding:6px;border-radius:6px;border:1px solid #ccc;" />
-              <button id="setTicketBtn" style="padding:8px 12px;border-radius:8px;background:#58a; border:none; cursor:pointer;color:#fff;">Guardar</button>
-              <div id="estRevenueDisplay" style="margin-left:8px;color:rgba(0,0,0,0.6)"></div>
+          <div style="width: 100%; height: 12px; background: rgba(0,0,0,0.4); border-radius: 6px; margin: 8px 0; overflow:hidden;">
+            <div style="width: ${Math.min(100, (stadiumCap/100000)*100)}%; height: 100%; background: linear-gradient(90deg, #4CAF50, #8BC34A); border-radius: 6px; transition: width 0.3s;"></div>
           </div>
-          <div style="opacity:0.9;font-size:0.92em;color:rgba(0,0,0,0.7);">Notas: o custo por lugar aumenta com o tamanho atual do estádio. A receita dos jogos entra no orçamento do clube após o fim de cada jogo.</div>
+          <div style="font-size:0.85em; color:#999; margin-bottom: 12px;">O custo por lugar aumenta à medida que o estádio cresce. O limite máximo permitido pela câmara é de 100.000 lugares.</div>
+          <div style="display:flex; gap:12px; align-items:center; margin-top: 12px;">
+            <label style="font-size:0.9em; color:#ccc;">Expandir estádio (%):</label>
+            <input id="upgradePercentInput" type="number" min="1" max="100" value="5" style="width:70px; padding:6px; border-radius:4px; border:1px solid #555; background:#222; color:#fff;" />
+            <button id="upgradeStadiumBtn" style="padding:6px 12px; border-radius:4px; background:#4CAF50; color:white; border:none; cursor:pointer; font-weight:bold;">Aumentar</button>
+            <span id="upgradeCostDisplay" style="font-size:0.9em; color:#bbb; margin-left:10px;"></span>
+          </div>
+        </div>
+      </div>
+      
+      <div class="hub-box" style="max-width: 800px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.05);">
+        <h3 style="margin-top:0; margin-bottom: 15px; color:#ffeb3b; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 8px;">Bilheteira & Tesouraria</h3>
+        <div style="font-size: 1.2em; margin-bottom: 15px;">Saldo Atual: <strong style="color:#4CAF50;" id="clubBudgetDisplay">${formatMoney(bud)}</strong></div>
+        
+        <div style="display:flex; gap:12px; align-items:center;">
+            <label style="min-width:140px; color:#ccc;">Preço do Bilhete (€):</label>
+            <input id="ticketPriceInput" type="number" min="1" value="${ticketPrice}" style="width:90px; padding:8px; border-radius:4px; border:1px solid #555; background:#222; color:#fff; font-weight:bold;" />
+            <button id="setTicketBtn" style="padding:8px 16px; border-radius:4px; background:#2196F3; border:none; cursor:pointer; color:#fff; font-weight:bold;">Aplicar Novo Preço</button>
+        </div>
+        <div style="margin-top:8px; font-size:0.85em; color:#999;">Preços altos afastam os adeptos em jogos normais, mas jogos grandes (contra equipas de topo) suportam bilhetes mais caros!</div>
+        <div id="estRevenueDisplay" style="margin-top:12px; font-size:0.95em; color:#bbb; background:rgba(0,0,0,0.2); padding:10px; border-radius:6px;"></div>
       </div>
     `;
 
@@ -59,15 +76,23 @@ export function renderFinance(club) {
           const pct = Math.max(1, Math.min(100, Number(pctIn.value || 10)));
           const cc = calcCostForPercent(pct);
           costDisp.textContent = `${cc.seatsAdded} lugares → custo aprox. ${formatMoney(cc.total)} (${cc.costPerSeat}€/lugar)`;
-          const estAttendance =
-            FootLab &&
-            FootLab.Finance &&
-            typeof FootLab.Finance.computeMatchAttendance === 'function'
-              ? FootLab.Finance.computeMatchAttendance({ homeClub: c, awayClub: {} }).attendance
-              : Math.min(Number(c.stadiumCapacity || 10000), 10000);
-          estDisp.textContent = estAttendance
-            ? `Estimativa por jogo: ${estAttendance} espectadores → receita ~ ${formatMoney(Math.round(estAttendance * Number(priceIn.value || c.ticketPrice || 20)))} `
-            : '';
+          
+          // Atualizar estimativa visual usando a nova lógica de preços
+          const basePrice = (c.division || 4) === 1 ? 30 : (c.division || 4) === 2 ? 25 : (c.division || 4) === 3 ? 18 : 12;
+          const selectedPrice = Math.max(1, Number(priceIn.value || 20));
+          let priceFactor = basePrice / selectedPrice;
+          priceFactor = Math.max(0.2, Math.min(1.5, priceFactor));
+          
+          const cap = Number(c.stadiumCapacity || 10000);
+          const members = Number(c.members || Math.floor(cap * 0.5));
+          
+          // Assumindo um desempenho neutro (0.5) e adversário normal para a estimativa visual
+          const baseFill = 0.5 * 0.7 * priceFactor;
+          let estAttendance = members + Math.floor((cap - members) * baseFill);
+          if (estAttendance > cap) estAttendance = cap;
+          
+          estDisp.innerHTML = `Estimativa Assistência (Meio da Tabela): <strong>${estAttendance.toLocaleString()} espectadores</strong><br/>
+                               Estimativa Receita por Jogo: <strong style="color:#4CAF50;">${formatMoney(Math.round(estAttendance * selectedPrice))}</strong>`;
         }
 
         pctIn.addEventListener('input', updateCostDisplay);
