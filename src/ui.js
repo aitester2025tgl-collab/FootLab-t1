@@ -243,29 +243,29 @@
           <div style="display:flex; align-items:center; gap:10px;">
             <div style="width:36px; height:36px; flex-shrink:0; border-radius:6px; background:${oppBg}; border:2px solid ${oppFg}; box-shadow: 0 4px 8px rgba(0,0,0,0.3);"></div>
             <div style="display:flex; flex-direction:column; overflow:hidden; width:100%;">
-              <strong style="font-size:1.05em; color:#fff; white-space:nowrap; text-overflow:ellipsis; overflow:hidden;" title="${oppName}">${oppName}</strong>
-              <span style="font-size:0.8em; color:#bbb;">${isHome ? 'Em Casa' : 'Fora'} - Jor. ${window.currentJornada}</span>
+              <strong style="font-size:1.05em; white-space:nowrap; text-overflow:ellipsis; overflow:hidden;" title="${oppName}">${oppName}</strong>
+              <span style="font-size:0.8em; opacity:0.7;">${isHome ? 'Em Casa' : 'Fora'} - Jor. ${window.currentJornada}</span>
             </div>
           </div>
           
-          <div style="background:rgba(0,0,0,0.25); border:1px solid rgba(255,255,255,0.05); border-radius:8px; padding:10px; font-size:0.85em; color:#ddd; display:flex; flex-direction:column; gap:8px;">
-            <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid rgba(255,255,255,0.05); padding-bottom:4px;">
-              <span style="color:#aaa;">Tática:</span>
-              <strong style="background: rgba(255,255,255,0.1); padding: 2px 6px; border-radius: 4px; color:#fff;">${oppTactic}</strong>
+          <div style="background:rgba(128,128,128,0.15); border:1px solid rgba(128,128,128,0.2); border-radius:8px; padding:10px; font-size:0.85em; display:flex; flex-direction:column; gap:8px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid rgba(128,128,128,0.2); padding-bottom:4px;">
+              <span style="opacity:0.7;">Tática:</span>
+              <strong style="background: rgba(128,128,128,0.2); padding: 2px 6px; border-radius: 4px;">${oppTactic}</strong>
             </div>
-            <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid rgba(255,255,255,0.05); padding-bottom:4px;">
-              <span style="color:#aaa;">Qualidade:</span>
-              <strong style="background: rgba(255,235,59,0.15); border: 1px solid rgba(255,235,59,0.3); padding: 2px 6px; border-radius: 4px; color:#ffeb3b;">${avgSkill}</strong>
+            <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid rgba(128,128,128,0.2); padding-bottom:4px;">
+              <span style="opacity:0.7;">Qualidade:</span>
+              <strong style="background: rgba(128,128,128,0.2); border: 1px solid rgba(128,128,128,0.3); padding: 2px 6px; border-radius: 4px; font-weight: 900;">${avgSkill}</strong>
             </div>
-            <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid rgba(255,255,255,0.05); padding-bottom:4px;">
-              <span style="color:#aaa;">Golos (M/S):</span>
-              <strong style="color:#fff;"><span style="color:#4CAF50;">${oppGF}</span> / <span style="color:#F44336;">${oppGA}</span></strong>
+            <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid rgba(128,128,128,0.2); padding-bottom:4px;">
+              <span style="opacity:0.7;">Golos (M/S):</span>
+              <strong><span style="color:#4CAF50;">${oppGF}</span> / <span style="color:#F44336;">${oppGA}</span></strong>
             </div>
             <div style="display:flex; flex-direction:column; gap:4px; margin-top:2px;">
-              <span style="color:#aaa;">Melhor Marcador:</span>
-              <div style="display:flex; justify-content:space-between; align-items:center; background:rgba(0,0,0,0.2); padding:6px 8px; border-radius:6px; border:1px solid rgba(255,255,255,0.02);">
-                <strong style="color:#fff; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:70%;" title="${topScorer.name}">👟 ${topScorer.name}</strong>
-                <span style="color:#ffeb3b; font-weight:bold; flex-shrink:0;">${topScorer.goals} <span style="font-size:0.8em; font-weight:normal; color:#aaa;">Gls</span></span>
+              <span style="opacity:0.7;">Melhor Marcador:</span>
+              <div style="display:flex; justify-content:space-between; align-items:center; background:rgba(128,128,128,0.2); padding:6px 8px; border-radius:6px; border:1px solid rgba(128,128,128,0.2);">
+                <strong style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:70%;" title="${topScorer.name}">👟 ${topScorer.name}</strong>
+                <span style="font-weight:900; font-size:1.1em; flex-shrink:0;">${topScorer.goals} <span style="font-size:0.8em; font-weight:normal; opacity:0.8;">Gls</span></span>
               </div>
             </div>
           </div>
@@ -273,6 +273,83 @@
       `;
     }
     return html;
+  }
+
+  function renderNextMatchMenu() {
+    const content = document.getElementById('hub-main-content');
+    if (!content) return;
+
+    if (!window.playerClub || !window.seasonCalendar || !window.currentJornada) {
+      content.innerHTML = `<h2>Próximo Jogo</h2><div class="hub-box" style="padding:30px; text-align:center; color:#aaa; font-size:1.1em;">Sem informação do calendário.</div>`;
+      return;
+    }
+    
+    const nextRoundIndex = window.currentJornada - 1; 
+    if (nextRoundIndex >= window.seasonCalendar.length) {
+      content.innerHTML = `<h2>Fim de Época</h2><div class="hub-box" style="padding:30px; text-align:center; color:#aaa; font-size:1.1em;">O campeonato terminou.</div>`;
+      return;
+    }
+    
+    const nextRoundMatches = window.seasonCalendar[nextRoundIndex];
+    const myMatch = nextRoundMatches.find(m => m.homeClub === window.playerClub || m.awayClub === window.playerClub);
+    
+    if (!myMatch) {
+      content.innerHTML = `<h2>Próximo Jogo (Jornada ${window.currentJornada})</h2><div class="hub-box" style="padding:30px; text-align:center; color:#aaa; font-size:1.1em;">Sem jogo agendado (Folga).</div>`;
+      return;
+    }
+    
+    const isHome = myMatch.homeClub === window.playerClub;
+    const oppClub = isHome ? myMatch.awayClub : myMatch.homeClub;
+    const oppName = oppClub && oppClub.team ? oppClub.team.name : 'Desconhecido';
+    const oppBg = oppClub && oppClub.team ? oppClub.team.bgColor : '#333';
+    const oppFg = oppClub && oppClub.team ? oppClub.team.color : '#fff';
+    
+    const oppTactic = (oppClub && oppClub.team && oppClub.team.tactic) || '4-4-2';
+    const oppGF = oppClub ? (oppClub.goalsFor || 0) : 0;
+    const oppGA = oppClub ? (oppClub.goalsAgainst || 0) : 0;
+    
+    let topScorer = { name: 'Nenhum', goals: 0 };
+    let avgSkill = 0;
+    
+    if (oppClub && oppClub.team && oppClub.team.players) {
+      oppClub.team.players.forEach(p => { if ((p.goals || 0) > topScorer.goals) topScorer = p; });
+      const sortedSkill = [...oppClub.team.players].sort((a,b) => (b.skill||0) - (a.skill||0)).slice(0, 11);
+      if (sortedSkill.length > 0) avgSkill = Math.round(sortedSkill.reduce((sum, p) => sum + (p.skill||0), 0) / sortedSkill.length);
+    }
+    
+    content.innerHTML = `
+      <h2 style="margin-bottom: 20px; color: var(--team-menu-fg, inherit);">Próximo Jogo <span style="opacity:0.7; font-weight:normal; font-size:0.7em;">(Jornada ${window.currentJornada})</span></h2>
+      <div class="hub-box" style="max-width: 600px; background: rgba(128,128,128,0.15); padding: 30px; border-radius: 12px; border: 1px solid rgba(128,128,128,0.2); color: var(--team-menu-fg, inherit);">
+        <div style="display:flex; align-items:center; gap:20px; margin-bottom: 25px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 20px;">
+          <div style="width:80px; height:80px; flex-shrink:0; border-radius:12px; background:${oppBg}; border:3px solid ${oppFg}; box-shadow: 0 8px 16px rgba(0,0,0,0.2);"></div>
+          <div style="display:flex; flex-direction:column; overflow:hidden; width:100%;">
+            <span style="font-size:1.1em; opacity:0.7; text-transform:uppercase; letter-spacing:1px; margin-bottom:4px;">Adversário (${isHome ? 'Em Casa' : 'Fora'})</span>
+            <strong style="font-size:2em; white-space:nowrap; text-overflow:ellipsis; overflow:hidden;" title="${oppName}">${oppName}</strong>
+          </div>
+        </div>
+        <div style="font-size:1.15em; display:flex; flex-direction:column; gap:16px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid rgba(128,128,128,0.2); padding-bottom:10px;">
+            <span style="opacity:0.7;">Tática Habitual:</span>
+            <strong style="background: rgba(128,128,128,0.2); padding: 4px 12px; border-radius: 6px;">${oppTactic}</strong>
+          </div>
+          <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid rgba(128,128,128,0.2); padding-bottom:10px;">
+            <span style="opacity:0.7;">Qualidade do Onze:</span>
+            <strong style="background: rgba(128,128,128,0.2); border: 1px solid rgba(128,128,128,0.3); padding: 4px 12px; border-radius: 6px; font-weight: 900;">${avgSkill}</strong>
+          </div>
+          <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid rgba(128,128,128,0.2); padding-bottom:10px;">
+            <span style="opacity:0.7;">Golos (Marcados / Sofridos):</span>
+            <strong><span style="color:#2e7d32; text-shadow:0 0 1px rgba(255,255,255,0.5);">${oppGF}</span> / <span style="color:#c62828; text-shadow:0 0 1px rgba(255,255,255,0.5);">${oppGA}</span></strong>
+          </div>
+          <div style="display:flex; flex-direction:column; gap:8px; margin-top:10px;">
+            <span style="opacity:0.7;">Melhor Marcador:</span>
+            <div style="display:flex; justify-content:space-between; align-items:center; background:rgba(128,128,128,0.2); padding:12px 16px; border-radius:8px; border:1px solid rgba(128,128,128,0.2);">
+              <strong style="font-size:1.1em; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:75%;" title="${topScorer.name}">👟 ${topScorer.name}</strong>
+              <span style="font-weight:900; font-size:1.2em; flex-shrink:0;">${topScorer.goals} <span style="font-size:0.7em; font-weight:normal; opacity:0.7;">Gls</span></span>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
   }
 
   function updateNextOpponentDisplay() {
@@ -311,18 +388,18 @@
     clubs.forEach((c, idx) => {
       const isPlayer = window.playerClub && c.team && window.playerClub.team && c.team.name === window.playerClub.team.name;
       // Destaca a equipa do jogador
-      const highlightStyle = isPlayer ? 'style="background: rgba(255,255,255,0.15); font-weight: 800; color: #fff;"' : '';
+      const highlightStyle = isPlayer ? 'style="background: rgba(128,128,128,0.25); font-weight: 800;"' : '';
       const diff = (c.goalsFor || 0) - (c.goalsAgainst || 0);
       const bg = (c.team && c.team.bgColor) || '#333';
       const fg = (c.team && c.team.color) || '#fff';
 
       html += `<tr ${highlightStyle}>
         <td>${idx + 1}</td>
-        <td style="display:flex; align-items:center; gap:8px;">
-          <div style="width:16px; height:16px; border-radius:3px; background:${bg}; border:1px solid ${fg};"></div>
-          ${c.team ? c.team.name : 'Desconhecida'}
+        <td style="display:flex; align-items:center; gap:6px; overflow:hidden; white-space:nowrap;">
+          <div style="width:12px; height:12px; flex-shrink:0; border-radius:3px; background:${bg}; border:1px solid ${fg};"></div>
+          <span style="overflow:hidden; text-overflow:ellipsis;">${c.team ? c.team.name : 'Desconhecida'}</span>
         </td>
-        <td style="color:#ffeb3b; font-weight:800;">${c.points || 0}</td>
+        <td style="font-weight:800; opacity:0.9;">${c.points || 0}</td>
         <td>${c.gamesPlayed || 0}</td>
         <td>${c.wins || 0}</td>
         <td>${c.draws || 0}</td>
@@ -343,7 +420,7 @@
     } catch (e) { console.warn('Falha no Hub.renderAllDivisionsTables, a usar fallback.'); }
 
     if (!html || typeof html !== 'string' || html.trim() === '') {
-      html = '<div style="display:flex; flex-direction:column; gap:20px;">';
+      html = '<div class="all-standings-grid">';
       for (let i = 0; i < 4; i++) html += buildTableHtml(i);
       html += '</div>';
     }
@@ -439,6 +516,7 @@
   window.renderLeagueTable = window.renderLeagueTable || renderLeagueTable;
   window.initTacticPanel = window.initTacticPanel || initTacticPanel;
   window.renderInitialMatchBoard = window.renderInitialMatchBoard || renderInitialMatchBoard;
+  window.renderNextMatchMenu = window.renderNextMatchMenu || renderNextMatchMenu;
   window.updateMatchBoardLine = window.updateMatchBoardLine || updateMatchBoardLine;
   window.updateNextOpponentDisplay = window.updateNextOpponentDisplay || updateNextOpponentDisplay;
 

@@ -38,16 +38,16 @@ function showRenewContractMenu(player, club, minDemanded, formatMoneyFn, renderT
   box.style.maxWidth = '420px';
   
   const html = `
-        <h3 style="margin-top:0; color:#ffeb3b; font-size:1.3em;">Renovação de Contrato</h3>
-        <div style="margin-top:8px;font-weight:700;font-size:1.1em;">${player.name} <span style="font-weight:500;opacity:0.85">(${player.position || ''})</span></div>
-        <div style="margin-top:12px; font-size:0.95em;">O jogador exige um salário mínimo mensal de <strong style="color:#8BC34A;">${formatMoneyFn(minDemanded)}</strong>.</div>
-        <div style="margin-top:16px;display:flex;gap:8px;align-items:center;">
-          <label style="min-width:120px; color:#ccc;">Salário a propor:</label>
-          <input id="renewSalaryInput" type="number" min="${minDemanded}" value="${minDemanded}" style="width:150px;padding:8px;border-radius:6px;border:1px solid #555;background:#111;color:#fff;font-size:1.05em;font-weight:bold;" />
+        <h3 style="margin-top:0; color:#4CAF50; font-size:1.5em; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:12px;">Renovação de Contrato</h3>
+        <div style="margin-top:16px;font-weight:700;font-size:1.2em;">${player.name} <span style="font-weight:500;opacity:0.85">(${player.position || ''})</span></div>
+        <div style="margin-top:8px;font-size:1em;color:#ddd;">O jogador exige um salário mínimo mensal de <strong style="color:#8BC34A; font-size:1.1em;">${formatMoneyFn(minDemanded)}</strong>.</div>
+        <div style="margin-top:24px;display:flex;gap:12px;align-items:center;background:rgba(0,0,0,0.2);padding:16px;border-radius:8px;">
+          <label style="min-width:120px;font-weight:bold;opacity:0.9;">Salário a propor:</label>
+          <input id="renewSalaryInput" type="number" min="${minDemanded}" value="${minDemanded}" style="width:160px;padding:10px;border-radius:6px;border:1px solid #555;background:#111;color:#fff;font-size:1.1em;font-weight:bold;" />
         </div>
         <div style="margin-top:24px;display:flex;justify-content:flex-end;gap:12px;">
-          <button id="renewCancelBtn" style="padding:10px 16px;border-radius:6px;border:none;background:#555;color:#fff;cursor:pointer;font-weight:bold;transition:background 0.2s;">Cancelar</button>
-          <button id="renewConfirmBtn" style="padding:10px 16px;border-radius:6px;border:none;background:#4CAF50;color:#fff;cursor:pointer;font-weight:bold;transition:background 0.2s;">Propor Contrato</button>
+          <button id="renewCancelBtn" style="padding:12px 20px;border-radius:6px;border:none;background:#555;color:#fff;font-weight:bold;cursor:pointer;">Cancelar</button>
+          <button id="renewConfirmBtn" style="padding:12px 20px;border-radius:6px;border:none;background:#4CAF50;color:#fff;font-weight:bold;cursor:pointer;">Propor Contrato</button>
         </div>`;
   box.innerHTML = html;
   overlay.appendChild(box);

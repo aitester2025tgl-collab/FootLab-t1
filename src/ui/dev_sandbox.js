@@ -9,7 +9,7 @@
   // Impede execução em produção se uma flag existir, ou permite apenas num URL local.
   if (typeof window !== 'undefined') {
     window.addEventListener('keydown', (e) => {
-      if (e.ctrlKey && e.shiftKey && e.key.toLowerCase() === 'd') {
+      if (e.ctrlKey && e.altKey && e.code === 'KeyD') {
         let menu = document.getElementById('dev-debug-menu');
         if (menu) {
           menu.remove();
@@ -70,6 +70,17 @@
         createBtn('4. Forçar Fim de Jogo (Ecrã de Classificação)', () => {
           if (typeof window.endSimulation === 'function') window.endSimulation();
           else alert('Erro: A função endSimulation não foi encontrada no contexto global.');
+        });
+
+        createBtn('5. Simular Época Inteira (Fast-Forward)', () => {
+          if (typeof window.fastForwardSeason === 'function') {
+            window.fastForwardSeason();
+            // Esconder o menu de dev para não ficar por cima do ecrã de loading
+            const devMenu = document.getElementById('dev-debug-menu');
+            if (devMenu) devMenu.remove();
+          } else {
+            alert('Erro: A função fastForwardSeason não foi encontrada.');
+          }
         });
 
         document.body.appendChild(menu);

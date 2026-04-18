@@ -202,13 +202,6 @@ function advanceMatchDay(matches, minute) {
         // mark event as goal
         homeGoal.type = 'goal';
         match.goals.push(homeGoal);
-        try {
-          const L = getLogger();
-          L.info &&
-            L.info('advanceMatchDay: HOME GOAL ->', homeGoal.player, 'min', minute, 'matchIdx', i);
-        } catch (e) {
-          /* ignore */
-        }
         match.homeGoals = (match.homeGoals || 0) + 1;
         match.index = i;
         updates.push({ match });
@@ -240,20 +233,6 @@ function advanceMatchDay(matches, minute) {
           const awayGoal = generateGoal(awayPlayers, minute, 'away');
           awayGoal.type = 'goal';
           match.goals.push(awayGoal);
-          try {
-            const L = getLogger();
-            L.info &&
-              L.info(
-                'advanceMatchDay: AWAY GOAL ->',
-                awayGoal.player,
-                'min',
-                minute,
-                'matchIdx',
-                i
-              );
-          } catch (e) {
-            /* ignore */
-          }
           match.awayGoals = (match.awayGoals || 0) + 1;
           match.index = i;
           updates.push({ match });

@@ -182,7 +182,15 @@ function generateDivisionClubs(divisionNumber) {
     // register club
     const club = createClub(team, divisionNumber);
     club.expenses = Math.max(0, Number(totalSalary));
-    club.coach = (window.REAL_COACHES && window.REAL_COACHES[team.name]) || null;
+    
+    const coachName = (window.REAL_COACHES && window.REAL_COACHES[team.name]) || null;
+    if (coachName) {
+      const baseRep = divisionNumber === 1 ? 82 : divisionNumber === 2 ? 68 : divisionNumber === 3 ? 55 : 40;
+      club.coach = { name: coachName, reputation: baseRep + Math.floor(Math.random() * 12) };
+    } else {
+      club.coach = null;
+    }
+    
     window.ALL_CLUBS = window.ALL_CLUBS || [];
     window.ALL_CLUBS.push(club);
 

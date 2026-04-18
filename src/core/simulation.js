@@ -25,6 +25,132 @@
   let isSimulating = false;
   let simIntervalId = null;
 
+  // --- POPUP DE JOGADOR LIVRE (ESTILO ELIFOOT) ---
+  function showSingleReleasePopup(player, callback) {
+    const overlay = document.createElement('div');
+    overlay.id = 'single-release-overlay';
+    overlay.style.cssText = 'position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.85);display:flex;align-items:center;justify-content:center;z-index:999999;';
+    
+    const box = document.createElement('div');
+    box.style.cssText = 'background:#1a1a1a;border:1px solid rgba(255,255,255,0.15);border-radius:12px;padding:24px;width:360px;color:#fff;text-align:center;box-shadow:0 12px 40px rgba(0,0,0,0.5);font-family:sans-serif;';
+    
+    const formatMoney = typeof window.formatMoney === 'function' ? window.formatMoney : (v) => v + ' €';
+    const fee = player.leavingFee || 0;
+    const salary = player.minContract || player.salary || 0;
+    const clubName = player.previousClubName || 'Desconhecido';
+    
+    box.innerHTML = `
+        <h3 style="margin-top:0;color:#ffeb3b;font-size:1.3rem;border-bottom:1px solid rgba(255,255,255,0.1);padding-bottom:12px;">Jogador Livre</h3>
+        <p style="font-size:0.95rem;margin-bottom:20px;opacity:0.9;line-height:1.4;"><strong>${player.name}</strong> terminou o contrato com o <strong>${clubName}</strong> e foi oferecido ao teu clube.</p>
+        <div style="background:rgba(255,255,255,0.05);padding:15px;border-radius:8px;margin-bottom:24px;text-align:left;font-size:0.95rem;">
+            <div style="display:flex;justify-content:space-between;margin-bottom:8px;"><span>Posição:</span> <strong>${player.position}</strong></div>
+            <div style="display:flex;justify-content:space-between;margin-bottom:8px;"><span>Habilidade:</span> <strong><span style="color:#ffeb3b;">${player.skill}</span></strong></div>
+            <div style="display:flex;justify-content:space-between;margin-bottom:8px;"><span>Salário:</span> <strong>${formatMoney(salary)}/mês</strong></div>
+            <div style="display:flex;justify-content:space-between;"><span>Prémio Assinatura:</span> <strong>${formatMoney(fee)}</strong></div>
+        </div>
+        <div style="display:flex;gap:12px;">
+            <button id="btn-accept-free" style="flex:1;background:#4caf50;color:#fff;border:none;padding:12px;border-radius:6px;font-weight:bold;cursor:pointer;font-size:1rem;transition:background 0.2s;">Contratar</button>
+            <button id="btn-reject-free" style="flex:1;background:#f44336;color:#fff;border:none;padding:12px;border-radius:6px;font-weight:bold;cursor:pointer;font-size:1rem;transition:background 0.2s;">Ignorar</button>
+        </div>
+    `;
+    
+    overlay.appendChild(box);
+    document.body.appendChild(overlay);
+    
+    const btnAccept = box.querySelector('#btn-accept-free');
+    const btnReject = box.querySelector('#btn-reject-free');
+    
+    btnAccept.onmouseover = () => btnAccept.style.background = '#45a049';
+    btnAccept.onmouseout = () => btnAccept.style.background = '#4caf50';
+    btnReject.onmouseover = () => btnReject.style.background = '#da190b';
+    btnReject.onmouseout = () => btnReject.style.background = '#f44336';
+    
+    btnAccept.onclick = () => { document.body.removeChild(overlay); callback(true); };
+    btnReject.onclick = () => { document.body.removeChild(overlay); callback(false); };
+  }
+
+  // --- LÓGICA DO MERCADO DE TREINADORES ---
+  function processManagerMovements(isEndSeason) {
+    const allDivisions = window.allDivisions || [];
+    const freeCoaches = window.UNEMPLOYED_COACHES || [];
+    window.PLAYER_JOB_OFFERS = window.PLAYER_JOB_OFFERS || [];
+    let clubsNeedingCoaches = [];
+
+    // 1. Avaliar desempenho e Despedir Treinadores
+    allDivisions.forEach((division) => {
+      const sorted = [...division].sort((a, b) => (b.points || 0) - (a.points || 0));
+      const total = sorted.length;
+      
+      sorted.forEach((club, rank) => {
+        if (!club.coach || club === window.playerClub) return; // Não despedir o Jogador automaticamente aqui
+        let sackChance = 0;
+        if (rank >= total - 3) sackChance = isEndSeason ? 1.0 : 0.4; // Zona de despromoção
+        else if (rank >= total - 6) sackChance = isEndSeason ? 0.3 : 0.1; // Risco de despromoção
+
+        if (Math.random() < sackChance) {
+          freeCoaches.push(club.coach);
+          club.coach = null;
+          clubsNeedingCoaches.push(club);
+        }
+      });
+    });
+
+    // 2. Calcular a Reputação do Jogador
+    const playerClub = window.playerClub;
+    let playerRep = 40;
+    if (playerClub && playerClub.division) {
+      playerRep = (playerClub.division === 1 ? 82 : playerClub.division === 2 ? 68 : playerClub.division === 3 ? 55 : 40);
+      const myDiv = allDivisions[playerClub.division - 1] || [];
+      const myRank = [...myDiv].sort((a,b) => (b.points||0) - (a.points||0)).findIndex(c => c === playerClub);
+      // Bónus brutal por estar a subir a equipa de divisão
+      if (myRank === 0) playerRep += 15;
+      else if (myRank <= 2) playerRep += 10;
+      else if (myRank <= 5) playerRep += 5;
+    }
+
+    // 3. Contratar Novos Treinadores (As equipas maiores escolhem primeiro)
+    clubsNeedingCoaches.sort((a, b) => a.division - b.division);
+    
+    for (let i = 0; i < clubsNeedingCoaches.length; i++) {
+      const club = clubsNeedingCoaches[i];
+      const baseRep = club.division === 1 ? 82 : club.division === 2 ? 68 : club.division === 3 ? 55 : 40;
+      
+      let candidates = [...freeCoaches];
+      // "Roubar" treinadores ativos de divisões inferiores
+      allDivisions.forEach(div => {
+        div.forEach(c => {
+          if (c.coach && c !== club && c.division > club.division) candidates.push({ ...c.coach, currentClub: c });
+        });
+      });
+      // Avaliar o Jogador (só recebe convite de divisões superiores se a rep o permitir)
+      if (playerClub && playerClub.division > club.division && playerRep >= baseRep - 10) {
+        candidates.push({ name: "JOGADOR", reputation: playerRep, isPlayer: true });
+      }
+
+      let viable = candidates.filter(c => c.reputation >= baseRep - 15 && c.reputation <= baseRep + 15);
+      // Se não houver ninguém no intervalo exigido, procuramos o melhor disponível
+      if (viable.length === 0 && candidates.length > 0) { viable = [...candidates]; }
+      if (viable.length === 0) { club.coach = null; continue; }
+      
+      viable.sort((a, b) => b.reputation - a.reputation);
+      const chosen = viable[0];
+
+      if (chosen.isPlayer) {
+        if (!window.PLAYER_JOB_OFFERS.find(o => o.id === club.id)) window.PLAYER_JOB_OFFERS.push(club);
+        club.coach = null; // O cargo fica vazio a aguardar a tua decisão
+      } else {
+        club.coach = { name: chosen.name, reputation: chosen.reputation };
+        if (chosen.currentClub) {
+          chosen.currentClub.coach = null;
+          clubsNeedingCoaches.push(chosen.currentClub); // Antigo clube entra na roda viva
+        } else {
+          const idx = freeCoaches.findIndex(fc => fc.name === chosen.name);
+          if (idx > -1) freeCoaches.splice(idx, 1);
+        }
+      }
+    }
+  }
+
   function updateClubStatsAfterMatches(matches) {
     if (!Array.isArray(matches)) return;
     matches.forEach((match) => {
@@ -388,19 +514,11 @@
           } catch (e) {
             /* ignore */
           }
-          // give the UI a moment to settle before starting ticks
           try {
-            const L = getLogger();
-            L.info &&
-              L.info('Scheduling simulation interval in', START_DELAY_MS, 'ms, tick=', perMinuteMs);
             setTimeout(() => {
-              const L2 = getLogger();
-              L2.info && L2.info('Starting simulation interval, tick=', perMinuteMs);
               simIntervalId = setInterval(simulationTick, perMinuteMs);
             }, START_DELAY_MS);
           } catch (e) {
-            const L3 = getLogger();
-            L3.info && L3.info('Starting simulation interval (fallback) tick=', perMinuteMs);
             simIntervalId = setInterval(simulationTick, perMinuteMs);
           }
         });
@@ -425,6 +543,14 @@
     let minute = 0;
     function simulationTick() {
       minute++;
+      
+      if (minute === 45) {
+        try {
+          const L = getLogger();
+          L.info && L.info(`⏱️ Intervalo da partida (Jornada ${window.currentJornada}).`);
+        } catch(e) {}
+      }
+
       const HALF_MINUTE =
         (window.GameConfig && window.GameConfig.rules && window.GameConfig.rules.halftimeMinute) ||
         46;
@@ -453,6 +579,10 @@
           clearInterval(simIntervalId);
           simIntervalId = null;
         }
+        try {
+          const L = getLogger();
+          L.info && L.info(`🏁 Fim dos jogos (Jornada ${window.currentJornada}).`);
+        } catch(e) {}
         endSimulation();
         return;
       }
@@ -561,8 +691,59 @@
         const topDivClubs = window.allDivisions[0] || [];
         const topRounds = window.generateRounds(topDivClubs);
         const seasonLength = Array.isArray(topRounds) ? topRounds.length : 0;
+        
+        // AVALIAÇÃO DE TREINADORES (Meio da Época e Final)
+        if (seasonLength > 0) {
+          const isMidSeason = (window.currentJornada === Math.floor(seasonLength / 2) + 1);
+          const isEndSeason = (window.currentJornada > seasonLength);
+          if (isMidSeason || isEndSeason) processManagerMovements(isEndSeason);
+        }
+
         if (seasonLength > 0 && (window.currentJornada || 0) > seasonLength) {
           // Season finished -> apply promotions/relegations
+          
+          // --- PRÉMIOS DE FIM DE ÉPOCA (ESTATÍSTICAS) ---
+          try {
+             let prizeMsg = "";
+             let totalPrize = 0;
+             const fm = typeof window.formatMoney === 'function' ? window.formatMoney : (v => v + ' €');
+
+             // Melhor Ataque e Defesa Global
+             const allClubsFlat = window.allClubs || [];
+             const sortedByAttack = [...allClubsFlat].sort((a, b) => (b.goalsFor || 0) - (a.goalsFor || 0));
+             const sortedByDefense = [...allClubsFlat].sort((a, b) => (a.goalsAgainst || 0) - (b.goalsAgainst || 0));
+
+             if (sortedByAttack[0] === window.playerClub) {
+                 prizeMsg += "🏆 Melhor Ataque Global: +" + fm(500000) + "\n";
+                 totalPrize += 500000;
+             }
+             if (sortedByDefense[0] === window.playerClub) {
+                 prizeMsg += "🛡️ Melhor Defesa Global: +" + fm(500000) + "\n";
+                 totalPrize += 500000;
+             }
+
+             // Top 10 Marcadores Global
+             const allPlayers = [];
+             allClubsFlat.forEach(c => {
+               if (c && c.team && c.team.players) c.team.players.forEach(p => allPlayers.push({ p, club: c }));
+             });
+             allPlayers.sort((a, b) => (b.p.goals || 0) - (a.p.goals || 0));
+             
+             const globalTop10 = allPlayers.slice(0, 10);
+             globalTop10.forEach((item, index) => {
+               if (item.club === window.playerClub) {
+                   const prize = (10 - index) * 50000; // 1º: 500k, 2º: 450k ... 10º: 50k
+                   prizeMsg += `👟 ${item.p.name} (${index+1}º Melhor Marcador): +${fm(prize)}\n`;
+                   totalPrize += prize;
+               }
+             });
+
+             if (totalPrize > 0) {
+                 window.playerClub.budget = (window.playerClub.budget || 0) + totalPrize;
+                 alert(`FIM DE ÉPOCA - PRÉMIOS DE DESEMPENHO\n\n${prizeMsg}\nTotal recebido: ${fm(totalPrize)}`);
+             }
+          } catch (e) { /* ignore */ }
+
           try {
             if (
               window.Promotion &&
@@ -669,6 +850,10 @@
     try {
       document.getElementById('screen-match').style.setProperty('display', 'none', 'important');
       document.getElementById('screen-hub').style.setProperty('display', 'flex', 'important');
+        // Ir imediatamente para o ecrã de Classificações
+        if (typeof renderHubContent === 'function') {
+          renderHubContent('menu-standings');
+        }
     } catch (e) {
       /* ignore */
     }
@@ -889,32 +1074,81 @@
     }
 
     try {
-      // If configured, auto-process pending releases so other clubs can attempt purchases
-      try {
-        const cfg = (window.GameConfig && window.GameConfig.transfer) || {};
-        if (
-          cfg &&
-          cfg.autoProcessPendingReleases === true &&
-          typeof window.processPendingReleases === 'function'
-        ) {
-          try {
-            window.processPendingReleases();
-          } catch (e) {
-            /* ignore errors during auto processing */
-          }
-        }
-      } catch (e) {
-        /* ignore */
-      }
+      // Removido autoProcessPendingReleases inicial.
+      // A IA só vai contratar jogadores DEPOIS de o humano os rejeitar.
       
-      // Mostrar o popup de transferências se houver jogadores negociáveis, senão volta à equipa normal
-      if (window.Offers && typeof window.Offers.showPendingReleasesPopup === 'function' && window.PENDING_RELEASES && window.PENDING_RELEASES.length > 0) {
-        window.Offers.showPendingReleasesPopup(() => {
-          if (typeof renderHubContent === 'function') renderHubContent('menu-team');
-        });
-      } else {
-        if (typeof renderHubContent === 'function') renderHubContent('menu-team');
-      }
+      // Fluxo Sequencial: 1º Resumo Transferências -> 2º Ofertas Emprego -> 3º Propostas Jogadores -> 4º Hub
+      setTimeout(() => {
+        const recentTransfers = (window.TRANSFER_HISTORY || []).filter(t => t.jornada === window.currentJornada && t.type === 'purchase');
+        
+        const checkPending = () => {
+          const externalReleases = (window.PENDING_RELEASES || []).filter(
+            (p) => p.originalClubRef !== window.playerClub
+          );
+
+          if (externalReleases.length === 0) {
+            if (typeof window.processPendingReleases === 'function') window.processPendingReleases();
+            window.PENDING_RELEASES = [];
+            if (typeof renderHubContent === 'function') renderHubContent('menu-team');
+            return;
+          }
+
+          const processNextRelease = (index) => {
+            if (index >= externalReleases.length) {
+              // Quando o humano terminar as suas decisões, a IA compra os que restam
+              if (typeof window.processPendingReleases === 'function') window.processPendingReleases();
+              window.PENDING_RELEASES = []; 
+              if (typeof renderHubContent === 'function') renderHubContent('menu-team');
+              return;
+            }
+
+            const p = externalReleases[index];
+            showSingleReleasePopup(p, (accepted) => {
+              if (accepted) {
+                const fee = p.leavingFee || 0;
+                if (window.playerClub && (window.playerClub.budget || 0) >= fee) {
+                  window.playerClub.budget -= fee;
+                  if (!window.playerClub.team.players) window.playerClub.team.players = [];
+                  
+                  p.salary = p.minContract || p.salary || 0;
+                  p.contractYears = 2; // Assina por 2 anos
+                  window.playerClub.team.players.push(p);
+
+                  if (p.originalClubRef && p.originalClubRef.team && p.originalClubRef.team.players) {
+                    const idx = p.originalClubRef.team.players.findIndex((x) => x.id === p.id || x.name === p.name);
+                    if (idx !== -1) p.originalClubRef.team.players.splice(idx, 1);
+                  }
+
+                  window.TRANSFER_HISTORY = window.TRANSFER_HISTORY || [];
+                  window.TRANSFER_HISTORY.push({ player: p.name, from: p.previousClubName || 'Mercado Livre', to: window.playerClub.team.name, fee: fee, salary: p.salary, type: 'purchase', jornada: window.currentJornada, time: Date.now() });
+                  
+                  const pendingIdx = window.PENDING_RELEASES.indexOf(p);
+                  if (pendingIdx !== -1) window.PENDING_RELEASES.splice(pendingIdx, 1);
+                } else {
+                  alert(`Não tens orçamento suficiente para pagar o prémio de assinatura de ${typeof window.formatMoney === 'function' ? window.formatMoney(fee) : fee + ' €'}.`);
+                }
+              }
+              processNextRelease(index + 1);
+            });
+          };
+
+          processNextRelease(0);
+        };
+
+        const checkJobOffers = () => {
+          if (window.Offers && typeof window.Offers.showJobOffersPopup === 'function' && window.PLAYER_JOB_OFFERS && window.PLAYER_JOB_OFFERS.length > 0) {
+            window.Offers.showJobOffersPopup(checkPending);
+          } else {
+            checkPending();
+          }
+        };
+
+        if (window.Offers && typeof window.Offers.showTransferNewsPopup === 'function' && recentTransfers.length > 0) {
+          window.Offers.showTransferNewsPopup(recentTransfers, checkJobOffers);
+        } else {
+          checkJobOffers();
+        }
+      }, 500);
     } catch (e) {
       /* ignore */
     }
@@ -942,6 +1176,130 @@
     }
   }
 
+  function fastForwardSeason() {
+    if (isSimulating) return alert("Já existe uma simulação a decorrer!");
+    if (!confirm("Isto vai simular todos os jogos restantes da época instantaneamente. Tem a certeza?")) return;
+    
+    isSimulating = true;
+    
+    const topDivClubs = window.allDivisions[0] || [];
+    const topRounds = window.generateRounds ? window.generateRounds(topDivClubs) : [];
+    const totalRounds = topRounds.length || 34;
+    
+    let seasonEndData = null;
+    let promoData = null;
+    
+    // Avisar o utilizador que o jogo está a processar
+    try { document.getElementById('hub-main-content').innerHTML = '<div style="display:flex; height:100%; justify-content:center; align-items:center;"><h2 style="color:#ffeb3b; text-align:center;">A simular o resto da época...<br><span style="font-size:0.6em; color:#aaa;">Isto pode demorar alguns segundos.</span></h2></div>'; } catch(e){}
+    
+    // Timeout pequeno para dar tempo de o browser desenhar o ecrã de Loading acima
+    setTimeout(() => {
+      while (window.currentJornada <= totalRounds) {
+        assignStartingLineups(window.currentRoundMatches);
+        
+        for (let min = 1; min <= 90; min++) {
+          if (typeof window.advanceMatchDay === 'function') {
+            window.advanceMatchDay(window.currentRoundMatches, min);
+          }
+        }
+        
+        if (Array.isArray(window.currentRoundMatches)) {
+          window.currentRoundMatches.forEach((m) => { if (m) m.isFinished = true; });
+          updateClubStatsAfterMatches(window.currentRoundMatches);
+        }
+        
+        window.currentJornada++;
+        
+        if (window.currentJornada === Math.floor(totalRounds / 2) + 1) {
+          processManagerMovements(false); // Despedimentos a meio da época
+        }
+        
+        // Manutenção de final de jornada (Drifts e Mercado IA)
+        try { if (typeof seasonalSkillDrift === 'function') seasonalSkillDrift(window.allDivisions); } catch (e) {}
+        try { if (typeof selectExpiringPlayersToLeave === 'function') selectExpiringPlayersToLeave(window.allDivisions, { probability: 0.35, maxPerClub: 1 }); } catch (e) {}
+        try { if (typeof selectPlayersForRelease === 'function') selectPlayersForRelease(window.allDivisions, { probability: 0.02, maxPerClub: 1 }); } catch (e) {}
+        try { if (typeof window.processPendingReleases === 'function') window.processPendingReleases(); } catch (e) {}
+        
+        if (window.currentJornada > totalRounds) {
+          // --- FIM DE ÉPOCA ---
+          processManagerMovements(true); // Despedimentos no fim da época
+          try {
+             let prizeMsg = "";
+             let totalPrize = 0;
+             const fm = typeof window.formatMoney === 'function' ? window.formatMoney : (v => v + ' €');
+
+             const allClubsFlat = window.allClubs || [];
+             const sortedByAttack = [...allClubsFlat].sort((a, b) => (b.goalsFor || 0) - (a.goalsFor || 0));
+             const sortedByDefense = [...allClubsFlat].sort((a, b) => (a.goalsAgainst || 0) - (b.goalsAgainst || 0));
+
+             if (sortedByAttack[0] === window.playerClub) { prizeMsg += "🏆 Melhor Ataque Global: +" + fm(500000) + "\n"; totalPrize += 500000; }
+             if (sortedByDefense[0] === window.playerClub) { prizeMsg += "🛡️ Melhor Defesa Global: +" + fm(500000) + "\n"; totalPrize += 500000; }
+             if (sortedByAttack[0] === window.playerClub) { prizeMsg += "🏆 Melhor Ataque: +" + fm(500000) + "<br>"; totalPrize += 500000; }
+             if (sortedByDefense[0] === window.playerClub) { prizeMsg += "🛡️ Melhor Defesa: +" + fm(500000) + "<br>"; totalPrize += 500000; }
+
+             const allPlayers = [];
+             allClubsFlat.forEach(c => { if (c && c.team && c.team.players) c.team.players.forEach(p => allPlayers.push({ p, club: c })); });
+             allPlayers.sort((a, b) => (b.p.goals || 0) - (a.p.goals || 0));
+             
+             const d1 = window.allDivisions[0] || [];
+             const championD1 = [...d1].sort((a, b) => {
+               if (b.points !== a.points) return b.points - a.points;
+               const diffA = (a.goalsFor || 0) - (a.goalsAgainst || 0);
+               const diffB = (b.goalsFor || 0) - (b.goalsAgainst || 0);
+               if (diffA !== diffB) return diffB - diffA;
+               return (b.goalsFor || 0) - (a.goalsFor || 0);
+             })[0];
+             if (championD1 === window.playerClub) { prizeMsg += "🥇 Campeão 1ª Divisão: +" + fm(2000000) + "<br>"; totalPrize += 2000000; }
+
+             const globalTop10 = allPlayers.slice(0, 10);
+             globalTop10.forEach((item, index) => {
+               if (item.club === window.playerClub) {
+                   const prize = (10 - index) * 50000; 
+                   prizeMsg += `👟 ${item.p.name} (${index+1}º Melhor Marcador): +${fm(prize)}\n`;
+                   prizeMsg += `👟 ${item.p.name} (${index+1}º Melhor Marcador): +${fm(prize)}<br>`;
+                   totalPrize += prize;
+               }
+             });
+
+             if (totalPrize > 0) {
+                 window.playerClub.budget = (window.playerClub.budget || 0) + totalPrize;
+                 alert(`FIM DE ÉPOCA - PRÉMIOS DE DESEMPENHO\n\n${prizeMsg}\nTotal recebido: ${fm(totalPrize)}`);
+             }
+
+             seasonEndData = { championD1, bestAttack: sortedByAttack[0], bestDefense: sortedByDefense[0], topScorer: allPlayers[0], prizeMsg, totalPrize };
+          } catch (e) { /* ignore */ }
+
+          try {
+            if (window.Promotion && typeof window.Promotion.applyPromotionRelegation === 'function') {
+              const promoResult = window.Promotion.applyPromotionRelegation(window.allDivisions || []);
+              window.allDivisions = promoResult.newDivisions || window.allDivisions || [];
+              promoData = window.Promotion.applyPromotionRelegation(window.allDivisions || []);
+              window.allDivisions = promoData.newDivisions || window.allDivisions || [];
+              window.allClubs = (window.allDivisions || []).reduce((acc, d) => acc.concat(d || []), []);
+              window.allClubs.forEach((c, idx) => { if (c) c.division = c.division || (c.team && c.team.division) || Math.floor(idx / 18) + 1; });
+              alert("A época chegou ao fim! Consulte as Classificações e as Estatísticas.");
+            }
+          } catch (e) {}
+          break;
+        } else {
+          // Preparar a ronda seguinte para o loop processar
+          const nextRoundMatches = [];
+          (window.allDivisions || []).forEach((divisionClubs) => {
+            const rounds = window.generateRounds(divisionClubs);
+            const roundIndex = (window.currentJornada - 1) % rounds.length;
+            if (rounds[roundIndex]) nextRoundMatches.push(...rounds[roundIndex]);
+          });
+          window.currentRoundMatches = nextRoundMatches;
+        }
+      }
+      
+      isSimulating = false;
+      if (typeof window.renderHubContent === 'function') window.renderHubContent('menu-stats');
+      setTimeout(() => { executePostMatchFlow(seasonEndData, promoData, [], true); }, 150);
+      
+    }, 150);
+  }
+
   // expose both names for compatibility
   window.Simulation = window.Simulation || {};
   window.Simulation.updateClubStatsAfterMatches = updateClubStatsAfterMatches;
@@ -949,6 +1307,8 @@
   window.Simulation.simulateDay = simulateDay;
   window.Simulation.endSimulation = endSimulation;
   window.Simulation.finishDayAndReturnToHub = finishDayAndReturnToHub;
+  window.Simulation.fastForwardSeason = fastForwardSeason;
+  window.Simulation._showSingleReleasePopup = showSingleReleasePopup; // For testing/debug
 
   // Also export legacy global names used elsewhere
   window.updateClubStatsAfterMatches = updateClubStatsAfterMatches;
@@ -956,4 +1316,5 @@
   window.simulateDay = simulateDay;
   window.endSimulation = endSimulation;
   window.finishDayAndReturnToHub = finishDayAndReturnToHub;
+  window.fastForwardSeason = fastForwardSeason;
 })();

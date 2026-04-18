@@ -20,8 +20,13 @@ export function renderTransfers() {
       return;
     }
 
-    let html = `<h2>Transferências</h2><div class="hub-box subs-panel" style="padding:8px;display:flex;flex-direction:column;gap:8px;">`;
-    html += `<div style="display:flex;gap:8px;margin-bottom:8px;"><button id="tab-market" style="padding:6px 10px;border-radius:8px;border:none;background:#eee;color:#111;font-weight:700;">Mercado</button><button id="tab-free" style="padding:6px 10px;border-radius:8px;border:none;background:transparent;color:#aaa;font-weight:700;">Jogadores Livres</button><button id="tab-movements" style="padding:6px 10px;border-radius:8px;border:none;background:transparent;color:#aaa;font-weight:700;">Movimentos</button><button id="tab-my" style="padding:6px 10px;border-radius:8px;border:none;background:transparent;color:#aaa;font-weight:700;">Meus</button></div>`;
+    let html = `<h2>Transferências</h2><div class="hub-box" style="padding:16px;display:flex;flex-direction:column;gap:12px; border:1px solid rgba(128,128,128,0.2);">`;
+    html += `<div style="display:flex; gap:6px; margin-bottom:16px; background:rgba(128,128,128,0.1); padding:6px; border-radius:10px; overflow-x:auto;">
+              <button id="tab-market" style="flex:1; padding:10px 16px; border-radius:6px; border:none; background:var(--team-menu-fg, #111); color:var(--team-menu-bg, #eee); font-weight:bold; cursor:pointer; opacity:1; white-space:nowrap; transition:all 0.2s;">Mercado</button>
+              <button id="tab-free" style="flex:1; padding:10px 16px; border-radius:6px; border:none; background:transparent; color:inherit; font-weight:bold; cursor:pointer; opacity:0.6; white-space:nowrap; transition:all 0.2s;">Jogadores Livres</button>
+              <button id="tab-movements" style="flex:1; padding:10px 16px; border-radius:6px; border:none; background:transparent; color:inherit; font-weight:bold; cursor:pointer; opacity:0.6; white-space:nowrap; transition:all 0.2s;">Movimentos</button>
+              <button id="tab-my" style="flex:1; padding:10px 16px; border-radius:6px; border:none; background:transparent; color:inherit; font-weight:bold; cursor:pointer; opacity:0.6; white-space:nowrap; transition:all 0.2s;">Meus</button>
+            </div>`;
     html += `<div id="trans-tab-content" style="display:flex;flex-direction:column;gap:8px;">`;
 
     html += `<div data-tab="market" class="trans-tab" style="display:block;">`;
@@ -53,25 +58,23 @@ export function renderTransfers() {
           }
           const btnTitle = isOwn ? 'Não é possível comprar jogadores do seu próprio clube' : '';
           const btnStyle = isOwn
-            ? 'padding:6px 8px;border-radius:6px;border:none;background:#9e9e9e;color:#fff;cursor:not-allowed;opacity:0.9;'
-            : 'padding:6px 8px;border-radius:6px;border:none;background:#2b7;color:#fff;';
+            ? 'padding:10px 16px;border-radius:6px;border:none;background:rgba(128,128,128,0.5);color:inherit;cursor:not-allowed;opacity:0.7;font-weight:bold;'
+            : 'padding:10px 16px;border-radius:6px;border:none;background:#4CAF50;color:#fff;font-weight:bold;cursor:pointer;transition:transform 0.2s;';
           const disabledAttr = isOwn ? 'disabled' : '';
-          html += `<div style="display:flex;align-items:center;justify-content:space-between;padding:6px 8px;background:rgba(0,0,0,0.04);border-radius:6px;">
-                    <div style="display:flex;gap:10px;align-items:center;"><div style="width:36px;font-weight:700;text-align:center">${pos}</div><div style="font-weight:600">${name}</div><div style="opacity:0.8;margin-left:8px">${club}</div></div>
-                    <div style="display:flex;gap:8px;align-items:center;"><div style="font-weight:700;color:#FFEB3B">${formatMoney(price)}</div><button data-player-name="${name}" class="buy-market-btn" title="${btnTitle}" ${disabledAttr} style="${btnStyle}">${isOwn ? 'Não disponível' : 'Comprar'}</button></div>`;
-          try {
-            const L =
-              (window.FootLab && window.FootLab.Logger) ||
-              (window.Elifoot && window.Elifoot.Logger) ||
-              console;
-            L.warn && L.warn('attach transfer handlers failed', e);
-          } catch (e) {
-            const L = (window.FootLab && window.FootLab.Logger) || console;
-            L.warn && L.warn('attach transfer handlers failed', e);
-          }
+          html += `<div style="display:flex; align-items:center; justify-content:space-between; padding:12px 16px; background:rgba(128,128,128,0.1); border-radius:8px; border:1px solid rgba(128,128,128,0.1); margin-bottom:8px; flex-wrap:wrap; gap:12px;">
+                    <div style="display:flex; gap:12px; align-items:center; flex:1; min-width:200px;">
+                      <div style="width:40px; font-weight:700; text-align:center; opacity:0.8; background:rgba(128,128,128,0.2); padding:4px 0; border-radius:4px;">${pos}</div>
+                      <div style="font-weight:700; font-size:1.1em; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:200px;" title="${name}">${name}</div>
+                      <div style="opacity:0.7; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:180px;" title="${club}">${club}</div>
+                    </div>
+                    <div style="display:flex; gap:16px; align-items:center; justify-content:flex-end;">
+                      <div style="font-weight:800; font-size:1.15em; opacity:0.95;">${formatMoney(price)}</div>
+                      <button data-player-name="${name}" class="buy-market-btn" title="${btnTitle}" ${disabledAttr} style="${btnStyle}">${isOwn ? 'Não disponível' : 'Comprar'}</button>
+                    </div>
+                  </div>`;
         } catch (e) {
           const name = (p && (p.name || p.playerName)) || '—';
-          html += `<div style="padding:6px 8px;background:rgba(0,0,0,0.02);border-radius:6px;"><div style="font-weight:600">${name}</div></div>`;
+          html += `<div style="padding:12px;background:rgba(128,128,128,0.1);border-radius:6px;margin-bottom:8px;"><div style="font-weight:600">${name}</div></div>`;
         }
       });
     } else {
@@ -91,9 +94,17 @@ export function renderTransfers() {
           '—';
         const minContract = p.minContract || p.minMonthly || p.minSalary || 0;
         const skill = typeof p.skill === 'number' ? p.skill : p._skill || 0;
-        html += `<div style="display:flex;align-items:center;justify-content:space-between;padding:6px 8px;background:rgba(0,0,0,0.03);border-radius:6px;">
-                    <div style="display:flex;gap:10px;align-items:center;"><div style="width:36px;font-weight:700;text-align:center">${pos}</div><div style="font-weight:600">${name}</div><div style="opacity:0.8;margin-left:8px">${prev}</div><div style="opacity:0.75;margin-left:8px;font-size:0.9em;color:#ddd">Skill: ${skill}</div></div>
-                    <div style="display:flex;gap:8px;align-items:center;"><div style="font-weight:700;color:#8BC34A">Mín: ${formatMoney(minContract)}</div><button data-free-idx="${idx}" class="buy-free-btn" style="padding:6px 8px;border-radius:6px;border:none;background:#2b7;color:#fff;">Comprar</button></div>
+        html += `<div style="display:flex; align-items:center; justify-content:space-between; padding:12px 16px; background:rgba(128,128,128,0.1); border-radius:8px; border:1px solid rgba(128,128,128,0.1); margin-bottom:8px; flex-wrap:wrap; gap:12px;">
+                  <div style="display:flex; gap:12px; align-items:center; flex:1; min-width:250px;">
+                    <div style="width:40px; font-weight:700; text-align:center; opacity:0.8; background:rgba(128,128,128,0.2); padding:4px 0; border-radius:4px;">${pos}</div>
+                    <div style="font-weight:700; font-size:1.1em; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:200px;" title="${name}">${name}</div>
+                    <div style="opacity:0.7; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:180px;" title="${prev}">${prev}</div>
+                    <div style="background:rgba(128,128,128,0.2); padding:4px 8px; border-radius:4px; font-size:0.9em; font-weight:bold;">Skill <span style="color:var(--team-menu-fg, inherit); opacity: 0.9;">${skill}</span></div>
+                  </div>
+                  <div style="display:flex; gap:16px; align-items:center; justify-content:flex-end;">
+                    <div style="font-weight:800; font-size:1.1em; color:#4CAF50; text-shadow:0 0 1px rgba(255,255,255,0.2);">Mín: ${formatMoney(minContract)}</div>
+                    <button data-free-idx="${idx}" class="buy-free-btn" style="padding:10px 16px; border-radius:6px; border:none; background:#4CAF50; color:#fff; cursor:pointer; font-weight:bold; transition:transform 0.2s;">Assinar</button>
+                  </div>
                 </div>`;
       });
     } else {
@@ -117,12 +128,20 @@ export function renderTransfers() {
           const fee = Number(h.fee || 0);
           const salary = Number(h.salary || 0);
           const when = h.time ? new Date(Number(h.time)).toLocaleString() : '';
-          html += `<div style="display:flex;align-items:center;justify-content:space-between;padding:6px 8px;background:rgba(0,0,0,0.03);border-radius:6px;margin-bottom:6px;">
-                      <div style="display:flex;flex-direction:column;">
-                        <div style="font-weight:700">${player}</div>
-                        <div style="opacity:0.8;font-size:0.9em">${from} → ${to} · ${when}</div>
+          html += `<div style="display:flex; align-items:center; justify-content:space-between; padding:12px 16px; background:rgba(128,128,128,0.1); border-radius:8px; border:1px solid rgba(128,128,128,0.1); margin-bottom:8px; flex-wrap:wrap; gap:12px;">
+                      <div style="display:flex; flex-direction:column; gap:6px; flex:1; min-width:200px;">
+                        <div style="font-weight:700; font-size:1.1em; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="${player}">${player}</div>
+                        <div style="opacity:0.8; font-size:0.9em; font-weight:600; display:flex; gap:8px; flex-wrap:wrap;">
+                          <span><strong style="opacity:0.7;">De:</strong> ${from}</span> 
+                          <span>➔</span> 
+                          <span><strong style="opacity:0.7;">Para:</strong> ${to}</span>
+                          <span style="opacity:0.6;">· ${when}</span>
+                        </div>
                       </div>
-                      <div style="text-align:right;font-size:0.95em">${fee ? formatMoney(fee) + '<br/>' : ''}${salary ? formatMoney(salary) + '/m' : ''}</div>
+                      <div style="text-align:right; font-size:1.05em; font-weight:bold; opacity:0.95; display:flex; flex-direction:column; gap:4px;">
+                        <span style="font-size: 1.1em;">${fee ? formatMoney(fee) : 'Custo Zero'}</span>
+                        <span style="font-size:0.85em; opacity:0.8; color:var(--team-menu-fg, inherit);">${salary ? formatMoney(salary) + ' /mês' : ''}</span>
+                      </div>
                     </div>`;
         });
       }
@@ -160,12 +179,20 @@ export function renderTransfers() {
           const fee = Number(h.fee || 0);
           const salary = Number(h.salary || 0);
           const when = h.time ? new Date(Number(h.time)).toLocaleString() : '';
-          html += `<div style="display:flex;align-items:center;justify-content:space-between;padding:6px 8px;background:rgba(0,0,0,0.03);border-radius:6px;margin-bottom:6px;">
-                      <div style="display:flex;flex-direction:column;">
-                        <div style="font-weight:700">${player}</div>
-                        <div style="opacity:0.8;font-size:0.9em">${from} → ${to} · ${when}</div>
+          html += `<div style="display:flex; align-items:center; justify-content:space-between; padding:12px 16px; background:rgba(128,128,128,0.1); border-radius:8px; border:1px solid rgba(128,128,128,0.1); margin-bottom:8px; flex-wrap:wrap; gap:12px;">
+                      <div style="display:flex; flex-direction:column; gap:6px; flex:1; min-width:200px;">
+                        <div style="font-weight:700; font-size:1.1em; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="${player}">${player}</div>
+                        <div style="opacity:0.8; font-size:0.9em; font-weight:600; display:flex; gap:8px; flex-wrap:wrap;">
+                          <span><strong style="opacity:0.7;">De:</strong> ${from}</span> 
+                          <span>➔</span> 
+                          <span><strong style="opacity:0.7;">Para:</strong> ${to}</span>
+                          <span style="opacity:0.6;">· ${when}</span>
+                        </div>
                       </div>
-                      <div style="text-align:right;font-size:0.95em">${fee ? formatMoney(fee) + '<br/>' : ''}${salary ? formatMoney(salary) + '/m' : ''}</div>
+                      <div style="text-align:right; font-size:1.05em; font-weight:bold; opacity:0.95; display:flex; flex-direction:column; gap:4px;">
+                        <span style="font-size: 1.1em;">${fee ? formatMoney(fee) : 'Custo Zero'}</span>
+                        <span style="font-size:0.85em; opacity:0.8; color:var(--team-menu-fg, inherit);">${salary ? formatMoney(salary) + ' /mês' : ''}</span>
+                      </div>
                     </div>`;
         });
       }
@@ -187,16 +214,17 @@ export function renderTransfers() {
           tabs.forEach((t) => {
             t.style.display = t.getAttribute('data-tab') === name ? 'block' : 'none';
           });
-          if (name === 'market') {
-            tabMarket.style.background = '#eee';
-            tabMarket.style.color = '#111';
-            tabFree.style.background = 'transparent';
-            tabFree.style.color = '#aaa';
-          } else {
-            tabFree.style.background = '#eee';
-            tabFree.style.color = '#111';
-            tabMarket.style.background = 'transparent';
-            tabMarket.style.color = '#aaa';
+          const allTabBtns = [tabMarket, tabFree, tabMov, tabMy].filter(Boolean);
+          allTabBtns.forEach(b => {
+             b.style.background = 'transparent';
+             b.style.color = 'inherit';
+             b.style.opacity = '0.6';
+          });
+          const activeBtn = name === 'market' ? tabMarket : name === 'free' ? tabFree : name === 'movements' ? tabMov : tabMy;
+          if (activeBtn) {
+             activeBtn.style.background = 'var(--team-menu-fg, #111)';
+             activeBtn.style.color = 'var(--team-menu-bg, #eee)';
+             activeBtn.style.opacity = '1';
           }
         };
         if (tabMarket) tabMarket.addEventListener('click', () => showTab('market'));
@@ -277,6 +305,12 @@ export function showBuyFreePlayerMenu(pl, rawFreeAgents, idxInFiltered) {
     const box = document.createElement('div');
     // Use the standard subs-panel + transfer root classes so sizing and colors match halftime panel
     box.className = 'subs-panel transfer-overlay-root';
+    box.style.background = '#2e2e2e';
+    box.style.color = '#ffffff';
+    box.style.padding = '30px';
+    box.style.borderRadius = '12px';
+    box.style.boxShadow = '0 15px 40px rgba(0,0,0,0.8)';
+    box.style.border = '1px solid rgba(255,255,255,0.1)';
     const skill = pl.skill || 0;
     const minC = Math.max(0, Number(pl.minContract || pl.minMonthly || pl.minSalary || 0));
     const prev =
@@ -285,16 +319,17 @@ export function showBuyFreePlayerMenu(pl, rawFreeAgents, idxInFiltered) {
       pl.clubName ||
       '—';
     const html = `
-          <h3 class="transfer-title">Assinar jogador livre</h3>
-          <div style="margin-top:8px;font-weight:700;color:var(--hub-fg, #111)">${pl.name} <span style="font-weight:500;opacity:0.85">(${pl.position || ''})</span></div>
-          <div style="margin-top:8px;color:var(--hub-fg, #333)">Skill: ${skill} · Clube anterior: ${prev} · Salário mínimo: ${formatMoney(minC)}</div>
-          <div style="margin-top:12px;display:flex;gap:8px;align-items:center;">
-            <label style="min-width:120px;color:var(--hub-fg, #111)">Salário mensal</label>
-            <input id="buyFreeSalaryInput" type="number" min="${minC}" value="${minC || Math.max(500, Number(pl.salary || 500))}" style="width:200px;padding:8px;border-radius:8px;border:1px solid rgba(0,0,0,0.12);background:rgba(255,255,255,0.9);color:#111" />
+          <h3 style="margin-top:0; color:#4CAF50; font-size:1.5em; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:12px;">Assinar Jogador Livre</h3>
+          <div style="margin-top:16px;font-weight:700;font-size:1.2em;">${pl.name} <span style="font-weight:500;opacity:0.85">(${pl.position || ''})</span></div>
+          <div style="margin-top:8px;opacity:0.8;font-size:1em;">Skill: ${skill} · Clube anterior: ${prev}</div>
+          <div style="margin-top:8px;font-size:1em;">Salário Mínimo: <strong style="color:#8BC34A">${formatMoney(minC)}</strong></div>
+          <div style="margin-top:24px;display:flex;gap:12px;align-items:center;background:rgba(0,0,0,0.2);padding:16px;border-radius:8px;">
+            <label style="min-width:120px;font-weight:bold;opacity:0.9;">Salário a Propor:</label>
+            <input id="buyFreeSalaryInput" type="number" min="${minC}" value="${minC || Math.max(500, Number(pl.salary || 500))}" style="width:160px;padding:10px;border-radius:6px;border:1px solid #555;background:#111;color:#fff;font-size:1.1em;font-weight:bold;" />
           </div>
-          <div style="margin-top:16px;display:flex;justify-content:flex-end;gap:10px;">
-            <button id="buyFreeCancelBtn" style="padding:10px 14px;border-radius:10px;border:none;background:#efefef;color:#111">Cancelar</button>
-            <button id="buyFreeConfirmBtn" style="padding:10px 14px;border-radius:10px;border:none;background:#2b7;color:#fff">Assinar (1 ano)</button>
+          <div style="margin-top:24px;display:flex;justify-content:flex-end;gap:12px;">
+            <button id="buyFreeCancelBtn" style="padding:12px 20px;border-radius:6px;border:none;background:#555;color:#fff;font-weight:bold;cursor:pointer;">Cancelar</button>
+            <button id="buyFreeConfirmBtn" style="padding:12px 20px;border-radius:6px;border:none;background:#4CAF50;color:#fff;font-weight:bold;cursor:pointer;">Assinar (1 ano)</button>
           </div>`;
     box.innerHTML = html;
     overlay.appendChild(box);

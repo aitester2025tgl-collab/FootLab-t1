@@ -6,6 +6,7 @@ import { renderTransfers, showBuyFreePlayerMenu } from './transfers.mjs';
 import { renderFinance } from './finance.mjs';
 import { initTacticPanel } from './tactics.mjs';
 import { renderHistory } from './history.mjs';
+import { renderStats } from './stats.mjs';
 
 const FootLab = window.FootLab || window.Elifoot || window;
 
@@ -48,6 +49,18 @@ export function renderHubContent(menuId) {
     window.updateNextOpponentDisplay();
   }
 
+  // Atualizar visualmente o botão ativo no menu
+  const menuButtons = document.querySelectorAll('#hub-menu .hub-menu-btn');
+  menuButtons.forEach((b) => {
+    // Limpar estilos inline legados que conflitam com o CSS transparente (Glassmorphism)
+    b.style.background = '';
+    b.style.color = '';
+    b.style.boxShadow = '';
+    
+    if (b.id === menuId) b.classList.add('active');
+    else b.classList.remove('active');
+  });
+
   // delegate to module renderers, fallback to legacy global functions
   switch (menuId) {
     case 'menu-team':
@@ -74,15 +87,11 @@ export function renderHubContent(menuId) {
       break;
     case 'menu-next-match':
       try {
-        const html =
-          window.Hub &&
-          window.Hub.buildNextOpponentHtml &&
-          typeof window.Hub.buildNextOpponentHtml === 'function'
-            ? window.Hub.buildNextOpponentHtml()
-            : typeof buildNextOpponentHtml === 'function'
-              ? buildNextOpponentHtml()
-              : '<h2>Próximo Jogo</h2>';
-        content.innerHTML = `<h2>Próximo Jogo</h2><div id="nextMatchDetails">${html}</div>`;
+        if (typeof window.renderNextMatchMenu === 'function') {
+          window.renderNextMatchMenu();
+        } else {
+          content.innerHTML = '<h2>Próximo Jogo</h2><div id="nextMatchDetails">—</div>';
+        }
       } catch (e) {
         content.innerHTML = '<h2>Próximo Jogo</h2><div id="nextMatchDetails">—</div>';
       }
@@ -107,6 +116,13 @@ export function renderHubContent(menuId) {
         renderHistory();
       } catch (e) {
         if (typeof window.renderHistory === 'function') window.renderHistory();
+      }
+      break;
+    case 'menu-stats':
+      try {
+        renderStats();
+      } catch (e) {
+        if (typeof window.renderStats === 'function') window.renderStats();
       }
       break;
     case 'menu-load':
@@ -354,33 +370,7 @@ export function initHubUI(playerClub) {
   menuButtons.forEach((btn) => {
     btn.addEventListener('click', (e) => {
       const menuId = e.target.id;
-      menuButtons.forEach((b) => {
-        b.classList.remove('active');
-        b.style.background = 'rgba(255,255,255,0.07)';
-        b.style.color = getReadableTextColor(
-          (E.playerClub && E.playerClub.team && E.playerClub.team.bgColor) || '#2e2e2e',
-          (E.playerClub && E.playerClub.team && E.playerClub.team.color) || '#008000'
-        );
-        b.style.boxShadow = '0 2px 8px rgba(0,0,0,0.07)';
-      });
-      e.target.classList.add('active');
-      e.target.style.background =
-        'linear-gradient(90deg, rgba(255,255,255,0.13) 0%, rgba(0,0,0,0.13) 100%)';
-      e.target.style.color = getReadableTextColor(
-        (E.playerClub && E.playerClub.team && E.playerClub.team.bgColor) || '#2e2e2e',
-        (E.playerClub && E.playerClub.team && E.playerClub.team.color) || '#008000'
-      );
-      e.target.style.boxShadow = '0 6px 18px rgba(0,0,0,0.16)';
-      if (menuId === 'menu-team') {
-        // prefer pending releases popup before rendering team
-        if (E && E.Offers && typeof E.Offers.showPendingReleasesPopup === 'function') {
-          E.Offers.showPendingReleasesPopup(() => renderHubContent(menuId));
-        } else {
-          renderHubContent(menuId);
-        }
-      } else {
-        renderHubContent(menuId);
-      }
+      renderHubContent(menuId);
     });
   });
 
@@ -399,26 +389,13 @@ export function initHubUI(playerClub) {
       } catch (_) {}
       const simFn = (E && E.simulateDay) || window.simulateDay;
       if (!simFn || typeof simFn !== 'function') return;
-      if (E && E.Offers && typeof E.Offers.showPendingReleasesPopup === 'function') {
-        E.Offers.showPendingReleasesPopup(() => {
-          try {
-            simFn();
-          } catch (err) {
-            try {
-              const L = (E && E.Logger) || console;
-              L.warn && L.warn('simulateDay failed', err);
-            } catch (_) {}
-          }
-        });
-      } else {
+      try {
+        simFn();
+      } catch (err) {
         try {
-          simFn();
-        } catch (err) {
-          try {
-            const L = (E && E.Logger) || console;
-            L.warn && L.warn('simulateDay failed', err);
-          } catch (_) {}
-        }
+          const L = (E && E.Logger) || console;
+          L.warn && L.warn('simulateDay failed', err);
+        } catch (_) {}
       }
       // clear the transient user flag shortly after starting so subsequent
       // programmatic calls remain blocked unless re-authorized by user action.
