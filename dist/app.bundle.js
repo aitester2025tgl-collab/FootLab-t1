@@ -2277,19 +2277,35 @@
     }
     function showHalfTimeSubsOverlay3(club, match, cb) {
       const overlay = document.getElementById("subs-overlay");
-      if (overlay && club && club.team) {
-        const bg = club.team.bgColor || "#2e2e2e";
-        const fg = club.team.color || "#ffffff";
-        const rgb = hexToRgb2(bg);
-        const lum = rgb ? luminance2(rgb) : 0;
-        const panelBgAdjust = lum < 0.35 ? 20 : -25;
-        const panelBg = adjustColor(bg, panelBgAdjust);
-        overlay.style.setProperty("--subs-overlay-bg", `rgba(${rgb ? rgb.join(",") : "0,0,0"}, 0.8)`, "important");
-        overlay.style.setProperty("--subs-panel-bg", panelBg, "important");
-        overlay.style.setProperty("--subs-fg", fg, "important");
+      let bg = "#2e2e2e";
+      let fg = "#ffffff";
+      if (club) {
+        bg = club.bgColor || club.team && club.team.bgColor || "#2e2e2e";
+        fg = club.color || club.team && club.team.color || "#ffffff";
       }
-      if (window.Overlays && typeof window.Overlays.showHalfTimeSubsOverlay === "function")
-        return window.Overlays.showHalfTimeSubsOverlay(club, match, cb);
+      if (overlay) {
+        overlay.style.setProperty("--subs-overlay-bg", "rgba(0, 0, 0, 0.9)", "important");
+        overlay.style.setProperty("--subs-panel-bg", bg, "important");
+        overlay.style.setProperty("--subs-fg", fg, "important");
+        const panel = overlay.querySelector(".subs-panel");
+        if (panel) {
+          panel.style.backgroundColor = bg;
+          panel.style.color = fg;
+          panel.style.opacity = "1";
+        }
+      }
+      if (window.Overlays && typeof window.Overlays.showHalfTimeSubsOverlay === "function") {
+        const result = window.Overlays.showHalfTimeSubsOverlay(club, match, cb);
+        if (overlay) {
+          const panel = overlay.querySelector(".subs-panel");
+          if (panel) {
+            panel.style.setProperty("background-color", bg, "important");
+            panel.style.setProperty("color", fg, "important");
+            panel.style.setProperty("opacity", "1", "important");
+          }
+        }
+        return result;
+      }
       if (!overlay) {
         if (typeof cb === "function") cb();
         return;
@@ -2310,7 +2326,7 @@
         overlay.style.setProperty("align-items", "center", "important");
         overlay.style.setProperty(
           "background",
-          "var(--subs-overlay-bg, rgba(0,0,0,0.66))",
+          "var(--subs-overlay-bg, rgba(0, 0, 0, 0.9))",
           "important"
         );
         if (!overlay.querySelector(".resume-btn")) {
@@ -2345,13 +2361,81 @@
         return window.Hub.buildNextOpponentHtml();
       return "<div>Sem informa\xE7\xE3o.</div>";
     }
+    function buildTableHtml(divisionIndex) {
+      const divisionNum = divisionIndex + 1;
+      const clubs = window.allDivisions && window.allDivisions[divisionIndex] ? window.allDivisions[divisionIndex].slice() : [];
+      clubs.sort((a, b) => {
+        const ptsA = a.points || 0;
+        const ptsB = b.points || 0;
+        if (ptsA !== ptsB) return ptsB - ptsA;
+        const diffA = (a.goalsFor || 0) - (a.goalsAgainst || 0);
+        const diffB = (b.goalsFor || 0) - (b.goalsAgainst || 0);
+        if (diffA !== diffB) return diffB - diffA;
+        return (b.goalsFor || 0) - (a.goalsFor || 0);
+      });
+      let html = `<div class="hub-box"><h2>Classifica\xE7\xE3o - ${divisionNum}\xAA Divis\xE3o</h2>`;
+      html += `<table>
+      <thead>
+        <tr>
+          <th>Pos</th><th>Equipa</th><th>Pts</th><th>J</th><th>V</th><th>E</th><th>D</th><th>GM</th><th>GS</th><th>DG</th>
+        </tr>
+      </thead>
+      <tbody>`;
+      clubs.forEach((c, idx) => {
+        const isPlayer = window.playerClub && c.team && window.playerClub.team && c.team.name === window.playerClub.team.name;
+        const highlightStyle = isPlayer ? 'style="background: rgba(255,255,255,0.15); font-weight: 800; color: #fff;"' : "";
+        const diff = (c.goalsFor || 0) - (c.goalsAgainst || 0);
+        const bg = c.team && c.team.bgColor || "#333";
+        const fg = c.team && c.team.color || "#fff";
+        html += `<tr ${highlightStyle}>
+        <td>${idx + 1}</td>
+        <td style="display:flex; align-items:center; gap:8px;">
+          <div style="width:16px; height:16px; border-radius:3px; background:${bg}; border:1px solid ${fg};"></div>
+          ${c.team ? c.team.name : "Desconhecida"}
+        </td>
+        <td style="color:#ffeb3b; font-weight:800;">${c.points || 0}</td>
+        <td>${c.gamesPlayed || 0}</td>
+        <td>${c.wins || 0}</td>
+        <td>${c.draws || 0}</td>
+        <td>${c.losses || 0}</td>
+        <td>${c.goalsFor || 0}</td>
+        <td>${c.goalsAgainst || 0}</td>
+        <td>${diff}</td>
+      </tr>`;
+      });
+      html += `</tbody></table></div>`;
+      return html;
+    }
     function renderAllDivisionsTables() {
-      if (window.Hub && typeof window.Hub.renderAllDivisionsTables === "function")
-        return window.Hub.renderAllDivisionsTables();
+      let html = "";
+      try {
+        if (window.Hub && typeof window.Hub.renderAllDivisionsTables === "function") html = window.Hub.renderAllDivisionsTables();
+      } catch (e2) {
+        console.warn("Falha no Hub.renderAllDivisionsTables, a usar fallback.");
+      }
+      if (!html || typeof html !== "string" || html.trim() === "") {
+        html = '<div style="display:flex; flex-direction:column; gap:20px;">';
+        for (let i = 0; i < 4; i++) html += buildTableHtml(i);
+        html += "</div>";
+      }
+      const container = document.getElementById("hub-main-content");
+      if (container) container.innerHTML = html;
+      return html;
     }
     function renderLeagueTable() {
-      if (window.Hub && typeof window.Hub.renderLeagueTable === "function")
-        return window.Hub.renderLeagueTable();
+      let html = "";
+      try {
+        if (window.Hub && typeof window.Hub.renderLeagueTable === "function") html = window.Hub.renderLeagueTable();
+      } catch (e2) {
+        console.warn("Falha no Hub.renderLeagueTable, a usar fallback.");
+      }
+      if (!html || typeof html !== "string" || html.trim() === "") {
+        const divIndex = window.playerClub ? window.playerClub.division - 1 : 3;
+        html = buildTableHtml(divIndex);
+      }
+      const container = document.getElementById("hub-main-content");
+      if (container) container.innerHTML = html;
+      return html;
     }
     function initTacticPanel2() {
       if (window.Tactics && typeof window.Tactics.initTacticPanel === "function")
@@ -2371,74 +2455,17 @@
       screens.forEach((id) => {
         const el = document.getElementById(id);
         if (el) {
-          el.style.setProperty("display", "none", "important");
-          el.style.opacity = "0";
+          el.style.display = "none";
+          el.style.opacity = "1";
         }
       });
       const hubScreen = document.getElementById("screen-hub");
       if (hubScreen) {
-        hubScreen.style.setProperty("display", "flex", "important");
-        hubScreen.style.setProperty("flex-direction", "row", "important");
-        hubScreen.style.opacity = "1";
         let styleEl = document.getElementById("hub-layout-adjustment");
-        if (!styleEl) {
-          styleEl = document.createElement("style");
-          styleEl.id = "hub-layout-adjustment";
-          document.head.appendChild(styleEl);
-        }
-        styleEl.textContent = `
-        #screen-hub { 
-          display: flex !important; 
-          flex-direction: row !important; 
-          height: 100vh !important; 
-          overflow: hidden !important; 
-          width: 100vw !important; 
-          margin: 0 !important; 
-          background: #1a1a1a;
-        }
-        
-        /* \xC1rea Central (Jogadores) - Deve ocupar todo o espa\xE7o restante */
-        #hub-main-content { 
-          flex: 1 !important; 
-          min-width: 0 !important; 
-          overflow-y: auto !important; 
-          padding: 20px !important; 
-        }
-        
-        /* Barras Laterais - For\xE7ar largura fixa e verticalidade */
-        .hub-sidebar, #tactics-panel, .tactics-column, .hub-sidebar-left, .hub-sidebar-right { 
-          display: flex !important; 
-          flex-direction: column !important; 
-          gap: 10px !important; 
-          padding: 10px !important; 
-          background: rgba(0,0,0,0.5) !important;
-          overflow-y: auto !important;
-          box-sizing: border-box !important;
-        }
-        
-        /* Sidebar Esquerda (Treinador, Menu) */
-        .hub-sidebar { flex: 0 0 170px !important; width: 170px !important; border-right: 1px solid rgba(255,255,255,0.1) !important; }
-        
-        /* Sidebar Direita (T\xE1ticas, Finan\xE7as, Advers\xE1rio) */
-        #tactics-panel, .tactics-column { flex: 0 0 210px !important; width: 210px !important; border-left: 1px solid rgba(255,255,255,0.1) !important; }
-
-        /* FOR\xC7AR VERTICALIDADE: Bloquear qualquer tentativa de colocar elementos lado-a-lado nas laterais */
-        .hub-sidebar *, #tactics-panel *, .tactics-column * { 
-          display: flex !important;
-          flex-direction: column !important;
-          width: 100% !important; 
-          float: none !important;
-          box-sizing: border-box !important;
-        }
-
-        /* Bot\xF5es individuais dentro das laterais */
-        .hub-sidebar button, .tactics-column button {
-          margin-bottom: 5px !important;
-          text-align: left !important;
-          padding: 8px !important;
-          white-space: normal !important; /* Permitir que o texto do bot\xE3o quebre linha se for longo */
-        }
-      `;
+        if (styleEl) styleEl.remove();
+        hubScreen.style.display = "flex";
+        hubScreen.style.flexDirection = "column";
+        hubScreen.style.opacity = "1";
       }
       if (typeof initHubUI2 === "function") {
         try {
@@ -2688,11 +2715,11 @@
       }
       function proceedToMatch() {
         try {
-          document.getElementById("screen-hub").style.display = "none";
+          document.getElementById("screen-hub").style.setProperty("display", "none", "important");
         } catch (e2) {
         }
         try {
-          document.getElementById("screen-match").style.display = "flex";
+          document.getElementById("screen-match").style.setProperty("display", "flex", "important");
         } catch (e2) {
         }
         try {
@@ -2832,8 +2859,8 @@
       } catch (e2) {
       }
       try {
-        document.getElementById("screen-match").style.display = "none";
-        document.getElementById("screen-hub").style.display = "flex";
+        document.getElementById("screen-match").style.setProperty("display", "none", "important");
+        document.getElementById("screen-hub").style.setProperty("display", "flex", "important");
         if (typeof renderHubContent === "function") renderHubContent("menu-standings");
       } catch (e2) {
         try {
@@ -2937,8 +2964,8 @@
       } catch (e2) {
       }
       try {
-        document.getElementById("screen-match").style.display = "none";
-        document.getElementById("screen-hub").style.display = "flex";
+        document.getElementById("screen-match").style.setProperty("display", "none", "important");
+        document.getElementById("screen-hub").style.setProperty("display", "flex", "important");
       } catch (e2) {
       }
       try {
@@ -5237,6 +5264,7 @@ Probabilidade estimada: ${(prob * 100).toFixed(1)}%`
     window.playerClub = playerClub;
     window.allDivisions = allDivisions;
     window.allClubs = allClubs;
+    window.currentJornada = 1;
     if (typeof generateRounds === "function") {
       const firstRoundMatches = [];
       allDivisions.forEach((div) => {

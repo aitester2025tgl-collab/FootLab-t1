@@ -194,13 +194,90 @@
       return window.Hub.buildNextOpponentHtml();
     return '<div>Sem informação.</div>';
   }
-  function renderAllDivisionsTables() {
-    if (window.Hub && typeof window.Hub.renderAllDivisionsTables === 'function')
-      return window.Hub.renderAllDivisionsTables();
+
+  // --- Fallbacks Robustos para gerar Tabelas de Classificação ---
+  function buildTableHtml(divisionIndex) {
+    const divisionNum = divisionIndex + 1;
+    const clubs = (window.allDivisions && window.allDivisions[divisionIndex]) 
+      ? window.allDivisions[divisionIndex].slice() : [];
+
+    // Ordenação correta: Pontos > Diferença de Golos > Golos Marcados
+    clubs.sort((a, b) => {
+      const ptsA = a.points || 0;
+      const ptsB = b.points || 0;
+      if (ptsA !== ptsB) return ptsB - ptsA;
+      const diffA = (a.goalsFor || 0) - (a.goalsAgainst || 0);
+      const diffB = (b.goalsFor || 0) - (b.goalsAgainst || 0);
+      if (diffA !== diffB) return diffB - diffA;
+      return (b.goalsFor || 0) - (a.goalsFor || 0);
+    });
+
+    let html = `<div class="hub-box"><h2>Classificação - ${divisionNum}ª Divisão</h2>`;
+    html += `<table>
+      <thead>
+        <tr>
+          <th>Pos</th><th>Equipa</th><th>Pts</th><th>J</th><th>V</th><th>E</th><th>D</th><th>GM</th><th>GS</th><th>DG</th>
+        </tr>
+      </thead>
+      <tbody>`;
+
+    clubs.forEach((c, idx) => {
+      const isPlayer = window.playerClub && c.team && window.playerClub.team && c.team.name === window.playerClub.team.name;
+      // Destaca a equipa do jogador
+      const highlightStyle = isPlayer ? 'style="background: rgba(255,255,255,0.15); font-weight: 800; color: #fff;"' : '';
+      const diff = (c.goalsFor || 0) - (c.goalsAgainst || 0);
+      const bg = (c.team && c.team.bgColor) || '#333';
+      const fg = (c.team && c.team.color) || '#fff';
+
+      html += `<tr ${highlightStyle}>
+        <td>${idx + 1}</td>
+        <td style="display:flex; align-items:center; gap:8px;">
+          <div style="width:16px; height:16px; border-radius:3px; background:${bg}; border:1px solid ${fg};"></div>
+          ${c.team ? c.team.name : 'Desconhecida'}
+        </td>
+        <td style="color:#ffeb3b; font-weight:800;">${c.points || 0}</td>
+        <td>${c.gamesPlayed || 0}</td>
+        <td>${c.wins || 0}</td>
+        <td>${c.draws || 0}</td>
+        <td>${c.losses || 0}</td>
+        <td>${c.goalsFor || 0}</td>
+        <td>${c.goalsAgainst || 0}</td>
+        <td>${diff}</td>
+      </tr>`;
+    });
+    html += `</tbody></table></div>`;
+    return html;
   }
+
+  function renderAllDivisionsTables() {
+    let html = '';
+    try {
+      if (window.Hub && typeof window.Hub.renderAllDivisionsTables === 'function') html = window.Hub.renderAllDivisionsTables();
+    } catch (e) { console.warn('Falha no Hub.renderAllDivisionsTables, a usar fallback.'); }
+
+    if (!html || typeof html !== 'string' || html.trim() === '') {
+      html = '<div style="display:flex; flex-direction:column; gap:20px;">';
+      for (let i = 0; i < 4; i++) html += buildTableHtml(i);
+      html += '</div>';
+    }
+    const container = document.getElementById('hub-main-content');
+    if (container) container.innerHTML = html;
+    return html;
+  }
+
   function renderLeagueTable() {
-    if (window.Hub && typeof window.Hub.renderLeagueTable === 'function')
-      return window.Hub.renderLeagueTable();
+    let html = '';
+    try {
+      if (window.Hub && typeof window.Hub.renderLeagueTable === 'function') html = window.Hub.renderLeagueTable();
+    } catch (e) { console.warn('Falha no Hub.renderLeagueTable, a usar fallback.'); }
+
+    if (!html || typeof html !== 'string' || html.trim() === '') {
+      const divIndex = window.playerClub ? (window.playerClub.division - 1) : 3;
+      html = buildTableHtml(divIndex);
+    }
+    const container = document.getElementById('hub-main-content');
+    if (container) container.innerHTML = html;
+    return html;
   }
 
   function initTacticPanel() {

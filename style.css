@@ -166,12 +166,12 @@ html {
 #screen-hub {
   background-color: var(--hub-bg, #2e2e2e);
   color: #ffffff;
-  display: flex !important;
-  flex-direction: column !important;
-  height: 100vh !important;
-  width: 100vw !important;
-  overflow: hidden !important;
-  box-sizing: border-box !important;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+  box-sizing: border-box;
 }
 
 /* Generic hub box for all side panels to ensure vertical stacking */
@@ -269,6 +269,31 @@ html {
   background: rgba(255, 255, 255, 0.1);
   color: white;
   border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Estilo para os itens da lista de Táticas */
+.tactic-item {
+  padding: 10px 12px;
+  margin-bottom: 8px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.95rem;
+  transition: all 0.2s ease;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.tactic-item:hover {
+  background: rgba(255, 255, 255, 0.1);
+  transform: translateX(4px);
+}
+.tactic-item.active {
+  background: rgba(0, 230, 118, 0.15);
+  border-color: #00e676;
+  color: #00e676;
+  font-weight: 700;
 }
 
 .hub-menu-btn:hover {
@@ -382,7 +407,6 @@ html {
 }
 
 /* Match screen should use the same hub background (not white) */
-/* Match screen should use the same hub background (not white) */
 #screen-match {
   display: none; /* toggled by app JS */
   background-color: var(--hub-bg, #2e2e2e);
@@ -390,11 +414,9 @@ html {
   box-sizing: border-box;
   padding: 12px;
   /* make match screen occupy full viewport and layout its children vertically */
-  height: 100vh !important;
-  min-height: 100vh !important;
-  display: flex !important;
-  flex-direction: column !important;
-  gap: 12px !important;
+  height: 100vh;
+  flex-direction: column;
+  gap: 12px;
 }
 
 /* The conflicting layout override block has been removed. */
@@ -505,10 +527,6 @@ html {
 	 so all four divisions are visible without page scroll. Each division
 	 gets its own box; match lines inside are sized by JS (adjustMatchBoardSizing).
 */
-.#match-board {
-  /* selector corrected below */
-}
-
 #match-board {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -706,6 +724,21 @@ html {
 .skill-fill {
   height: 100%;
   border-radius: 6px;
+  background: #888;
+  transition: width 0.3s ease, background 0.3s ease;
+}
+/* Classes dinâmicas para a barra de habilidade */
+.skill-fill.skill-low {
+  background: linear-gradient(90deg, #ff5252, #e53935);
+}
+.skill-fill.skill-medium {
+  background: linear-gradient(90deg, #ffd740, #fbc02d);
+}
+.skill-fill.skill-high {
+  background: linear-gradient(90deg, #69f0ae, #00e676);
+}
+.skill-fill.skill-elite {
+  background: linear-gradient(90deg, #18ffff, #00b0ff);
 }
 
 
@@ -773,7 +806,7 @@ html {
   display: none; /* toggled by JS */
   align-items: center;
   justify-content: center;
-  background: var(--subs-overlay-bg, rgba(0, 0, 0, 0.6));
+  background: rgba(0, 0, 0, 0.9) !important;
   z-index: 2147483646; /* below the forced z-index used in JS */
   padding: 20px;
 }
@@ -783,40 +816,40 @@ html {
   max-height: 90vh;
   overflow: visible; /* allow confirmation prompt to escape panel bounds */
   border-radius: 12px;
-  box-shadow: 0 18px 48px rgba(0, 0, 0, 0.6);
   padding: 0; /* header and body control their own padding */
   box-sizing: border-box;
-  background: linear-gradient(180deg, var(--subs-panel-bg, #23272b), rgba(0, 0, 0, 0.05));
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.7);
-  color: var(--subs-fg, #fff);
+  background: var(--subs-panel-bg, #1a1a1a) !important;
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.9) !important;
+  color: var(--subs-fg, #fff) !important;
   display: flex;
   flex-direction: column;
+  opacity: 1 !important;
 }
 
 .subs-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 16px 20px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  padding: 12px 16px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.15) !important;
   gap: 12px;
 }
 .subs-title {
-  font-size: 1.15rem;
+  font-size: 1.05rem;
   font-weight: 800;
   display: flex;
   align-items: center;
   gap: 12px;
 }
 .subs-title .team-badge {
-  width: 36px;
-  height: 36px;
+  width: 32px;
+  height: 32px;
   border-radius: 8px;
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25);
   flex-shrink: 0;
-  background-color: var(--subs-panel-bg, #333);
-  border: 2px solid var(--subs-fg, #fff);
+  background-color: var(--subs-panel-bg, #333) !important;
+  border: 2px solid var(--subs-fg, #fff) !important;
 }
 .subs-meta {
   font-size: 0.95rem;
@@ -824,24 +857,27 @@ html {
   display: flex;
   gap: 10px;
   align-items: center;
+  color: var(--subs-fg, #fff) !important;
 }
 .subs-score {
   font-weight: 900;
-  background: rgba(255, 255, 255, 0.04);
+  background: rgba(0, 0, 0, 0.2);
   padding: 6px 10px;
   border-radius: 8px;
+  color: var(--subs-fg, #fff) !important;
 }
 
 .subs-body {
   display: flex;
-  gap: 18px;
-  padding: 14px 18px;
+  gap: 24px;
+  padding: 12px 16px;
   overflow: hidden;
   flex: 1 1 auto;
 }
 .subs-columns {
   display: flex;
-  gap: 18px;
+  justify-content: space-between;
+  gap: 20px;
   align-items: stretch;
   width: 100%;
 }
@@ -852,12 +888,15 @@ html {
   background: transparent;
   display: flex;
   flex-direction: column;
+  box-sizing: border-box;
 }
 .starters-col {
-  flex: 0 0 62%;
+  flex: 0 0 48%;
+  box-sizing: border-box;
 }
 .subs-col-right {
-  flex: 0 0 38%;
+  flex: 0 0 48%;
+  box-sizing: border-box;
 }
 
 .starters-list,
@@ -869,39 +908,42 @@ html {
   overflow-y: auto;
 }
 .starters-list {
-  max-height: calc(80vh - 220px);
+  max-height: 70vh;
 }
 .subs-list {
-  max-height: calc(80vh - 220px);
+  max-height: 70vh;
 }
 
 .starters-list li,
 .subs-list li {
-  padding: 10px 12px;
-  margin-bottom: 8px;
-  border-radius: 8px;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  justify-content: space-between;
-  cursor: pointer;
-  transition:
-    transform 140ms ease,
-    box-shadow 140ms ease,
-    background 140ms ease;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.03);
+  padding: 8px 8px !important;
+  margin-bottom: 4px !important;
+  border-radius: 4px !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+  justify-content: space-between !important;
+  cursor: pointer !important;
+  transition: all 0.12s ease !important;
+  background: rgba(0, 0, 0, 0.4) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  color: var(--subs-fg, #fff) !important;
+  font-size: 0.9rem !important;
+}
+.subs-list li {
+  font-size: 0.85rem !important;
 }
 .starters-list li:hover,
 .subs-list li:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.18);
+  transform: translateY(-2px) !important;
+  background: rgba(255, 255, 255, 0.1) !important;
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15) !important;
 }
 .starters-list li.selected-out {
-  outline: 2px solid rgba(255, 255, 255, 0.16);
-  background: linear-gradient(90deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.02));
-  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.2);
-  transform: translateX(2px);
+  outline: 2px solid var(--subs-fg, #fff) !important;
+  background: rgba(0, 0, 0, 0.5) !important;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2) !important;
+  transform: translateX(4px) !important;
 }
 .starters-list li.paired,
 .subs-list li.paired {
@@ -928,18 +970,22 @@ html {
 
 .player-pos-badge {
   display: inline-block;
-  min-width: 36px;
+  min-width: 32px;
   text-align: center;
   font-weight: 800;
-  border-radius: 6px;
-  padding: 6px;
-  background: rgba(255, 255, 255, 0.03);
+  border-radius: 4px;
+  padding: 4px 6px;
+  font-size: 0.85rem;
+  background: rgba(255, 255, 255, 0.2) !important;
+  color: #fff !important;
 }
 
 .player-skill {
   margin-left: 12px;
-  opacity: 0.85;
-  font-size: 0.9rem;
+  opacity: 1;
+  color: #ffeb3b; /* Amarelo suave para saltar à vista */
+  font-size: 0.85rem;
+  font-weight: 400;
 }
 
 .subs-actions {
@@ -953,9 +999,9 @@ html {
   flex: 1;
 }
 .subs-back-btn {
-  padding: 10px 18px;
-  font-size: 1rem;
-  border-radius: 10px;
+  padding: 8px 14px;
+  font-size: 0.9rem;
+  border-radius: 6px;
   background: #ffffff;
   color: #222;
   border: none;

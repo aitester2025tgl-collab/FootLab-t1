@@ -19,7 +19,8 @@
     "test:match-sim": "mocha tests/match_sim_test.js",
     "test": "npm run test:unit && npm run test:integration && npm run test:smoke && npm run test:match-sim",
     "screenshot-snapshot": "node dev/tools/screenshot_from_snapshot.js",
-    "start:electron": "npm run build && electron src/electron-main.js"
+    "start:electron": "npm run build && electron src/electron-main.js",
+    "start": "npm run start:electron"
   },
   "author": "",
   "license": "MIT",
