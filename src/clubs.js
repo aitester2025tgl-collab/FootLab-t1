@@ -139,7 +139,7 @@ function generateDivisionClubs(divisionNumber) {
                     ? 1000
                     : 500) * 0.6
             ),
-      contractYears: typeof r.contractYears === 'number' ? r.contractYears : 1,
+      contractYears: typeof r.contractYears === 'number' ? r.contractYears : undefined,
       goals: r.goals || 0,
     }));
 
@@ -147,19 +147,19 @@ function generateDivisionClubs(divisionNumber) {
     let stadiumCapacity, members, ticketPrice;
     if (divisionNumber === 1) {
       stadiumCapacity = 30000 + Math.floor(Math.random() * 40000);
-      members = 25000 + Math.floor(Math.random() * 50000);
+      members = Math.floor(stadiumCapacity * (0.5 + Math.random() * 0.4));
       ticketPrice = 30 + Math.floor(Math.random() * 20);
     } else if (divisionNumber === 2) {
       stadiumCapacity = 15000 + Math.floor(Math.random() * 30000);
-      members = 15000 + Math.floor(Math.random() * 15000);
+      members = Math.floor(stadiumCapacity * (0.4 + Math.random() * 0.4));
       ticketPrice = 25 + Math.floor(Math.random() * 10);
     } else if (divisionNumber === 3) {
       stadiumCapacity = 10000 + Math.floor(Math.random() * 10000);
-      members = 5000 + Math.floor(Math.random() * 10000);
+      members = Math.floor(stadiumCapacity * (0.3 + Math.random() * 0.4));
       ticketPrice = 18 + Math.floor(Math.random() * 7);
     } else {
       stadiumCapacity = 4000 + Math.floor(Math.random() * 6000);
-      members = 1000 + Math.floor(Math.random() * 4000);
+      members = Math.floor(stadiumCapacity * (0.2 + Math.random() * 0.4));
       ticketPrice = 12 + Math.floor(Math.random() * 5);
     }
 

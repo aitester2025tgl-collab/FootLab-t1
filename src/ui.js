@@ -239,33 +239,33 @@
       }
       
       html = `
-        <div style="display:flex; flex-direction:column; gap:14px; margin-top:5px; width: 100%;">
-          <div style="display:flex; align-items:center; gap:12px;">
-            <div style="width:40px; height:40px; flex-shrink:0; border-radius:6px; background:${oppBg}; border:2px solid ${oppFg}; box-shadow: 0 4px 8px rgba(0,0,0,0.3);"></div>
-            <div style="display:flex; flex-direction:column; overflow:hidden;">
-              <strong style="font-size:1.1em; color:#fff; white-space:nowrap; text-overflow:ellipsis;">${oppName}</strong>
-              <span style="font-size:0.85em; color:#aaa;">${isHome ? 'Jogo em Casa' : 'Jogo Fora'} - Jornada ${window.currentJornada}</span>
+        <div style="display:flex; flex-direction:column; gap:12px; margin-top:5px; width: 100%;">
+          <div style="display:flex; align-items:center; gap:10px;">
+            <div style="width:36px; height:36px; flex-shrink:0; border-radius:6px; background:${oppBg}; border:2px solid ${oppFg}; box-shadow: 0 4px 8px rgba(0,0,0,0.3);"></div>
+            <div style="display:flex; flex-direction:column; overflow:hidden; width:100%;">
+              <strong style="font-size:1.05em; color:#fff; white-space:nowrap; text-overflow:ellipsis; overflow:hidden;" title="${oppName}">${oppName}</strong>
+              <span style="font-size:0.8em; color:#bbb;">${isHome ? 'Em Casa' : 'Fora'} - Jor. ${window.currentJornada}</span>
             </div>
           </div>
           
-          <div style="background:rgba(0,0,0,0.25); border:1px solid rgba(255,255,255,0.05); border-radius:8px; padding:12px; font-size:0.9em; color:#ccc; display:flex; flex-direction:column; gap:10px;">
-            <div style="display:flex; justify-content:space-between; border-bottom:1px solid rgba(255,255,255,0.05); padding-bottom:6px;">
-              <span>Tática Habitual:</span>
-              <strong style="color:#fff;">${oppTactic}</strong>
+          <div style="background:rgba(0,0,0,0.25); border:1px solid rgba(255,255,255,0.05); border-radius:8px; padding:10px; font-size:0.85em; color:#ddd; display:flex; flex-direction:column; gap:8px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid rgba(255,255,255,0.05); padding-bottom:4px;">
+              <span style="color:#aaa;">Tática:</span>
+              <strong style="background: rgba(255,255,255,0.1); padding: 2px 6px; border-radius: 4px; color:#fff;">${oppTactic}</strong>
             </div>
-            <div style="display:flex; justify-content:space-between; border-bottom:1px solid rgba(255,255,255,0.05); padding-bottom:6px;">
-              <span>Qualidade Média (Onze):</span>
-              <strong style="color:#ffeb3b;">${avgSkill}</strong>
+            <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid rgba(255,255,255,0.05); padding-bottom:4px;">
+              <span style="color:#aaa;">Qualidade:</span>
+              <strong style="background: rgba(255,235,59,0.15); border: 1px solid rgba(255,235,59,0.3); padding: 2px 6px; border-radius: 4px; color:#ffeb3b;">${avgSkill}</strong>
             </div>
-            <div style="display:flex; justify-content:space-between; border-bottom:1px solid rgba(255,255,255,0.05); padding-bottom:6px;">
-              <span>Golos (Marcados/Sofridos):</span>
+            <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid rgba(255,255,255,0.05); padding-bottom:4px;">
+              <span style="color:#aaa;">Golos (M/S):</span>
               <strong style="color:#fff;"><span style="color:#4CAF50;">${oppGF}</span> / <span style="color:#F44336;">${oppGA}</span></strong>
             </div>
-            <div style="display:flex; justify-content:space-between; align-items:center;">
-              <span>Melhor Marcador:</span>
-              <div style="text-align:right;">
-                <strong style="color:#fff; display:block; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:120px;">${topScorer.name}</strong>
-                <span style="color:#aaa; font-size:0.85em;">${topScorer.goals} Golo(s)</span>
+            <div style="display:flex; flex-direction:column; gap:4px; margin-top:2px;">
+              <span style="color:#aaa;">Melhor Marcador:</span>
+              <div style="display:flex; justify-content:space-between; align-items:center; background:rgba(0,0,0,0.2); padding:6px 8px; border-radius:6px; border:1px solid rgba(255,255,255,0.02);">
+                <strong style="color:#fff; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:70%;" title="${topScorer.name}">👟 ${topScorer.name}</strong>
+                <span style="color:#ffeb3b; font-weight:bold; flex-shrink:0;">${topScorer.goals} <span style="font-size:0.8em; font-weight:normal; color:#aaa;">Gls</span></span>
               </div>
             </div>
           </div>

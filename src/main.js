@@ -196,6 +196,14 @@ function initializeGameSession() {
   if (typeof assignRandomShortContracts === 'function') assignRandomShortContracts(allDivisions);
   if (typeof applySkillCaps === 'function') applySkillCaps(allDivisions);
 
+  // Injetar jogadores no mercado de transferências (Agentes Livres) no início do jogo
+  window.FREE_TRANSFERS = [];
+  window.PENDING_RELEASES = [];
+  window.TRANSFER_HISTORY = [];
+  if (typeof window.generateFreeAgents === 'function') {
+    window.generateFreeAgents(allDivisions, { probability: 0.05, maxPerClub: 2 });
+  }
+
   // Escolha aleatória do clube (últimos 8 da D4)
   const pool = division4.length > 8 ? division4.slice(-8) : division4.slice();
   playerClub = pool[Math.floor(Math.random() * pool.length)];
@@ -272,6 +280,7 @@ function formatMoney(value) {
       .replace(/\B(?=(\d{3})+(?!\d))/g, '.') + ' €'
   );
 }
+window.formatMoney = formatMoney;
 
 /* eslint-disable-next-line no-unused-vars */
 function formatNumber(value) {

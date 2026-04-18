@@ -9,6 +9,75 @@ import {
   avgSkill,
 } from './helpers.mjs';
 
+function showRenewContractMenu(player, club, minDemanded, formatMoneyFn, renderTeamRosterFn) {
+  const overlayId = 'renew-contract-overlay';
+  let overlay = document.getElementById(overlayId);
+  if (!overlay) {
+    overlay = document.createElement('div');
+    overlay.id = overlayId;
+    overlay.style.position = 'fixed';
+    overlay.style.left = '0';
+    overlay.style.top = '0';
+    overlay.style.width = '100vw';
+    overlay.style.height = '100vh';
+    overlay.style.zIndex = '70010';
+    overlay.style.display = 'flex';
+    overlay.style.alignItems = 'center';
+    overlay.style.justifyContent = 'center';
+    overlay.style.background = 'rgba(0,0,0,0.7)';
+    document.body.appendChild(overlay);
+  }
+  overlay.innerHTML = '';
+  const box = document.createElement('div');
+  box.className = 'subs-panel transfer-overlay-root';
+  box.style.padding = '24px';
+  box.style.background = '#2e2e2e';
+  box.style.color = '#fff';
+  box.style.borderRadius = '10px';
+  box.style.boxShadow = '0 10px 40px rgba(0,0,0,0.8)';
+  box.style.maxWidth = '420px';
+  
+  const html = `
+        <h3 style="margin-top:0; color:#ffeb3b; font-size:1.3em;">Renovação de Contrato</h3>
+        <div style="margin-top:8px;font-weight:700;font-size:1.1em;">${player.name} <span style="font-weight:500;opacity:0.85">(${player.position || ''})</span></div>
+        <div style="margin-top:12px; font-size:0.95em;">O jogador exige um salário mínimo mensal de <strong style="color:#8BC34A;">${formatMoneyFn(minDemanded)}</strong>.</div>
+        <div style="margin-top:16px;display:flex;gap:8px;align-items:center;">
+          <label style="min-width:120px; color:#ccc;">Salário a propor:</label>
+          <input id="renewSalaryInput" type="number" min="${minDemanded}" value="${minDemanded}" style="width:150px;padding:8px;border-radius:6px;border:1px solid #555;background:#111;color:#fff;font-size:1.05em;font-weight:bold;" />
+        </div>
+        <div style="margin-top:24px;display:flex;justify-content:flex-end;gap:12px;">
+          <button id="renewCancelBtn" style="padding:10px 16px;border-radius:6px;border:none;background:#555;color:#fff;cursor:pointer;font-weight:bold;transition:background 0.2s;">Cancelar</button>
+          <button id="renewConfirmBtn" style="padding:10px 16px;border-radius:6px;border:none;background:#4CAF50;color:#fff;cursor:pointer;font-weight:bold;transition:background 0.2s;">Propor Contrato</button>
+        </div>`;
+  box.innerHTML = html;
+  overlay.appendChild(box);
+
+  setTimeout(() => {
+    const cancel = document.getElementById('renewCancelBtn');
+    const confirm = document.getElementById('renewConfirmBtn');
+    const salaryIn = document.getElementById('renewSalaryInput');
+    
+    if (cancel) cancel.addEventListener('click', () => {
+      if (overlay && overlay.parentNode) overlay.parentNode.removeChild(overlay);
+    });
+    
+    if (confirm) confirm.addEventListener('click', () => {
+      const proposed = Math.max(1, Math.round(Number(salaryIn.value) || 0));
+      if (proposed >= minDemanded) {
+         player.salary = proposed;
+         player.contractYears = 1;
+         player.contractYearsLeft = 1;
+         alert(`${player.name} aceitou a proposta de ${formatMoneyFn(proposed)} e renovou por 1 época!`);
+         if (overlay && overlay.parentNode) overlay.parentNode.removeChild(overlay);
+         renderTeamRosterFn(club); 
+      } else {
+         alert(`${player.name} recusou a sua proposta! O valor oferecido é demasiado baixo.`);
+         if (overlay && overlay.parentNode) overlay.parentNode.removeChild(overlay);
+      }
+    });
+  }, 10);
+}
+
 export function renderTeamRoster(club) {
   try {
     const formatMoney =
@@ -74,7 +143,8 @@ export function renderTeamRoster(club) {
             : typeof p.contractYears !== 'undefined'
               ? p.contractYears
               : 0;
-        const endsMarker = Number(contractLeft) === 0 ? '*' : '';
+        // Jogadores com contrato têm o * à frente. Jogadores sem contrato não têm nada.
+        const contractMarker = Number(contractLeft) > 0 ? '*' : '';
         const displayPos = p._normPos || p.position || p.pos || '';
         html += `<div class="hub-box player-box" data-player-id="${p.id}">
                   <div class="player-header-row">
@@ -84,7 +154,7 @@ export function renderTeamRoster(club) {
                   <div class="skill-bar"><div class="skill-fill" style="width:${skill}%;background:${barColor};"></div></div>
                   <div style="display:flex;justify-content:space-between;align-items:center;font-size:0.92em;">
                     <div style="font-weight:700;color:rgba(255,255,255,0.9);">${skill}</div>
-                    <div class="player-salary" data-player-id="${p.id}">${formatMoney(salary)}${endsMarker ? ' ' + endsMarker : ''}</div>
+                    <div class="player-salary" data-player-id="${p.id}">${formatMoney(salary)} <span style="color:#ffeb3b;font-weight:bold;">${contractMarker}</span></div>
                   </div>
                 </div>`;
       });
@@ -110,74 +180,48 @@ export function renderTeamRoster(club) {
     // attach handlers
     setTimeout(() => {
       try {
-        const salaryEls = content.querySelectorAll('.player-salary');
-        salaryEls.forEach((el) => {
-          el.style.cursor = 'pointer';
-          el.title = 'Clique para negociar contrato deste jogador';
-          el.replaceWith(el.cloneNode(true));
-        });
-        const fresh = content.querySelectorAll('.player-salary');
-        fresh.forEach((el) => {
-          el.addEventListener('click', () => {
-            const pid = Number(el.dataset.playerId);
-            const player =
-              club.team && Array.isArray(club.team.players)
-                ? club.team.players.find((p) => p.id === pid)
-                : null;
-            if (!player) return alert('Jogador não encontrado');
-            const current = Number(player.salary || 0);
-            const proposedStr = window.prompt(
-              `Negociar salário para ${player.name}\nSalário atual: ${formatMoney(current)}\nIntroduza salário mensal proposto (número):`,
-              String(current)
-            );
-            if (proposedStr === null) return;
-            const proposed = Math.max(1, Math.round(Number(proposedStr) || 0));
-            const yearsStr = window.prompt(
-              'Duração do contrato em anos (ex: 1 ou 0):',
-              String(Number(player.contractYears || 1))
-            );
-            if (yearsStr === null) return;
-            const years = Math.max(0, Math.min(10, Number(yearsStr) || 1));
-            if (window.Finance && typeof window.Finance.negotiatePlayerContract === 'function') {
-              const res = window.Finance.negotiatePlayerContract(club, pid, proposed, years);
-              if (!res) return alert('Erro na negociação (resultado inválido).');
-              const prob = typeof res.acceptProb === 'number' ? res.acceptProb : 0;
-              if (res.accepted)
-                alert(
-                  `${player.name} aceitou a oferta!\nNovo salário: ${formatMoney(player.salary)}\nProbabilidade estimada: ${(prob * 100).toFixed(1)}%`
-                );
-              else
-                alert(
-                  `${player.name} rejeitou a oferta.\nProbabilidade estimada: ${(prob * 100).toFixed(1)}%`
-                );
-              renderTeamRoster(club);
-            } else {
-              alert('Serviço de negociação indisponível.');
-            }
-          });
-        });
         const rowEls = content.querySelectorAll('.player-box');
         rowEls.forEach((r) => {
-          r.style.cursor = 'pointer';
-          r.title = 'Clique para negociar ou oferecer contrato';
           r.replaceWith(r.cloneNode(true));
         });
         const freshRows = content.querySelectorAll('.player-box');
         freshRows.forEach((r) => {
+          const pid = Number(r.dataset.playerId);
+          const player = club.team && Array.isArray(club.team.players) ? club.team.players.find((p) => p.id === pid) : null;
+          if (!player) return;
+          
+          const contractLeft = typeof player.contractYearsLeft !== 'undefined' ? player.contractYearsLeft : (player.contractYears || 0);
+          const hasContract = Number(contractLeft) > 0;
+          
+          // Cursor e hint baseados no estado do contrato
+          if (hasContract) {
+            r.style.cursor = 'default';
+            r.title = 'Jogador com contrato ativo.';
+          } else {
+            r.style.cursor = 'pointer';
+            r.title = 'Sem contrato! Clique para negociar.';
+          }
+
           r.addEventListener('click', (ev) => {
-            if (ev.target && ev.target.classList && ev.target.classList.contains('player-salary'))
-              return;
-            const pid = Number(r.dataset.playerId);
-            const player =
-              club.team && Array.isArray(club.team.players)
-                ? club.team.players.find((p) => p.id === pid)
-                : null;
-            if (!player) return;
-            const showPlayerActionMenu =
-              (window.FootLab && window.FootLab.Hub && window.FootLab.Hub.showPlayerActionMenu) ||
-              window.showPlayerActionMenu;
-            if (typeof showPlayerActionMenu === 'function') showPlayerActionMenu(player, club);
-            else alert('Ação de jogador indisponível (showPlayerActionMenu).');
+            if (hasContract) return; // Nada acontece se tiver contrato
+            
+            // Calcular salário mínimo exigido para renovação (Aumento percentual)
+            const currentSalary = Number(player.salary || 300);
+            const skillLvl = Number(player.skill || 40);
+            
+            // Aumento percentual justo: entre 5% (skill baixa) e 25% (skill alta)
+            const raisePercentage = 0.05 + ((skillLvl / 100) * 0.20);
+            let minDemanded = Math.round(currentSalary * (1 + raisePercentage));
+            
+            // Arredondar para a dezena mais próxima (ex: 342 -> 350)
+            minDemanded = Math.ceil(minDemanded / 10) * 10;
+            
+            // Piso mínimo absoluto para garantir que não há valores absurdamente baixos
+            const absoluteMin = Math.max(300, Math.round(skillLvl * 8)); 
+            minDemanded = Math.max(minDemanded, absoluteMin);
+              
+            // Abre a janela personalizada de renovação
+            showRenewContractMenu(player, club, minDemanded, formatMoney, renderTeamRoster);
           });
         });
       } catch (e) {

@@ -39,19 +39,19 @@
         match.awayGoals = awayGoals;
 
         try {
-          const attendanceInfo =
-            window.Finance && typeof window.Finance.computeMatchAttendance === 'function'
-              ? window.Finance.computeMatchAttendance(match)
-              : { attendance: 0, capacity: 0 };
-          match.attendance = attendanceInfo.attendance;
-          match.stadiumCapacity = attendanceInfo.capacity;
+          let attendance = match.attendance || 0;
+          if (attendance === 0 && match.homeClub) {
+             const cap = match.homeClub.stadiumCapacity || (match.homeClub.team && match.homeClub.team.stadiumCapacity) || 10000;
+             attendance = Math.floor(cap * 0.6);
+             match.attendance = attendance;
+          }
           const homeClub = match.homeClub;
           if (homeClub) {
-            const ticketPrice = Number(homeClub.ticketPrice || homeClub.ticket || 20) || 20;
-            const matchRevenue = Math.round(match.attendance * ticketPrice);
+            const ticketPrice = Number(homeClub.ticketPrice || (homeClub.team && homeClub.team.ticketPrice) || 20) || 20;
+            const matchRevenue = Math.round(attendance * ticketPrice);
             homeClub.revenue = (homeClub.revenue || 0) + matchRevenue;
             homeClub.budget = (homeClub.budget || 0) + matchRevenue;
-            const operatingCost = Math.round(match.attendance * 0.5);
+            const operatingCost = Math.round(attendance * 0.5);
             homeClub.expenses = (homeClub.expenses || 0) + operatingCost;
             homeClub.budget = (homeClub.budget || 0) - operatingCost;
             match.homeMatchRevenue = matchRevenue;
@@ -72,6 +72,12 @@
           const isHome = idx === 0;
           const goalsScored = isHome ? homeGoals : awayGoals;
           const goalsConceded = isHome ? awayGoals : homeGoals;
+
+          // Deduzir salários (1/4 do custo mensal por jogo) a ambas as equipas
+          const actualSalary = (club.team && Array.isArray(club.team.players)) ? club.team.players.reduce((sum, p) => sum + (p.salary || 0), 0) : (club.totalSalaryCost || 0);
+          const matchSalary = Math.round(actualSalary / 4);
+          club.expenses = (club.expenses || 0) + matchSalary;
+          club.budget = (club.budget || 0) - matchSalary;
 
           club.gamesPlayed = (club.gamesPlayed || 0) + 1;
           club.goalsFor = (club.goalsFor || 0) + goalsScored;
@@ -166,6 +172,40 @@
 
     matches.forEach((match) => {
       try {
+        // Calcular a assistência ANTES de o jogo começar para a UI do MatchBoard poder mostrar
+        if (match.homeClub && typeof match.attendance === 'undefined') {
+          const cap = match.homeClub.stadiumCapacity || (match.homeClub.team && match.homeClub.team.stadiumCapacity) || 10000;
+          const members = match.homeClub.members || (match.homeClub.team && match.homeClub.team.members) || Math.floor(cap * 0.5);
+          
+          // Calcular fator de performance com base na posição atual na liga
+          let performanceFactor = 0.5; // Base (meio da tabela)
+          try {
+            if (window.allDivisions && match.homeClub.division) {
+              const divClubs = window.allDivisions[match.homeClub.division - 1];
+              if (divClubs && divClubs.length > 1) {
+                const sorted = [...divClubs].sort((a, b) => {
+                  const pa = a.points || 0;
+                  const pb = b.points || 0;
+                  if (pb !== pa) return pb - pa;
+                  const gda = (a.goalsFor || 0) - (a.goalsAgainst || 0);
+                  const gdb = (b.goalsFor || 0) - (b.goalsAgainst || 0);
+                  return gdb - gda;
+                });
+                const rank = sorted.findIndex(c => c === match.homeClub);
+                if (rank >= 0) performanceFactor = 1.0 - (rank / (divClubs.length - 1));
+              }
+            }
+          } catch (e) { /* ignore */ }
+          
+          // Equipas no topo enchem 70-100% dos lugares livres, no fundo enchem 0-30%
+          const baseFill = performanceFactor * 0.7;
+          const randomFill = Math.random() * 0.3;
+          let att = members + Math.floor((cap - members) * (baseFill + randomFill));
+          if (att > cap) att = cap;
+          match.attendance = att;
+          match.stadiumCapacity = cap;
+        }
+
         const homeTeam = match.homeClub && match.homeClub.team;
         const awayTeam = match.awayClub && match.awayClub.team;
         if (homeTeam && typeof Lineups.chooseStarters === 'function') {
@@ -841,7 +881,15 @@
       } catch (e) {
         /* ignore */
       }
-      if (typeof renderHubContent === 'function') renderHubContent('menu-team');
+      
+      // Mostrar o popup de transferências se houver jogadores negociáveis, senão volta à equipa normal
+      if (window.Offers && typeof window.Offers.showPendingReleasesPopup === 'function' && window.PENDING_RELEASES && window.PENDING_RELEASES.length > 0) {
+        window.Offers.showPendingReleasesPopup(() => {
+          if (typeof renderHubContent === 'function') renderHubContent('menu-team');
+        });
+      } else {
+        if (typeof renderHubContent === 'function') renderHubContent('menu-team');
+      }
     } catch (e) {
       /* ignore */
     }

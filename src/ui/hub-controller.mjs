@@ -10,29 +10,43 @@ const FootLab = window.FootLab || window.Elifoot || window;
 
 export function updateBudgetDisplays(club) {
   try {
+    // Helper de formatação seguro caso a função global falhe ou não esteja disponível
+    const safeFormatMoney = (typeof window.formatMoney === 'function') 
+      ? window.formatMoney 
+      : (v) => (!v && v !== 0 ? '0 €' : Math.floor(v).toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') + ' €');
+
     const headerBudget = document.getElementById('club-budget');
     const finBudget = document.getElementById('clubBudgetDisplay');
     const revEl = document.getElementById('club-revenue');
     const expEl = document.getElementById('club-expenses');
     const val = Number((club && (Number(club.budget) || 0)) || 0);
-    if (headerBudget) headerBudget.textContent = formatMoney(val);
-    if (finBudget) finBudget.textContent = formatMoney(val);
+    if (headerBudget) headerBudget.textContent = safeFormatMoney(val);
+    if (finBudget) finBudget.textContent = safeFormatMoney(val);
     try {
       const rev = Number((club && (Number(club.revenue) || 0)) || 0);
       const exp = Number((club && (Number(club.expenses) || 0)) || 0);
-      if (revEl) revEl.textContent = formatMoney(rev);
-      if (expEl) expEl.textContent = formatMoney(exp);
+      if (revEl) revEl.textContent = safeFormatMoney(rev);
+      if (expEl) expEl.textContent = safeFormatMoney(exp);
     } catch (e) {
       /* ignore */
     }
   } catch (e) {
-    /* ignore */
+    console.warn('Erro ao atualizar painel de finanças:', e);
   }
 }
 
 export function renderHubContent(menuId) {
   const content = document.getElementById('hub-main-content');
   if (!content) return;
+  
+  // Atualizar as finanças laterais sempre que renderizamos o painel ou passamos uma jornada
+  if (window.playerClub) updateBudgetDisplays(window.playerClub);
+  
+  // Atualizar o painel do próximo adversário (coluna direita) para manter a sincronia
+  if (typeof window.updateNextOpponentDisplay === 'function') {
+    window.updateNextOpponentDisplay();
+  }
+
   // delegate to module renderers, fallback to legacy global functions
   switch (menuId) {
     case 'menu-team':
