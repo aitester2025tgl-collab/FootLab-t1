@@ -1,7 +1,8 @@
 /* eslint-disable no-console, no-unused-vars */
 // tests/promotion_integration_test.js
-const assert = require('assert');
-const { applyPromotionRelegation } = require('../src/core/promotion');
+import assert from 'assert';
+import { getLogger } from './testLogger.js';
+import { applyPromotionRelegation } from '../src/core/promotion.mjs';
 
 function makeDivision(divIndex) {
   // produce 18 clubs with predictable names and tiebreak values
@@ -24,7 +25,7 @@ function makeDivision(divIndex) {
 // Build 4 divisions
 const allDivisions = [makeDivision(0), makeDivision(1), makeDivision(2), makeDivision(3)];
 
-const logger = require('./testLogger').getLogger();
+const logger = getLogger();
 
 // Quick sanity: top of each division should be T1 and bottom T18
 for (let d = 0; d < 4; d++) {

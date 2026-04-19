@@ -1,9 +1,11 @@
 /* eslint-disable no-console, no-unused-vars */
 // tests/transfer_offers_integration_test.js
 // Full transfer integration test: simulate confirming a pending release purchase
-const { JSDOM } = require('jsdom');
-const assert = require('assert');
-const logger = require('./testLogger').getLogger();
+import { JSDOM } from 'jsdom';
+import assert from 'assert';
+import { getLogger } from './testLogger.js';
+
+const logger = getLogger();
 
 const dom = new JSDOM(`<!doctype html><html><head></head><body></body></html>`, {
   runScripts: 'dangerously',
@@ -12,6 +14,11 @@ const dom = new JSDOM(`<!doctype html><html><head></head><body></body></html>`, 
 const window = dom.window;
 global.window = window;
 global.document = window.document;
+Object.defineProperty(global, 'navigator', {
+  value: dom.window.navigator,
+  writable: true,
+  configurable: true,
+});
 
 // Polyfills/stubs used by hub.js
 window.alert = (...args) => {
@@ -73,12 +80,12 @@ window.PENDING_RELEASES = [
 ];
 
 // load the new offers module
-require('../src/ui/offers.js');
+import * as Offers from '../src/ui/offers.mjs';
 
 logger.info('Starting full transfer integration test');
 
 // Run the popup and let the confirm/prompt flow execute
-window.Offers.showPendingReleasesPopup(() => {
+Offers.showPendingReleasesPopup(() => {
   logger.info('offers popup callback finished');
 });
 

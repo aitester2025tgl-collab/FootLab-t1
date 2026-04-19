@@ -163,6 +163,7 @@ function generateFreeAgents(allDivisions, options) {
         const p = players[i];
         if (!p) continue;
         if (removed >= maxPerClub) break;
+        if (window.FREE_TRANSFERS.length >= 10) return window.FREE_TRANSFERS;
         if (Math.random() < perPlayerProb) {
           // remove from club roster
           const idx = club.team.players.findIndex((x) => x === p || (x && p && x.id === p.id));
@@ -216,6 +217,7 @@ function selectPlayersForRelease(allDivisions, options) {
         if (removed >= maxPerClub) break;
         const p = club.team.players[i];
         if (!p) continue;
+        if (window.PENDING_RELEASES.length >= 10) return window.PENDING_RELEASES;
         if (Math.random() < perPlayerProb) {
           // mark as pending release but keep in squad until signed or moved to free
           const clone = Object.assign({}, p);
@@ -770,3 +772,5 @@ try {
 } catch (e) {
   // ignore, this is a non-critical setup block
 }
+
+export { generateFreeAgents };

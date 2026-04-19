@@ -1,10 +1,9 @@
 // core/persistence.js
 // Centralized persistence API to replace ad-hoc localStorage usage.
-(function () {
-  'use strict';
+'use strict';
 
-  const DEFAULT_MAX_BYTES = 512 * 1024; // 512 KB default max snapshot size
-  const SNAPSHOT_VERSION = 1;
+const DEFAULT_MAX_BYTES = 5242880; // 5MB default max snapshot size
+const SNAPSHOT_VERSION = 1;
 
   function getByteSize(str) {
     try {
@@ -44,21 +43,63 @@
     return console;
   }
 
+  /**
+   * Cleans the snapshot object before saving. This function removes temporary data,
+   * trims long history arrays, and eliminates circular references to reduce the
+   * overall size of the save file and prevent serialization errors.
+   * @param {object} snap The raw game state snapshot.
+   * @returns {object} A cleaned, smaller version of the snapshot.
+   */
+  function pruneSnapshot(snap) {
+    if (!snap) return null;
+    // Create a deep copy to avoid mutating the live game state.
+    // This is the simplest way, though not the most performant for huge objects.
+    // It also handily breaks any circular references that would prevent stringification.
+    const pruned = JSON.parse(JSON.stringify(snap));
+
+    // 1. Trim large history arrays to keep the snapshot lean.
+    if (Array.isArray(pruned.TRANSFER_HISTORY)) {
+      pruned.TRANSFER_HISTORY = pruned.TRANSFER_HISTORY.slice(-50); // Keep last 50 entries
+    }
+
+    // 2. Remove redundant or circular references from clubs and players.
+    // The `originalClubRef` is a major source of bloat and is not needed for loading a save.
+    const cleanPlayer = (player) => {
+      if (player) delete player.originalClubRef;
+    };
+
+    if (Array.isArray(pruned.allClubs)) {
+      pruned.allClubs.forEach((club) => {
+        if (club && club.team && Array.isArray(club.team.players)) {
+          club.team.players.forEach(cleanPlayer);
+        }
+      });
+    }
+
+    // 3. Clean pending releases as well.
+    if (Array.isArray(pruned.PENDING_RELEASES)) {
+      pruned.PENDING_RELEASES.forEach(cleanPlayer);
+    }
+
+    return pruned;
+  }
+
   const Persistence = {
     // saveSnapshot stores an envelope {version, created, payload} and enforces a size guard.
     saveSnapshot(snap, opts) {
       try {
+        const cleanSnap = pruneSnapshot(snap);
         const cfg =
           typeof window !== 'undefined' &&
           (window.FootLab || window.Elifoot) &&
           (window.FootLab || window.Elifoot).Config
             ? (window.FootLab || window.Elifoot).Config
             : {};
-        const maxBytes = (opts && opts.maxBytes) || cfg.maxSnapshotSizeBytes || DEFAULT_MAX_BYTES;
-        const envelope = { version: SNAPSHOT_VERSION, created: Date.now(), payload: snap };
+        const maxBytes = 5242880; // Forçado para 5MB
+        const envelope = { version: SNAPSHOT_VERSION, created: Date.now(), payload: cleanSnap };
         const raw = JSON.stringify(envelope);
         const size = getByteSize(raw);
-        const logger =
+        const logger = 
           typeof window !== 'undefined' &&
           (window.FootLab || window.Elifoot) &&
           (window.FootLab || window.Elifoot).Logger
@@ -245,5 +286,5 @@
     // compatibility alias
     window.Elifoot = window.Elifoot || window.FootLab;
   }
-  if (typeof module !== 'undefined' && module.exports) module.exports = Persistence;
-})();
+  
+  export default Persistence;

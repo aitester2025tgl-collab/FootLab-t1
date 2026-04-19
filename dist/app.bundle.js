@@ -1,9 +1,7 @@
 (() => {
-  var __create = Object.create;
   var __defProp = Object.defineProperty;
   var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
   var __getOwnPropNames = Object.getOwnPropertyNames;
-  var __getProtoOf = Object.getPrototypeOf;
   var __hasOwnProp = Object.prototype.hasOwnProperty;
   var __require = /* @__PURE__ */ ((x) => typeof require !== "undefined" ? require : typeof Proxy !== "undefined" ? new Proxy(x, {
     get: (a, b) => (typeof require !== "undefined" ? require : a)[b]
@@ -13,9 +11,6 @@
   });
   var __esm = (fn, res) => function __init() {
     return fn && (res = (0, fn[__getOwnPropNames(fn)[0]])(fn = 0)), res;
-  };
-  var __commonJS = (cb, mod) => function __require2() {
-    return mod || (0, cb[__getOwnPropNames(cb)[0]])((mod = { exports: {} }).exports, mod), mod.exports;
   };
   var __export = (target, all) => {
     for (var name in all)
@@ -29,1302 +24,335 @@
     }
     return to;
   };
-  var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__getProtoOf(mod)) : {}, __copyProps(
-    // If the importer is in node compatibility mode or this is not an ESM
-    // file that has been converted to a CommonJS file using a Babel-
-    // compatible transform (i.e. "__esModule" has not been set), then set
-    // "default" to the CommonJS "module.exports" for node compatibility.
-    isNodeMode || !mod || !mod.__esModule ? __defProp(target, "default", { value: mod, enumerable: true }) : target,
-    mod
-  ));
-
-  // src/core/globals.js
-  var require_globals = __commonJS({
-    "src/core/globals.js"(exports, module) {
-      (function() {
-        if (typeof window === "undefined") return;
-        window.FootLab = window.FootLab || window.Elifoot || {};
-        window.Elifoot = window.Elifoot || window.FootLab;
-        const keys = [
-          "playerClub",
-          "currentRoundMatches",
-          "allDivisions",
-          "allClubs",
-          "currentJornada",
-          "GAME_NAME",
-          "GameConfig"
-        ];
-        keys.forEach((k) => {
-          try {
-            if (typeof window[k] !== "undefined" && typeof window.Elifoot[k] === "undefined")
-              window.Elifoot[k] = window[k];
-          } catch (e) {
-          }
-          try {
-            Object.defineProperty(window, k, {
-              get() {
-                return window.Elifoot[k];
-              },
-              set(v) {
-                window.Elifoot[k] = v;
-              },
-              configurable: true
-            });
-          } catch (e) {
-          }
-        });
-        const namespaces = [
-          "MatchBoard",
-          "Hub",
-          "Tactics",
-          "Overlays",
-          "Finance",
-          "Offers",
-          "Lineups",
-          "Promotion"
-        ];
-        namespaces.forEach((name) => {
-          try {
-            window.FootLab[name] = window.FootLab[name] || window[name] || {};
-            Object.defineProperty(window, name, {
-              get() {
-                return window.FootLab[name];
-              },
-              set(v) {
-                window.FootLab[name] = v;
-              },
-              configurable: true
-            });
-          } catch (e) {
-          }
-        });
-        try {
-          if (typeof module !== "undefined" && module.exports)
-            module.exports = window.FootLab || window.Elifoot;
-        } catch (e) {
-        }
-      })();
-    }
-  });
+  var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 
   // src/core/logger.js
-  var require_logger = __commonJS({
-    "src/core/logger.js"(exports, module) {
-      (function() {
-        "use strict";
-        const LEVELS = { DEBUG: 10, INFO: 20, WARN: 30, ERROR: 40 };
-        const FootLab2 = typeof window !== "undefined" && (window.FootLab || window.Elifoot) || {};
-        let currentLevel = FootLab2 && FootLab2.Config && FootLab2.Config.LOG_LEVEL ? FootLab2.Config.LOG_LEVEL : FootLab2 && FootLab2.Config && FootLab2.Config.DEBUG ? LEVELS.DEBUG : LEVELS.INFO;
-        function shouldLog(level) {
-          return level >= currentLevel;
-        }
-        const logger = {
-          LEVELS,
-          setLevel(nameOrValue) {
-            if (typeof nameOrValue === "string" && LEVELS[nameOrValue] !== void 0)
-              currentLevel = LEVELS[nameOrValue];
-            else if (typeof nameOrValue === "number") currentLevel = nameOrValue;
-          },
-          debug(...args) {
-            if (shouldLog(LEVELS.DEBUG))
-              try {
-                console.debug && console.debug(...args);
-              } catch (_) {
-              }
-          },
-          info(...args) {
-            if (shouldLog(LEVELS.INFO))
-              try {
-                console.info && console.info(...args);
-              } catch (_) {
-              }
-          },
-          warn(...args) {
-            if (shouldLog(LEVELS.WARN))
-              try {
-                console.warn && console.warn(...args);
-              } catch (_) {
-              }
-          },
-          error(...args) {
-            if (shouldLog(LEVELS.ERROR))
-              try {
-                console.error && console.error(...args);
-              } catch (_) {
-              }
-          }
-        };
-        if (typeof window !== "undefined") {
-          window.FootLab = window.FootLab || window.Elifoot || {};
-          window.FootLab.Logger = window.FootLab.Logger || logger;
-          window.Elifoot = window.Elifoot || window.FootLab;
-        }
-        if (typeof module !== "undefined" && module.exports) module.exports = logger;
-      })();
-    }
+  var logger_exports = {};
+  __export(logger_exports, {
+    default: () => logger_default
   });
-
-  // src/core/persistence.js
-  var require_persistence = __commonJS({
-    "src/core/persistence.js"(exports, module) {
-      (function() {
-        "use strict";
-        const DEFAULT_MAX_BYTES = 512 * 1024;
-        const SNAPSHOT_VERSION = 1;
-        function getByteSize(str) {
-          try {
-            if (typeof TextEncoder !== "undefined") return new TextEncoder().encode(str).length;
-            return str.length;
-          } catch (e) {
-            return str && str.length || 0;
-          }
-        }
-        function getLogger6() {
-          try {
-            if (typeof window !== "undefined" && (window.FootLab || window.Elifoot) && (window.FootLab || window.Elifoot).Logger)
-              return (window.FootLab || window.Elifoot).Logger;
-          } catch (e) {
-          }
-          try {
-            if (typeof __require === "function") {
-              try {
-                return require_logger();
-              } catch (e) {
-              }
-            }
-          } catch (e) {
-          }
-          return console;
-        }
-        const Persistence = {
-          // saveSnapshot stores an envelope {version, created, payload} and enforces a size guard.
-          saveSnapshot(snap, opts) {
+  function shouldLog(level) {
+    return level >= currentLevel;
+  }
+  var LEVELS, FootLab, currentLevel, logger, logger_default;
+  var init_logger = __esm({
+    "src/core/logger.js"() {
+      LEVELS = { DEBUG: 10, INFO: 20, WARN: 30, ERROR: 40 };
+      FootLab = typeof window !== "undefined" && (window.FootLab || window.Elifoot) || {};
+      currentLevel = FootLab && FootLab.Config && FootLab.Config.LOG_LEVEL ? FootLab.Config.LOG_LEVEL : FootLab && FootLab.Config && FootLab.Config.DEBUG ? LEVELS.DEBUG : LEVELS.INFO;
+      logger = {
+        LEVELS,
+        setLevel(nameOrValue) {
+          if (typeof nameOrValue === "string" && LEVELS[nameOrValue] !== void 0)
+            currentLevel = LEVELS[nameOrValue];
+          else if (typeof nameOrValue === "number") currentLevel = nameOrValue;
+        },
+        debug(...args) {
+          if (shouldLog(LEVELS.DEBUG))
             try {
-              const cfg = typeof window !== "undefined" && (window.FootLab || window.Elifoot) && (window.FootLab || window.Elifoot).Config ? (window.FootLab || window.Elifoot).Config : {};
-              const maxBytes = opts && opts.maxBytes || cfg.maxSnapshotSizeBytes || DEFAULT_MAX_BYTES;
-              const envelope = { version: SNAPSHOT_VERSION, created: Date.now(), payload: snap };
-              const raw = JSON.stringify(envelope);
-              const size = getByteSize(raw);
-              const logger = typeof window !== "undefined" && (window.FootLab || window.Elifoot) && (window.FootLab || window.Elifoot).Logger ? (window.FootLab || window.Elifoot).Logger : console;
-              if (size > maxBytes) {
-                try {
-                  logger.warn && logger.warn(
-                    "Persistence.saveSnapshot: snapshot too large",
-                    size,
-                    "bytes (max",
-                    maxBytes,
-                    ")"
-                  );
-                } catch (_) {
-                }
-                try {
-                  Persistence.saveDebugSnapshot({
-                    reason: "oversize_snapshot",
-                    size,
-                    maxBytes,
-                    snapshotMeta: { currentJornada: snap && snap.currentJornada }
-                  });
-                } catch (_) {
-                }
-                return false;
-              }
-              if (typeof localStorage !== "undefined") {
-                try {
-                  localStorage.setItem("footlab_t1_save_snapshot", raw);
-                } catch (_) {
-                }
-                try {
-                  localStorage.setItem("elifoot_save_snapshot", raw);
-                } catch (_) {
-                }
-              }
-              return true;
-            } catch (e) {
-              try {
-                const lg = getLogger6();
-                lg.warn && lg.warn("Persistence.saveSnapshot failed", e);
-              } catch (_) {
-              }
-              return false;
-            }
-          },
-          loadSnapshot() {
-            try {
-              if (typeof localStorage === "undefined") return null;
-              const raw = localStorage.getItem("footlab_t1_save_snapshot") || localStorage.getItem("elifoot_save_snapshot");
-              if (!raw) return null;
-              const envelope = JSON.parse(raw);
-              if (!envelope || typeof envelope !== "object") return null;
-              if (!("version" in envelope)) {
-                try {
-                  const lg = getLogger6();
-                  lg.info && lg.info("Persistence.loadSnapshot: migrating legacy snapshot to versioned envelope");
-                } catch (_) {
-                }
-                try {
-                  const legacy = envelope;
-                  const wrapped = { version: SNAPSHOT_VERSION, created: Date.now(), payload: legacy };
-                  try {
-                    try {
-                      localStorage.setItem("footlab_t1_save_snapshot", JSON.stringify(wrapped));
-                    } catch (_) {
-                    }
-                    try {
-                      localStorage.setItem("elifoot_save_snapshot", JSON.stringify(wrapped));
-                    } catch (_) {
-                    }
-                  } catch (e) {
-                  }
-                  return wrapped.payload || null;
-                } catch (e) {
-                  return envelope;
-                }
-              }
-              if (envelope.version !== SNAPSHOT_VERSION) {
-                try {
-                  const lg = getLogger6();
-                  lg.warn && lg.warn("Persistence.loadSnapshot: snapshot version mismatch", envelope.version);
-                } catch (_) {
-                }
-                return null;
-              }
-              return envelope.payload || null;
-            } catch (e) {
-              try {
-                const lg = getLogger6();
-                lg.warn && lg.warn("Persistence.loadSnapshot failed", e);
-              } catch (_) {
-              }
-              return null;
-            }
-          },
-          saveDebugSnapshot(dbg) {
-            try {
-              if (typeof localStorage !== "undefined") {
-                try {
-                  localStorage.setItem("footlab_t1_debug_snapshot", JSON.stringify(dbg));
-                } catch (_) {
-                }
-                try {
-                  localStorage.setItem("elifoot_debug_snapshot", JSON.stringify(dbg));
-                } catch (_) {
-                }
-              }
-            } catch (e) {
-            }
-          },
-          saveSeasonResults(obj) {
-            try {
-              if (typeof localStorage !== "undefined") {
-                try {
-                  localStorage.setItem("footlab_t1_last_season_results", JSON.stringify(obj));
-                } catch (_) {
-                }
-                try {
-                  localStorage.setItem("elifoot_last_season_results", JSON.stringify(obj));
-                } catch (_) {
-                }
-              }
-            } catch (e) {
-            }
-          },
-          // low-level helpers
-          getRaw(key) {
-            try {
-              return typeof localStorage !== "undefined" ? localStorage.getItem(key) : null;
-            } catch (e) {
-              return null;
-            }
-          },
-          setRaw(key, value) {
-            try {
-              if (typeof localStorage !== "undefined") localStorage.setItem(key, value);
-            } catch (e) {
-            }
-          }
-        };
-        if (typeof window !== "undefined") {
-          window.FootLab = window.FootLab || window.Elifoot || {};
-          window.FootLab.Persistence = window.FootLab.Persistence || Persistence;
-          window.Elifoot = window.Elifoot || window.FootLab;
-        }
-        if (typeof module !== "undefined" && module.exports) module.exports = Persistence;
-      })();
-    }
-  });
-
-  // src/core/promotion.js
-  var require_promotion = __commonJS({
-    "src/core/promotion.js"(exports, module) {
-      (function() {
-        "use strict";
-        function cloneClubs(arr) {
-          return arr.map((c) => Object.assign({}, c));
-        }
-        function applyPromotionRelegation(allDivisions2) {
-          if (!Array.isArray(allDivisions2) || allDivisions2.length === 0)
-            throw new Error("allDivisions must be an array of divisions");
-          const divisions = allDivisions2.map((d) => Array.isArray(d) ? d.slice() : []);
-          const promoted = {};
-          const relegated = {};
-          function sortStandings(arr) {
-            return arr.slice().sort((a, b) => {
-              const pa = Number(a.points || 0), pb = Number(b.points || 0);
-              if (pb !== pa) return pb - pa;
-              const gda = Number(a.goalsFor || 0) - Number(a.goalsAgainst || 0);
-              const gdb = Number(b.goalsFor || 0) - Number(b.goalsAgainst || 0);
-              if (gdb !== gda) return gdb - gda;
-              return Number(b.goalsFor || 0) - Number(a.goalsFor || 0);
-            });
-          }
-          const D = divisions.length;
-          for (let idx = 1; idx < D; idx++) {
-            const div = divisions[idx] || [];
-            const sorted = sortStandings(div);
-            const top3 = sorted.slice(0, 3);
-            promoted[idx] = top3;
-          }
-          for (let idx = 0; idx < D - 1; idx++) {
-            const div = divisions[idx] || [];
-            const sorted = sortStandings(div);
-            const bottom3 = sorted.slice(-3);
-            relegated[idx] = bottom3;
-          }
-          const newDivisions = divisions.map((d) => d.slice());
-          for (let idx = 0; idx < D - 1; idx++) {
-            const rej = (relegated[idx] || []).slice();
-            if (!rej.length) continue;
-            rej.forEach((club) => {
-              const arr = newDivisions[idx];
-              const i = arr.indexOf(club);
-              if (i >= 0) arr.splice(i, 1);
-              if (club) club.division = idx + 2;
-            });
-            newDivisions[idx + 1] = newDivisions[idx + 1].concat(rej);
-          }
-          for (let idx = D - 1; idx >= 1; idx--) {
-            const pr = (promoted[idx] || []).slice();
-            if (!pr.length) continue;
-            pr.forEach((club) => {
-              const arr = newDivisions[idx];
-              const i = arr.indexOf(club);
-              if (i >= 0) arr.splice(i, 1);
-              if (club) club.division = idx;
-            });
-            newDivisions[idx - 1] = newDivisions[idx - 1].concat(pr);
-          }
-          return { newDivisions, promoted, relegated };
-        }
-        if (typeof module !== "undefined" && module.exports)
-          module.exports = { applyPromotionRelegation };
-        if (typeof window !== "undefined") {
-          window.Promotion = window.Promotion || {};
-          window.Promotion.applyPromotionRelegation = applyPromotionRelegation;
-        }
-      })();
-    }
-  });
-
-  // src/constants.js
-  var require_constants = __commonJS({
-    "src/constants.js"(exports, module) {
-      (function(root) {
-        const Constants = {
-          GAME_NAME: "FootLab t1",
-          POSITIONS: ["GK", "DF", "MF", "FW"],
-          DIVISION_SKILL_CAPS: {
-            1: { base: 95, min: 75 },
-            2: { base: 80, min: 60 },
-            3: { base: 65, min: 45 },
-            4: { base: 50, min: 25 }
-          },
-          DEFAULT_DIVISION_SKILL_CAP: { base: 50, min: 25 },
-          CONTRACT_CONFIG: {
-            pctOneYear: 0.35,
-            pctExpiring: 0.12,
-            minSalary: 300,
-            salaryMultiplier: 25
-          },
-          TRANSFER_MARKET: {
-            freeAgentProb: 0.06,
-            maxFreeAgentsPerClub: 2,
-            pendingReleaseProb: 0.02,
-            maxPendingPerClub: 1,
-            expiringLeaveProb: 0.35,
-            maxExpiringPerClub: 2,
-            baseMarketValue: 5e3,
-            skillValueMultiplier: 200,
-            divisionMultipliers: {
-              1: 1.6,
-              2: 1.25,
-              3: 0.9,
-              4: 0.6
-            }
-          },
-          SEASONAL_DRIFT_FACTORS: [0.6, 0.4, 0.28, 0.18]
-        };
-        if (typeof exports !== "undefined") {
-          if (typeof module !== "undefined" && module.exports) {
-            exports = module.exports = Constants;
-          } else {
-            exports.Constants = Constants;
-          }
-        } else {
-          root.GameConstants = Constants;
-        }
-      })(typeof self !== "undefined" ? self : exports);
-    }
-  });
-
-  // src/teams.js
-  var require_teams = __commonJS({
-    "src/teams.js"(exports, module) {
-      var E = typeof window !== "undefined" ? window.FootLab || window.Elifoot || window : typeof global !== "undefined" ? global : {};
-      function buildDivisionsFromRostersOrdered() {
-        const E2 = typeof window !== "undefined" ? window.FootLab || window.Elifoot || window : typeof global !== "undefined" ? global : {};
-        function getLogger6() {
-          try {
-            return typeof window !== "undefined" && window.FootLab && window.FootLab.Logger || typeof window !== "undefined" && window.Elifoot && window.Elifoot.Logger || console;
-          } catch (e) {
-            return console;
-          }
-        }
-        const globalObj = typeof window !== "undefined" ? window : typeof global !== "undefined" ? global : {};
-        const rostersSource = globalObj && globalObj.REAL_ROSTERS || E2 && E2.REAL_ROSTERS || null;
-        const rosters = rostersSource ? Object.keys(rostersSource) : [];
-        const teamColorMapSource = globalObj && globalObj.REAL_TEAM_COLORS || E2 && E2.REAL_TEAM_COLORS || null;
-        const rostersArePresent = Array.isArray(rosters) && rosters.length > 0;
-        if (!rostersArePresent) {
-          throw new Error(
-            `Aguardando dados: window.REAL_ROSTERS n\xE3o encontrado. Verifique se real_rosters_2025_26.js foi carregado.`
-          );
-        }
-        function validateRosters(expectedTeams = 72, minPlayers = 18) {
-          if (!(E2 && E2.REAL_ROSTERS)) return;
-          const keys = Object.keys(E2.REAL_ROSTERS);
-          const problems = [];
-          if (keys.length !== expectedTeams)
-            problems.push(`expected ${expectedTeams} teams but found ${keys.length}`);
-          for (let i = 0; i < keys.length; i++) {
-            const team = keys[i];
-            const players = E2.REAL_ROSTERS[team] || [];
-            if (!Array.isArray(players)) {
-              problems.push(`${team} roster is not an array`);
-              continue;
-            }
-            if (players.length < minPlayers) problems.push(`${team} has only ${players.length} players`);
-          }
-          if (problems.length) {
-            const msg = "Roster validation failed: " + problems.join("; ");
-            try {
-              const L = getLogger6();
-              L && L.warn && L.warn(msg);
-            } catch (e) {
-              try {
-                console && console.warn && console.warn(msg);
-              } catch (_) {
-              }
-            }
-            return;
-          }
-        }
-        validateRosters(72, 18);
-        function nameToColor(name) {
-          if (!name) return { bg: "#2e2e2e", fg: "#ffffff" };
-          let h = 0;
-          for (let i = 0; i < name.length; i++) h = h * 31 + name.charCodeAt(i) & 268435455;
-          const hue = h % 360;
-          const sat = 60 + h % 10;
-          const light = 34 + h % 12;
-          const hslToHexLocal = (h2, s, l) => {
-            l /= 100;
-            const a = s * Math.min(l, 1 - l) / 100;
-            const f = (n) => {
-              const k = (n + h2 / 30) % 12;
-              const color = l - a * Math.max(Math.min(k - 3, 9 - k, 1), -1);
-              return Math.round(255 * color).toString(16).padStart(2, "0");
-            };
-            return `#${f(0)}${f(8)}${f(4)}`;
-          };
-          const getLuminanceLocal = (hex) => {
-            const r = parseInt(hex.slice(1, 3), 16) / 255;
-            const g = parseInt(hex.slice(3, 5), 16) / 255;
-            const b = parseInt(hex.slice(5, 7), 16) / 255;
-            const a = [r, g, b].map((v) => v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4));
-            return 0.2126 * a[0] + 0.7152 * a[1] + 0.0722 * a[2];
-          };
-          const bg = hslToHexLocal(hue, sat, light);
-          const L = getLuminanceLocal(bg);
-          const fg = L > 0.5 ? "#000000" : "#ffffff";
-          return { bg, fg };
-        }
-        const teamColorMap = teamColorMapSource;
-        function normalizeName(n) {
-          if (!n) return "";
-          let s = n.normalize ? n.normalize("NFD").replace(/\p{Diacritic}/gu, "") : n;
-          s = String(s).toLowerCase();
-          s = s.replace(/\b(fc|cf|sl|sc|cd|ac|cp|sad|f c|c f|ac\.|fc\.|sc\.|rcd|ssc|ss|clube|futebol)\b/g, "");
-          s = s.replace(/[\u2018\u2019'`’]/g, "");
-          s = s.replace(/[^a-z0-9\s]/g, "");
-          s = s.replace(/\s+/g, " ").trim();
-          return s;
-        }
-        const _normalizedColorMap = {};
-        try {
-          Object.keys(teamColorMap || {}).forEach((k) => {
-            const nk = normalizeName(k || "");
-            if (nk) _normalizedColorMap[nk] = teamColorMap[k];
-          });
-        } catch (e) {
-        }
-        const sliceTeam = (start) => rosters.slice(start, start + 18).map((name) => {
-          let c;
-          const exact = teamColorMap && teamColorMap[name] ? teamColorMap[name] : null;
-          if (exact) {
-            c = { bg: exact.bgColor || "#2e2e2e", fg: exact.color || "#ffffff" };
-          } else {
-            const nk = normalizeName(name);
-            const m = nk && _normalizedColorMap[nk] ? _normalizedColorMap[nk] : null;
-            if (m) c = { bg: m.bgColor || "#2e2e2e", fg: m.color || "#ffffff" };
-            else c = nameToColor(name);
-          }
-          return { name, color: c.fg, bgColor: c.bg };
-        });
-        const div1 = sliceTeam(0);
-        const div2 = sliceTeam(18);
-        const div3 = sliceTeam(36);
-        const div4 = sliceTeam(54);
-        return [
-          { name: "1\xAA divis\xE3o", teams: div1 },
-          { name: "2\xAA divis\xE3o", teams: div2 },
-          { name: "3\xAA divis\xE3o", teams: div3 },
-          { name: "4\xAA divis\xE3o", teams: div4 }
-        ];
-      }
-      var divisionsData2 = null;
-      var _divisionsResolve = null;
-      var _divisionsReject = null;
-      var divisionsReady = new Promise((resolve, reject) => {
-        _divisionsResolve = resolve;
-        _divisionsReject = reject;
-      });
-      function _tryBuildDivisions() {
-        try {
-          const dd = buildDivisionsFromRostersOrdered();
-          divisionsData2 = dd;
-          try {
-            if (typeof console !== "undefined" && console.log) {
-            }
-          } catch (e) {
-          }
-          try {
-            if (typeof window !== "undefined") window.divisionsData = divisionsData2;
-            if (typeof global !== "undefined") global.divisionsData = divisionsData2;
-          } catch (e) {
-          }
-          try {
-            _divisionsResolve && _divisionsResolve(divisionsData2);
-          } catch (e) {
-          }
-          try {
-            if (typeof document !== "undefined" && typeof document.dispatchEvent === "function") {
-              document.dispatchEvent(new CustomEvent("footlab:rosters-loaded"));
-            }
-          } catch (e) {
-          }
-          return true;
-        } catch (e) {
-          return false;
-        }
-      }
-      if (!_tryBuildDivisions()) {
-        const start = Date.now();
-        const timeout = 3e3;
-        const iv = setInterval(() => {
-          if (_tryBuildDivisions()) {
-            clearInterval(iv);
-            return;
-          }
-          if (Date.now() - start > timeout) {
-            clearInterval(iv);
-            try {
-              _divisionsReject && _divisionsReject(
-                new Error("Timed out waiting for window.REAL_ROSTERS to become available")
-              );
-            } catch (e) {
-            }
-            try {
-              console && console.error && console.error("Timed out waiting for window.REAL_ROSTERS");
+              console.debug && console.debug(...args);
             } catch (_) {
             }
-          }
-        }, 80);
-      }
-      function waitForDivisionsData(timeoutMs = 3e3) {
-        if (divisionsData2) return Promise.resolve(divisionsData2);
-        return Promise.race([
-          divisionsReady,
-          new Promise(
-            (_, rej) => setTimeout(() => rej(new Error("waitForDivisionsData timeout")), timeoutMs)
-          )
-        ]);
-      }
-      var TACTICS = [
-        {
-          name: "4-4-2",
-          description: "Cl\xE1ssica - Equilibrada",
-          attack: 3,
-          defense: 3,
-          midfield: 4,
-          requires: { wingers: false, threeAtBack: false }
         },
-        {
-          name: "4-3-3",
-          description: "Ofensiva - Ataque (com pontas)",
-          attack: 4,
-          defense: 2,
-          midfield: 3,
-          requires: { wingers: true, threeAtBack: false, strikers: 1 }
+        info(...args) {
+          if (shouldLog(LEVELS.INFO))
+            try {
+              console.info && console.info(...args);
+            } catch (_) {
+            }
         },
-        {
-          name: "3-5-2",
-          description: "Controle - Meio-campo (tr\xEAs centrais)",
-          attack: 3,
-          defense: 3,
-          midfield: 5,
-          requires: { wingers: false, threeAtBack: true }
+        warn(...args) {
+          if (shouldLog(LEVELS.WARN))
+            try {
+              console.warn && console.warn(...args);
+            } catch (_) {
+            }
         },
-        {
-          name: "5-3-2",
-          description: "Defensiva - Seguran\xE7a (laterais avan\xE7am)",
-          attack: 2,
-          defense: 5,
-          midfield: 3,
-          requires: { wingers: false, threeAtBack: false }
-        },
-        {
-          name: "4-5-1",
-          description: "Conten\xE7\xE3o - Defesa (meio-campo denso)",
-          attack: 2,
-          defense: 4,
-          midfield: 5,
-          requires: { wingers: false, threeAtBack: false }
-        },
-        {
-          name: "3-4-3",
-          description: "Ataque Total - Press\xE3o (tr\xEAs centrais e pontas)",
-          attack: 5,
-          defense: 2,
-          midfield: 4,
-          requires: { wingers: true, threeAtBack: true, strikers: 1 }
-        },
-        {
-          name: "5-4-1",
-          description: "Ultra Defensiva - Resist\xEAncia",
-          attack: 1,
-          defense: 5,
-          midfield: 4,
-          requires: { wingers: false, threeAtBack: false }
-        },
-        {
-          name: "4-2-3-1",
-          description: "Moderna - Controle e Transi\xE7\xE3o",
-          attack: 4,
-          defense: 3,
-          midfield: 5,
-          requires: { wingers: true, threeAtBack: false, strikers: 1 }
-        },
-        {
-          name: "4-1-4-1",
-          description: "Posicional - Trinco e Linha M\xE9dia",
-          attack: 3,
-          defense: 4,
-          midfield: 5,
-          requires: { wingers: true, threeAtBack: false, strikers: 1 }
-        },
-        {
-          name: "4-2-4",
-          description: "Ultra Ofensiva - Risco M\xE1ximo",
-          attack: 5,
-          defense: 3,
-          midfield: 2,
-          requires: { wingers: true, threeAtBack: false, strikers: 2 }
+        error(...args) {
+          if (shouldLog(LEVELS.ERROR))
+            try {
+              console.error && console.error(...args);
+            } catch (_) {
+            }
         }
-      ];
-      try {
-        if (typeof window !== "undefined") {
-          window.TACTICS = TACTICS;
-          window.FootLab = window.FootLab || window.Elifoot || {};
-          window.FootLab.TACTICS = window.FootLab.TACTICS || TACTICS;
-          window.Elifoot = window.Elifoot || window.FootLab;
-        }
-        if (typeof global !== "undefined") global.TACTICS = TACTICS;
-      } catch (e) {
+      };
+      if (typeof window !== "undefined") {
+        window.FootLab = window.FootLab || window.Elifoot || {};
+        window.FootLab.Logger = window.FootLab.Logger || logger;
+        window.Elifoot = window.Elifoot || window.FootLab;
       }
-      function generateTeam(teamId) {
-        const allTeams = divisionsData2.map((d) => d.teams).flat();
-        const teamMeta = allTeams[teamId - 1] || {
-          name: `Team ${teamId}`,
-          color: "#FFFFFF",
-          bgColor: "#000000"
-        };
-        let players = [];
-        try {
-          if (E && E.REAL_ROSTERS && E.REAL_ROSTERS[teamMeta.name])
-            players = E.REAL_ROSTERS[teamMeta.name];
-        } catch (e) {
-          players = [];
-        }
-        if (!Array.isArray(players) || players.length === 0) {
-          throw new Error(
-            `No roster found for team "${teamMeta.name}" (teamId ${teamId}). The application requires real roster data in window.REAL_ROSTERS.`
-          );
-        }
-        const divIndex = Math.floor((teamId - 1) / 18);
-        let stadiumCapacity = divIndex === 0 ? 3e4 : divIndex === 1 ? 15e3 : divIndex === 2 ? 1e4 : 4e3;
-        let members = divIndex === 0 ? 25e3 : divIndex === 1 ? 15e3 : divIndex === 2 ? 5e3 : 1e3;
-        return {
-          id: teamId,
-          name: teamMeta.name,
-          color: teamMeta.color,
-          bgColor: teamMeta.bgColor,
-          players,
-          tactic: "4-4-2",
-          stadiumCapacity,
-          members,
-          ticketPrice: 20,
-          totalSalaryCost: 0,
-          currentLeaguePosition: 0,
-          leaguePoints: 0
-        };
-      }
-      try {
-        if (typeof window !== "undefined") {
-          window.generateTeam = generateTeam;
-          window.FootLab = window.FootLab || window.Elifoot || {};
-          window.FootLab.generateTeam = window.FootLab.generateTeam || generateTeam;
-          window.Elifoot = window.Elifoot || window.FootLab;
-        }
-        if (typeof global !== "undefined") global.generateTeam = generateTeam;
-      } catch (e) {
-      }
-      function printDivisionAssignments() {
-        if (typeof divisionsData2 === "undefined") return;
-        const logger = typeof window !== "undefined" && window.FootLab && window.FootLab.Logger || typeof window !== "undefined" && window.Elifoot && window.Elifoot.Logger || console;
-        divisionsData2.forEach((d, idx) => {
-          logger.info(`${idx + 1}. ${d.name} \u2014 ${d.teams.length} teams`);
-          d.teams.forEach((t, i) => logger.info(`   ${i + 1}. ${t.name}`));
-        });
-      }
-      try {
-        if (typeof window !== "undefined") {
-          window.printDivisionAssignments = printDivisionAssignments;
-          window.FootLab = window.FootLab || window.Elifoot || {};
-          window.FootLab.printDivisionAssignments = window.FootLab.printDivisionAssignments || printDivisionAssignments;
-          window.Elifoot = window.Elifoot || window.FootLab;
-        }
-        if (typeof global !== "undefined") global.printDivisionAssignments = printDivisionAssignments;
-      } catch (e) {
-      }
-      function validateRosterConstraints({
-        expectedTeams = 72,
-        minPlayers = 18,
-        maxPlayers = 28,
-        maxGK = 3
-      } = {}) {
-        if (!(E && E.REAL_ROSTERS)) return { ok: true, problems: [] };
-        const keys = Object.keys(E.REAL_ROSTERS);
-        const problems = [];
-        if (keys.length !== expectedTeams)
-          problems.push(`expected ${expectedTeams} teams but found ${keys.length}`);
-        for (let team of keys) {
-          const players = E.REAL_ROSTERS[team] || [];
-          if (!Array.isArray(players)) {
-            problems.push(`${team} roster is not an array`);
-            continue;
-          }
-          if (players.length < minPlayers) problems.push(`${team} has only ${players.length} players`);
-          if (players.length > maxPlayers)
-            problems.push(`${team} has ${players.length} players (over ${maxPlayers})`);
-          const gkCount = players.reduce(
-            (a, p) => a + ((p.position || p.pos || "").toUpperCase() === "GK" ? 1 : 0),
-            0
-          );
-          if (gkCount > maxGK) problems.push(`${team} has ${gkCount} GKs (over ${maxGK})`);
-        }
-        return { ok: problems.length === 0, problems };
-      }
-      try {
-        if (typeof window !== "undefined") window.validateRosterConstraints = validateRosterConstraints;
-        if (typeof global !== "undefined") global.validateRosterConstraints = validateRosterConstraints;
-      } catch (e) {
-      }
-      if (typeof module !== "undefined" && module.exports) {
-        module.exports.printDivisionAssignments = printDivisionAssignments;
-        module.exports.validateRosterConstraints = validateRosterConstraints;
-      }
-      if (typeof module !== "undefined" && module.exports) {
-        module.exports = {
-          divisionsData: divisionsData2,
-          waitForDivisionsData,
-          generateTeam,
-          TACTICS,
-          printDivisionAssignments,
-          validateRosterConstraints
-        };
-      }
-      try {
-        if (typeof window !== "undefined") {
-          window.waitForDivisionsData = waitForDivisionsData;
-          window.FootLab = window.FootLab || window.Elifoot || {};
-          window.FootLab.waitForDivisionsData = window.FootLab.waitForDivisionsData || waitForDivisionsData;
-          window.Elifoot = window.Elifoot || window.FootLab;
-        }
-        if (typeof global !== "undefined") global.waitForDivisionsData = waitForDivisionsData;
-      } catch (e) {
-      }
-      try {
-        const _startup = validateRosterConstraints({
-          expectedTeams: 72,
-          minPlayers: 18,
-          maxPlayers: 28,
-          maxGK: 3
-        });
-        if (!_startup.ok) {
-          throw new Error("Startup roster validation failed: " + _startup.problems.join("; "));
-        }
-      } catch (e) {
-        if (e && e.message && e.message.indexOf("Startup roster validation failed") === 0) throw e;
-      }
+      logger_default = logger;
     }
   });
 
-  // src/logic/transfers.js
-  function clubNeedsPosition(club, category) {
-    const Lineups = window.FootLab && window.FootLab.Lineups;
-    if (!Lineups) return true;
-    const tacticName = club.team.tactic || "4-4-2";
-    const formation = typeof Lineups.parseFormation === "function" ? Lineups.parseFormation(tacticName) : [4, 4, 2];
-    const requirements = {
-      GK: 1,
-      DEF: formation[0] || 4,
-      MID: formation[1] || 4,
-      ATT: formation[2] || 2
-    };
-    const currentCount = (club.team.players || []).filter((p) => Lineups.getPositionCategory(p.position) === category).length;
-    const saturationLimit = Math.max(category === "GK" ? 2 : 4, requirements[category] * 2);
-    return currentCount < saturationLimit;
-  }
-  function findPotentialBuyer(player, fee) {
-    const sellerClub = player.originalClubRef;
-    const Lineups = window.FootLab && window.FootLab.Lineups;
-    const category = Lineups ? Lineups.getPositionCategory(player.position) : "MID";
-    const allClubs2 = window.ALL_CLUBS || [];
-    const potentialBuyers = allClubs2.filter((club) => {
-      if (club === sellerClub) return false;
-      if (club.budget < fee) return false;
-      if (!clubNeedsPosition(club, category)) return false;
-      return true;
+  // src/core/globals.js
+  (function() {
+    if (typeof window === "undefined") return;
+    window.FootLab = window.FootLab || window.Elifoot || {};
+    window.Elifoot = window.Elifoot || window.FootLab;
+    const keys = [
+      "playerClub",
+      "currentRoundMatches",
+      "allDivisions",
+      "allClubs",
+      "currentJornada",
+      "GAME_NAME",
+      "GameConfig"
+    ];
+    keys.forEach((k) => {
+      try {
+        if (typeof window[k] !== "undefined" && typeof window.Elifoot[k] === "undefined")
+          window.Elifoot[k] = window[k];
+      } catch (e) {
+      }
+      try {
+        Object.defineProperty(window, k, {
+          get() {
+            return window.Elifoot[k];
+          },
+          set(v) {
+            window.Elifoot[k] = v;
+          },
+          configurable: true
+        });
+      } catch (e) {
+      }
     });
-    return potentialBuyers.length > 0 ? potentialBuyers[Math.floor(Math.random() * potentialBuyers.length)] : null;
-  }
-  function executeTransfer(player, sellerClub, buyerClub, fee, salary) {
-    sellerClub.budget = (sellerClub.budget || 0) + fee;
-    buyerClub.budget = (buyerClub.budget || 0) - fee;
-    const pIdx = sellerClub.team.players.findIndex((p) => p.id === player.id);
-    if (pIdx > -1) {
-      const [transferredPlayer] = sellerClub.team.players.splice(pIdx, 1);
-      transferredPlayer.salary = salary;
-      transferredPlayer.contractYears = 1;
-      transferredPlayer.contractYearsLeft = 1;
-      buyerClub.team.players.push(transferredPlayer);
-      window.TRANSFER_HISTORY = window.TRANSFER_HISTORY || [];
-      window.TRANSFER_HISTORY.push({
-        player: transferredPlayer.name,
-        from: sellerClub.team ? sellerClub.team.name : sellerClub.name,
-        to: buyerClub.team ? buyerClub.team.name : buyerClub.name,
-        fee,
-        salary,
-        type: "purchase",
-        jornada: typeof window.currentJornada !== "undefined" ? window.currentJornada : null,
-        time: Date.now()
-      });
-      return true;
-    }
-    return false;
-  }
-  var init_transfers = __esm({
-    "src/logic/transfers.js"() {
-    }
-  });
-
-  // src/ui/offers.js
-  var require_offers = __commonJS({
-    "src/ui/offers.js"(exports, module) {
-      init_transfers();
-      (function() {
-        const L = typeof window !== "undefined" && window.FootLab && window.FootLab.Logger || console;
-        const formatMoney3 = function(value) {
-          if (!value && value !== 0) return "0 \u20AC";
-          return Math.floor(value).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".") + " \u20AC";
-        };
-        function handleOfferAccept(player, playerIndex, onClose) {
-          const sellerClub = player.originalClubRef;
-          const fee = player.leavingFee || 0;
-          const buyerClub = findPotentialBuyer(player, fee);
-          if (!buyerClub) {
-            alert("Nenhum clube tem or\xE7amento ou necessidade para contratar este jogador no momento.");
-            return;
-          }
-          if (buyerClub.budget < fee) {
-            alert(
-              `${buyerClub.team.name} cannot afford the transfer fee of ${formatMoney3(fee)}.`
-            );
-            return;
-          }
-          const offerSalaryStr = prompt(
-            `Propor sal\xE1rio para ${player.name} (m\xEDnimo: ${formatMoney3(
-              player.minContract || 0
-            )})`,
-            player.minContract || 500
-          );
-          const offerSalary = parseInt(offerSalaryStr, 10);
-          if (isNaN(offerSalary) || offerSalary < (player.minContract || 0)) {
-            alert("Sal\xE1rio inv\xE1lido ou abaixo do m\xEDnimo.");
-            return;
-          }
-          const confirmed = confirm(
-            `Confirmar transfer\xEAncia de ${player.name} para ${buyerClub.team.name} por ${formatMoney3(fee)} com sal\xE1rio de ${formatMoney3(offerSalary)}?`
-          );
-          if (confirmed) {
-            executeTransfer(player, sellerClub, buyerClub, fee, offerSalary);
-            window.PENDING_RELEASES.splice(playerIndex, 1);
-            const overlay = document.getElementById("offers-overlay");
-            if (overlay) document.body.removeChild(overlay);
-            showPendingReleasesPopup(onClose);
-          }
-        }
-        function showPendingReleasesPopup(onClose) {
-          const pending = window.PENDING_RELEASES || [];
-          if (!pending.length) {
-            if (typeof onClose === "function") onClose();
-            return;
-          }
-          const overlay = document.createElement("div");
-          overlay.id = "offers-overlay";
-          Object.assign(overlay.style, {
-            position: "fixed",
-            left: "0",
-            top: "0",
-            right: "0",
-            bottom: "0",
-            background: "rgba(0,0,0,0.75)",
-            zIndex: 1e4,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            color: "#fff"
-          });
-          let html = `<div class="subs-panel" style="padding: 24px; background: #2e2e2e; color: #fff; border-radius: 10px; max-width: 600px; box-shadow: 0 10px 40px rgba(0,0,0,0.8); border: 1px solid rgba(255,255,255,0.1);">`;
-          html += `<h3 style="margin-top:0; color:#ffeb3b; font-size:1.3em; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:10px;">Propostas Recebidas</h3>`;
-          html += `<p style="font-size:0.95em; color:#ccc;">Os seguintes jogadores da sua equipa t\xEAm ofertas de outros clubes:</p>`;
-          pending.forEach((p, idx) => {
-            const fee = p.leavingFee || 0;
-            html += `<div style="display:flex;justify-content:space-between;align-items:center;padding:12px;background:rgba(0,0,0,0.2);margin-bottom:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.05);">
-                  <div>
-                      <strong style="font-size:1.1em;">${p.name}</strong> <span style="color:#aaa;">(${p.position})</span><br/>
-                      <span style="color:#8BC34A; font-weight:bold; font-size:0.9em;">Oferta: ${formatMoney3(fee)}</span>
-                  </div>
-                  <button id="offersDoProposeBtn" class="offer-propose-btn" data-player-idx="${idx}" style="padding:10px 16px;border:none;border-radius:6px;background:#2196F3;color:white;cursor:pointer;font-weight:bold;">Vender</button>
-              </div>`;
-          });
-          html += `<div style="text-align:right;margin-top:20px;"><button id="close-offers-popup" style="padding:10px 16px;border-radius:6px;border:none;background:#555;color:#fff;cursor:pointer;font-weight:bold;">Fechar</button></div>`;
-          html += `</div>`;
-          overlay.innerHTML = html;
-          document.body.appendChild(overlay);
-          document.getElementById("close-offers-popup").addEventListener("click", () => {
-            document.body.removeChild(overlay);
-            if (typeof onClose === "function") onClose();
-          });
-          overlay.querySelectorAll(".offer-propose-btn").forEach((btn) => {
-            btn.addEventListener("click", (e) => {
-              const playerIndex = parseInt(e.target.getAttribute("data-player-idx"), 10);
-              const player = pending[playerIndex];
-              handleOfferAccept(player, playerIndex, onClose);
-            });
-          });
-        }
-        function showJobOffersPopup(onClose) {
-          const offers = window.PLAYER_JOB_OFFERS || [];
-          if (!offers.length) {
-            if (typeof onClose === "function") onClose();
-            return;
-          }
-          const club = offers.shift();
-          const overlay = document.createElement("div");
-          overlay.id = "job-offers-overlay";
-          Object.assign(overlay.style, {
-            position: "fixed",
-            left: "0",
-            top: "0",
-            right: "0",
-            bottom: "0",
-            background: "rgba(0,0,0,0.85)",
-            zIndex: 10005,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            color: "#fff"
-          });
-          const currentCoachName = document.getElementById("coachNameDisplay") ? document.getElementById("coachNameDisplay").innerText : "Treinador";
-          let html = `<div class="subs-panel" style="padding: 30px; border-radius: 12px; width: 90%; max-width: 550px; text-align: center; border: 1px solid rgba(255,255,255,0.1); background: #2e2e2e; box-shadow: 0 15px 40px rgba(0,0,0,0.8);">`;
-          html += `<h2 style="color: #4CAF50; margin-top: 0; font-size: 1.6em;">Proposta de Trabalho</h2>`;
-          html += `<div style="width: 64px; height: 64px; margin: 20px auto; border-radius: 12px; background: ${club.team.bgColor}; border: 3px solid ${club.team.color}; box-shadow: 0 4px 10px rgba(0,0,0,0.3);"></div>`;
-          html += `<p style="font-size: 1.1em; line-height: 1.5; color: #ddd;">A dire\xE7\xE3o do <strong>${club.team.name}</strong> (${club.division}\xAA Divis\xE3o) despediu o seu treinador.<br><br>Eles acompanharam o seu trabalho e oferecem-lhe o comando t\xE9cnico. Aceita o desafio?</p>`;
-          html += `<div style="margin-top: 30px; display: flex; justify-content: center; gap: 15px;">`;
-          html += `<button id="rejectJobBtn" style="padding: 12px 24px; border-radius: 8px; border: none; background: #555; color: white; cursor: pointer; font-weight: bold; transition: background 0.2s;">Rejeitar Proposta</button>`;
-          html += `<button id="acceptJobBtn" style="padding: 12px 24px; border-radius: 8px; border: none; background: #4CAF50; color: white; cursor: pointer; font-weight: bold; transition: background 0.2s;">Assinar Contrato</button>`;
-          html += `</div></div>`;
-          overlay.innerHTML = html;
-          document.body.appendChild(overlay);
-          document.getElementById("rejectJobBtn").addEventListener("click", () => {
-            document.body.removeChild(overlay);
-            showJobOffersPopup(onClose);
-          });
-          document.getElementById("acceptJobBtn").addEventListener("click", () => {
-            window.playerClub.coach = { name: "Treinador Interino", reputation: 50 };
-            window.playerClub = club;
-            club.coach = { name: currentCoachName, reputation: 80 };
-            window.PLAYER_JOB_OFFERS = [];
-            document.body.removeChild(overlay);
-            alert(`Parab\xE9ns! Assinou contrato com o ${club.team.name}!`);
-            const playerTeamNameHub = document.getElementById("playerTeamNameHub");
-            const playerTeamNameFooter = document.getElementById("playerTeamNameFooter");
-            if (playerTeamNameHub) playerTeamNameHub.textContent = club.team.name;
-            if (playerTeamNameFooter) playerTeamNameFooter.textContent = club.team.name;
-            showJobOffersPopup(onClose);
-          });
-        }
-        function showTransferNewsPopup(transfers, onClose) {
-          if (!transfers || transfers.length === 0) {
-            if (typeof onClose === "function") onClose();
-            return;
-          }
-          const overlay = document.createElement("div");
-          overlay.id = "transfer-news-overlay";
-          Object.assign(overlay.style, {
-            position: "fixed",
-            left: "0",
-            top: "0",
-            right: "0",
-            bottom: "0",
-            background: "rgba(0,0,0,0.85)",
-            zIndex: 10005,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            color: "#fff"
-          });
-          const fm = typeof window.formatMoney === "function" ? window.formatMoney : (v) => v + " \u20AC";
-          let html = `<div class="subs-panel" style="padding: 24px; background: #2e2e2e; color: #fff; border-radius: 12px; width: 90%; max-width: 600px; box-shadow: 0 10px 40px rgba(0,0,0,0.8); border: 1px solid rgba(255,255,255,0.1);">`;
-          html += `<h3 style="margin-top:0; color:#4CAF50; font-size:1.4em; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:12px;">\u{1F4B8} Mercado de Transfer\xEAncias</h3>`;
-          html += `<p style="font-size:1em; color:#ccc; margin-bottom: 20px;">Resumo das principais transfer\xEAncias realizadas nesta jornada:</p>`;
-          html += `<div style="max-height: 400px; overflow-y: auto; padding-right: 10px; display:flex; flex-direction:column; gap:10px;">`;
-          transfers.forEach((t) => {
-            html += `<div style="background: rgba(0,0,0,0.2); padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05); display: flex; flex-direction: column; gap: 6px;">
-                 <div style="font-weight:bold; font-size:1.1em; color:#fff;">${t.player}</div>
-                 <div style="display:flex; justify-content:space-between; font-size:0.95em;">
-                   <span style="color:#aaa;">De: ${t.from} \u2794 Para: ${t.to}</span>
-                   <strong style="color:#ffeb3b;">${fm(t.fee)}</strong>
-                 </div>
-               </div>`;
-          });
-          html += `</div>`;
-          html += `<div style="text-align:right; margin-top:24px;"><button id="close-transfer-news-btn" style="padding:10px 20px; border-radius:6px; border:none; background:#2196F3; color:white; font-weight:bold; cursor:pointer;">Continuar</button></div>`;
-          html += `</div>`;
-          overlay.innerHTML = html;
-          document.body.appendChild(overlay);
-          document.getElementById("close-transfer-news-btn").addEventListener("click", () => {
-            document.body.removeChild(overlay);
-            if (typeof onClose === "function") onClose();
-          });
-        }
-        function showManagerMovementsPopup(movements, onClose) {
-          if (!movements || movements.length === 0) {
-            if (typeof onClose === "function") onClose();
-            return;
-          }
-          const overlay = document.createElement("div");
-          overlay.id = "manager-movements-overlay";
-          Object.assign(overlay.style, {
-            position: "fixed",
-            left: "0",
-            top: "0",
-            right: "0",
-            bottom: "0",
-            background: "rgba(0,0,0,0.85)",
-            zIndex: 10005,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            color: "#fff"
-          });
-          let html = `<div class="subs-panel" style="padding: 24px; background: #2e2e2e; color: #fff; border-radius: 12px; width: 90%; max-width: 600px; box-shadow: 0 10px 40px rgba(0,0,0,0.8); border: 1px solid rgba(255,255,255,0.1);">`;
-          html += `<h3 style="margin-top:0; color:#ffeb3b; font-size:1.4em; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:12px;">\u{1F4F0} Chicotadas Psicol\xF3gicas</h3>`;
-          html += `<p style="font-size:1em; color:#ccc; margin-bottom: 20px;">Resumo das recentes movimenta\xE7\xF5es de treinadores no futebol mundial:</p>`;
-          html += `<div style="max-height: 400px; overflow-y: auto; padding-right: 10px; display:flex; flex-direction:column; gap:10px;">`;
-          movements.forEach((m) => {
-            html += `<div style="background: rgba(0,0,0,0.2); padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05); display: flex; flex-direction: column; gap: 6px;">
-                 <div style="font-weight:bold; font-size:1.1em; color:#fff;">${m.clubName}</div>
-                 <div style="display:flex; justify-content:space-between; font-size:0.95em;">
-                   <span style="color:#F44336;">\u274C Sai: ${m.out}</span>
-                   <span style="color:#4CAF50;">\u2705 Entra: ${m.in}</span>
-                 </div>
-               </div>`;
-          });
-          html += `</div>`;
-          html += `<div style="text-align:right; margin-top:24px;"><button id="close-movements-btn" style="padding:10px 20px; border-radius:6px; border:none; background:#2196F3; color:white; font-weight:bold; cursor:pointer;">Continuar</button></div>`;
-          html += `</div>`;
-          overlay.innerHTML = html;
-          document.body.appendChild(overlay);
-          document.getElementById("close-movements-btn").addEventListener("click", () => {
-            document.body.removeChild(overlay);
-            if (typeof onClose === "function") onClose();
-          });
-        }
-        function showEndSeasonAwardsPopup(data, onClose) {
-          if (!data) {
-            if (typeof onClose === "function") onClose();
-            return;
-          }
-          const overlay = document.createElement("div");
-          overlay.id = "end-season-awards-overlay";
-          Object.assign(overlay.style, {
-            position: "fixed",
-            left: "0",
-            top: "0",
-            right: "0",
-            bottom: "0",
-            background: "rgba(0,0,0,0.85)",
-            zIndex: 10005,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            color: "#fff"
-          });
-          const fm = typeof window.formatMoney === "function" ? window.formatMoney : (v) => v + " \u20AC";
-          let html = `<div class="subs-panel" style="padding: 30px; background: #2e2e2e; color: #fff; border-radius: 12px; width: 90%; max-width: 650px; box-shadow: 0 15px 40px rgba(0,0,0,0.8); border: 1px solid rgba(255,255,255,0.1);">`;
-          html += `<h2 style="margin-top:0; color:#ffeb3b; font-size:1.8em; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:12px; text-align:center;">\u{1F3C6} Fim de \xC9poca - Pr\xE9mios</h2>`;
-          html += `<div style="display:grid; grid-template-columns: 1fr 1fr; gap:16px; margin-top:20px;">`;
-          const renderAward = (title, icon, name, sub) => `
-      <div style="background: rgba(0,0,0,0.2); padding: 16px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05); text-align:center;">
-        <div style="font-size:2em; margin-bottom:8px;">${icon}</div>
-        <div style="color:#aaa; font-size:0.9em; text-transform:uppercase; letter-spacing:1px; margin-bottom:4px; font-weight:bold;">${title}</div>
-        <strong style="font-size:1.2em; color:#fff;">${name}</strong>
-        <div style="color:#4CAF50; font-size:0.9em; margin-top:4px; font-weight:bold;">${sub}</div>
-      </div>
-    `;
-          if (data.championD1 && data.championD1.team) html += renderAward("Campe\xE3o 1\xAA Divis\xE3o", "\u{1F947}", data.championD1.team.name, `${data.championD1.points} Pts`);
-          if (data.topScorer && data.topScorer.p) html += renderAward("Melhor Marcador", "\u{1F45F}", data.topScorer.p.name, `${data.topScorer.p.goals} Golos (${data.topScorer.club.team.name})`);
-          if (data.bestAttack && data.bestAttack.team) html += renderAward("Melhor Ataque", "\u2694\uFE0F", data.bestAttack.team.name, `${data.bestAttack.goalsFor} Golos Marcados`);
-          if (data.bestDefense && data.bestDefense.team) html += renderAward("Melhor Defesa", "\u{1F6E1}\uFE0F", data.bestDefense.team.name, `${data.bestDefense.goalsAgainst} Golos Sofridos`);
-          html += `</div>`;
-          if (data.totalPrize > 0) {
-            html += `<div style="margin-top:20px; background:rgba(76, 175, 80, 0.15); border:1px solid rgba(76, 175, 80, 0.3); padding:16px; border-radius:8px; text-align:center;">
-                  <div style="color:#4CAF50; font-weight:bold; font-size:1.1em; margin-bottom:8px;">\u{1F4B0} Pr\xE9mios Recebidos pela Sua Equipa:</div>
-                  <div style="font-size:0.95em; color:#ddd; line-height:1.5;">${data.prizeMsg}</div>
-                  <div style="margin-top:8px; font-size:1.2em; font-weight:900; color:#ffeb3b;">Total: ${fm(data.totalPrize)}</div>
-                </div>`;
-          }
-          html += `<div style="text-align:center; margin-top:24px;"><button id="close-awards-btn" style="padding:12px 30px; border-radius:8px; border:none; background:#2196F3; color:white; font-weight:bold; cursor:pointer; font-size:1.1em; transition:transform 0.2s;">Continuar</button></div>`;
-          html += `</div>`;
-          overlay.innerHTML = html;
-          document.body.appendChild(overlay);
-          document.getElementById("close-awards-btn").addEventListener("click", () => {
-            document.body.removeChild(overlay);
-            if (typeof onClose === "function") onClose();
-          });
-        }
-        function showPromotionsPopup(data, onClose) {
-          if (!data || !data.promoted || !data.relegated) {
-            if (typeof onClose === "function") onClose();
-            return;
-          }
-          const overlay = document.createElement("div");
-          overlay.id = "promotions-overlay";
-          Object.assign(overlay.style, {
-            position: "fixed",
-            left: "0",
-            top: "0",
-            right: "0",
-            bottom: "0",
-            background: "rgba(0,0,0,0.85)",
-            zIndex: 10005,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            color: "#fff"
-          });
-          let html = `<div class="subs-panel" style="padding: 30px; background: #2e2e2e; color: #fff; border-radius: 12px; width: 90%; max-width: 850px; box-shadow: 0 15px 40px rgba(0,0,0,0.8); border: 1px solid rgba(255,255,255,0.1); max-height:95vh; overflow-y:auto;">`;
-          html += `<h2 style="margin-top:0; color:#4CAF50; font-size:1.8em; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:12px; text-align:center;">\u{1F4C8} Subidas e Descidas</h2>`;
-          const renderList = (title, clubs, isPromo) => {
-            if (!clubs || clubs.length === 0) return "<div></div>";
-            const color = isPromo ? "#4CAF50" : "#F44336";
-            const icon = isPromo ? "\u{1F53A}" : "\u{1F53B}";
-            let block = `<div>
-                     <h4 style="color:${color}; margin:0 0 10px 0; font-size:1.1em; border-bottom:1px solid rgba(255,255,255,0.05); padding-bottom:6px; text-align:center;">${title}</h4>
-                     <div style="display:flex; flex-direction:column; gap:6px;">`;
-            clubs.forEach((c) => {
-              block += `<div style="background:rgba(0,0,0,0.2); padding:8px 12px; border-radius:6px; font-weight:bold; font-size:1em; display:flex; justify-content:space-between; align-items:center;">
-                     <span style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="${c.team.name}">${c.team.name}</span><span style="flex-shrink:0;">${icon}</span>
-                   </div>`;
-            });
-            block += `</div></div>`;
-            return block;
-          };
-          html += `<div class="promotions-grid" style="margin-top: 20px;">`;
-          html += renderList("Sobem da 2\xAA para a 1\xAA Div.", data.promoted[1], true);
-          html += renderList("Descem da 1\xAA para a 2\xAA Div.", data.relegated[0], false);
-          html += renderList("Sobem da 3\xAA para a 2\xAA Div.", data.promoted[2], true);
-          html += renderList("Descem da 2\xAA para a 3\xAA Div.", data.relegated[1], false);
-          html += renderList("Sobem da 4\xAA para a 3\xAA Div.", data.promoted[3], true);
-          html += renderList("Descem da 3\xAA para a 4\xAA Div.", data.relegated[2], false);
-          html += `</div>`;
-          html += `<div style="text-align:center; margin-top:30px;"><button id="close-promos-btn" style="padding:12px 30px; border-radius:8px; border:none; background:#2196F3; color:white; font-weight:bold; cursor:pointer; font-size:1.1em; transition:transform 0.2s;">Concluir \xC9poca</button></div>`;
-          html += `</div>`;
-          overlay.innerHTML = html;
-          document.body.appendChild(overlay);
-          document.getElementById("close-promos-btn").addEventListener("click", () => {
-            document.body.removeChild(overlay);
-            if (typeof onClose === "function") onClose();
-          });
-        }
-        const Offers = {
-          showPendingReleasesPopup,
-          showJobOffersPopup,
-          showManagerMovementsPopup,
-          showEndSeasonAwardsPopup,
-          showPromotionsPopup
-        };
-        if (typeof window !== "undefined") {
-          window.Offers = Offers;
-        }
-        if (typeof module !== "undefined") {
-          module.exports = Offers;
-        }
-      })();
-    }
-  });
+    const namespaces = [
+      "MatchBoard",
+      "Hub",
+      "Tactics",
+      "Overlays",
+      "Finance",
+      "Offers",
+      "Lineups",
+      "Promotion"
+    ];
+    namespaces.forEach((name) => {
+      try {
+        window.FootLab[name] = window.FootLab[name] || window[name] || {};
+        Object.defineProperty(window, name, {
+          get() {
+            return window.FootLab[name];
+          },
+          set(v) {
+            window.FootLab[name] = v;
+          },
+          configurable: true
+        });
+      } catch (e) {
+      }
+    });
+  })();
 
   // src/entry.mjs
-  var import_globals = __toESM(require_globals(), 1);
-  var import_logger = __toESM(require_logger(), 1);
-  var import_persistence = __toESM(require_persistence(), 1);
-  var import_promotion = __toESM(require_promotion(), 1);
+  init_logger();
+
+  // src/core/persistence.js
+  var SNAPSHOT_VERSION = 1;
+  function getByteSize(str) {
+    try {
+      if (typeof TextEncoder !== "undefined") return new TextEncoder().encode(str).length;
+      return str.length;
+    } catch (e) {
+      return str && str.length || 0;
+    }
+  }
+  function getLogger() {
+    try {
+      if (typeof window !== "undefined" && (window.FootLab || window.Elifoot) && (window.FootLab || window.Elifoot).Logger)
+        return (window.FootLab || window.Elifoot).Logger;
+    } catch (e) {
+    }
+    try {
+      if (typeof __require === "function") {
+        try {
+          return init_logger(), __toCommonJS(logger_exports);
+        } catch (e) {
+        }
+      }
+    } catch (e) {
+    }
+    return console;
+  }
+  function pruneSnapshot(snap) {
+    if (!snap) return null;
+    const pruned = JSON.parse(JSON.stringify(snap));
+    if (Array.isArray(pruned.TRANSFER_HISTORY)) {
+      pruned.TRANSFER_HISTORY = pruned.TRANSFER_HISTORY.slice(-50);
+    }
+    const cleanPlayer = (player) => {
+      if (player) delete player.originalClubRef;
+    };
+    if (Array.isArray(pruned.allClubs)) {
+      pruned.allClubs.forEach((club) => {
+        if (club && club.team && Array.isArray(club.team.players)) {
+          club.team.players.forEach(cleanPlayer);
+        }
+      });
+    }
+    if (Array.isArray(pruned.PENDING_RELEASES)) {
+      pruned.PENDING_RELEASES.forEach(cleanPlayer);
+    }
+    return pruned;
+  }
+  var Persistence = {
+    // saveSnapshot stores an envelope {version, created, payload} and enforces a size guard.
+    saveSnapshot(snap, opts) {
+      try {
+        const cleanSnap = pruneSnapshot(snap);
+        const cfg = typeof window !== "undefined" && (window.FootLab || window.Elifoot) && (window.FootLab || window.Elifoot).Config ? (window.FootLab || window.Elifoot).Config : {};
+        const maxBytes = 5242880;
+        const envelope = { version: SNAPSHOT_VERSION, created: Date.now(), payload: cleanSnap };
+        const raw = JSON.stringify(envelope);
+        const size = getByteSize(raw);
+        const logger2 = typeof window !== "undefined" && (window.FootLab || window.Elifoot) && (window.FootLab || window.Elifoot).Logger ? (window.FootLab || window.Elifoot).Logger : console;
+        if (size > maxBytes) {
+          try {
+            logger2.warn && logger2.warn(
+              "Persistence.saveSnapshot: snapshot too large",
+              size,
+              "bytes (max",
+              maxBytes,
+              ")"
+            );
+          } catch (_) {
+          }
+          try {
+            Persistence.saveDebugSnapshot({
+              reason: "oversize_snapshot",
+              size,
+              maxBytes,
+              snapshotMeta: { currentJornada: snap && snap.currentJornada }
+            });
+          } catch (_) {
+          }
+          return false;
+        }
+        if (typeof localStorage !== "undefined") {
+          try {
+            localStorage.setItem("footlab_t1_save_snapshot", raw);
+          } catch (_) {
+          }
+          try {
+            localStorage.setItem("elifoot_save_snapshot", raw);
+          } catch (_) {
+          }
+        }
+        return true;
+      } catch (e) {
+        try {
+          const lg = getLogger();
+          lg.warn && lg.warn("Persistence.saveSnapshot failed", e);
+        } catch (_) {
+        }
+        return false;
+      }
+    },
+    loadSnapshot() {
+      try {
+        if (typeof localStorage === "undefined") return null;
+        const raw = localStorage.getItem("footlab_t1_save_snapshot") || localStorage.getItem("elifoot_save_snapshot");
+        if (!raw) return null;
+        const envelope = JSON.parse(raw);
+        if (!envelope || typeof envelope !== "object") return null;
+        if (!("version" in envelope)) {
+          try {
+            const lg = getLogger();
+            lg.info && lg.info("Persistence.loadSnapshot: migrating legacy snapshot to versioned envelope");
+          } catch (_) {
+          }
+          try {
+            const legacy = envelope;
+            const wrapped = { version: SNAPSHOT_VERSION, created: Date.now(), payload: legacy };
+            try {
+              try {
+                localStorage.setItem("footlab_t1_save_snapshot", JSON.stringify(wrapped));
+              } catch (_) {
+              }
+              try {
+                localStorage.setItem("elifoot_save_snapshot", JSON.stringify(wrapped));
+              } catch (_) {
+              }
+            } catch (e) {
+            }
+            return wrapped.payload || null;
+          } catch (e) {
+            return envelope;
+          }
+        }
+        if (envelope.version !== SNAPSHOT_VERSION) {
+          try {
+            const lg = getLogger();
+            lg.warn && lg.warn("Persistence.loadSnapshot: snapshot version mismatch", envelope.version);
+          } catch (_) {
+          }
+          return null;
+        }
+        return envelope.payload || null;
+      } catch (e) {
+        try {
+          const lg = getLogger();
+          lg.warn && lg.warn("Persistence.loadSnapshot failed", e);
+        } catch (_) {
+        }
+        return null;
+      }
+    },
+    saveDebugSnapshot(dbg) {
+      try {
+        if (typeof localStorage !== "undefined") {
+          try {
+            localStorage.setItem("footlab_t1_debug_snapshot", JSON.stringify(dbg));
+          } catch (_) {
+          }
+          try {
+            localStorage.setItem("elifoot_debug_snapshot", JSON.stringify(dbg));
+          } catch (_) {
+          }
+        }
+      } catch (e) {
+      }
+    },
+    saveSeasonResults(obj) {
+      try {
+        if (typeof localStorage !== "undefined") {
+          try {
+            localStorage.setItem("footlab_t1_last_season_results", JSON.stringify(obj));
+          } catch (_) {
+          }
+          try {
+            localStorage.setItem("elifoot_last_season_results", JSON.stringify(obj));
+          } catch (_) {
+          }
+        }
+      } catch (e) {
+      }
+    },
+    // low-level helpers
+    getRaw(key) {
+      try {
+        return typeof localStorage !== "undefined" ? localStorage.getItem(key) : null;
+      } catch (e) {
+        return null;
+      }
+    },
+    setRaw(key, value) {
+      try {
+        if (typeof localStorage !== "undefined") localStorage.setItem(key, value);
+      } catch (e) {
+      }
+    }
+  };
+  if (typeof window !== "undefined") {
+    window.FootLab = window.FootLab || window.Elifoot || {};
+    window.FootLab.Persistence = window.FootLab.Persistence || Persistence;
+    window.Elifoot = window.Elifoot || window.FootLab;
+  }
 
   // src/logic/lineups.js
   (function() {
-    function getLogger6() {
+    function getLogger7() {
       try {
         return window.FootLab && window.FootLab.Logger || window.Elifoot && window.Elifoot.Logger || console;
       } catch (e) {
@@ -1569,7 +597,7 @@
           }
         } catch (err) {
           try {
-            getLogger6().error("Erro a reordenar match por roster", err);
+            getLogger7().error("Erro a reordenar match por roster", err);
           } catch (_) {
           }
         }
@@ -1583,14 +611,11 @@
       NS.reorderMatchByRoster = reorderMatchByRoster;
     } catch (err) {
       try {
-        getLogger6().error("Erro a inicializar Elifoot.Lineups", err);
+        getLogger7().error("Erro a inicializar Elifoot.Lineups", err);
       } catch (_) {
       }
     }
   })();
-
-  // src/entry.mjs
-  var import_constants = __toESM(require_constants(), 1);
 
   // src/players.js
   var positions = typeof GameConstants !== "undefined" && GameConstants.POSITIONS || ["GK", "DF", "MF", "FW"];
@@ -1712,6 +737,7 @@
           const p = players[i];
           if (!p) continue;
           if (removed >= maxPerClub) break;
+          if (window.FREE_TRANSFERS.length >= 10) return window.FREE_TRANSFERS;
           if (Math.random() < perPlayerProb) {
             const idx = club.team.players.findIndex((x) => x === p || x && p && x.id === p.id);
             if (idx >= 0) club.team.players.splice(idx, 1);
@@ -1753,6 +779,7 @@
           if (removed >= maxPerClub) break;
           const p = club.team.players[i];
           if (!p) continue;
+          if (window.PENDING_RELEASES.length >= 10) return window.PENDING_RELEASES;
           if (Math.random() < perPlayerProb) {
             const clone = Object.assign({}, p);
             clone.previousSalary = Number(p.salary || 0);
@@ -2152,7 +1179,7 @@
     } catch (e) {
     }
     try {
-      if (typeof __require === "function") return require_logger();
+      if (typeof __require === "function") return init_logger(), __toCommonJS(logger_exports);
     } catch (e) {
     }
     return console;
@@ -2363,8 +1390,400 @@
   } catch (e) {
   }
 
-  // src/entry.mjs
-  var import_teams = __toESM(require_teams(), 1);
+  // src/teams.js
+  var E = typeof window !== "undefined" ? window.FootLab || window.Elifoot || window : typeof global !== "undefined" ? global : {};
+  function buildDivisionsFromRostersOrdered() {
+    const E2 = typeof window !== "undefined" ? window.FootLab || window.Elifoot || window : typeof global !== "undefined" ? global : {};
+    function getLogger7() {
+      try {
+        return typeof window !== "undefined" && window.FootLab && window.FootLab.Logger || typeof window !== "undefined" && window.Elifoot && window.Elifoot.Logger || console;
+      } catch (e) {
+        return console;
+      }
+    }
+    const globalObj = typeof window !== "undefined" ? window : typeof global !== "undefined" ? global : {};
+    const rostersSource = globalObj && globalObj.REAL_ROSTERS || E2 && E2.REAL_ROSTERS || null;
+    const rosters = rostersSource ? Object.keys(rostersSource) : [];
+    const teamColorMapSource = globalObj && globalObj.REAL_TEAM_COLORS || E2 && E2.REAL_TEAM_COLORS || null;
+    const rostersArePresent = Array.isArray(rosters) && rosters.length > 0;
+    if (!rostersArePresent) {
+      throw new Error(
+        `Aguardando dados: window.REAL_ROSTERS n\xE3o encontrado. Verifique se real_rosters_2025_26.js foi carregado.`
+      );
+    }
+    function validateRosters(expectedTeams = 72, minPlayers = 18) {
+      if (!(E2 && E2.REAL_ROSTERS)) return;
+      const keys = Object.keys(E2.REAL_ROSTERS);
+      const problems = [];
+      if (keys.length !== expectedTeams)
+        problems.push(`expected ${expectedTeams} teams but found ${keys.length}`);
+      for (let i = 0; i < keys.length; i++) {
+        const team = keys[i];
+        const players = E2.REAL_ROSTERS[team] || [];
+        if (!Array.isArray(players)) {
+          problems.push(`${team} roster is not an array`);
+          continue;
+        }
+        if (players.length < minPlayers) problems.push(`${team} has only ${players.length} players`);
+      }
+      if (problems.length) {
+        const msg = "Roster validation failed: " + problems.join("; ");
+        try {
+          const L2 = getLogger7();
+          L2 && L2.warn && L2.warn(msg);
+        } catch (e) {
+          try {
+            console && console.warn && console.warn(msg);
+          } catch (_) {
+          }
+        }
+        return;
+      }
+    }
+    validateRosters(72, 18);
+    function nameToColor(name) {
+      if (!name) return { bg: "#2e2e2e", fg: "#ffffff" };
+      let h = 0;
+      for (let i = 0; i < name.length; i++) h = h * 31 + name.charCodeAt(i) & 268435455;
+      const hue = h % 360;
+      const sat = 60 + h % 10;
+      const light = 34 + h % 12;
+      const hslToHexLocal = (h2, s, l) => {
+        l /= 100;
+        const a = s * Math.min(l, 1 - l) / 100;
+        const f = (n) => {
+          const k = (n + h2 / 30) % 12;
+          const color = l - a * Math.max(Math.min(k - 3, 9 - k, 1), -1);
+          return Math.round(255 * color).toString(16).padStart(2, "0");
+        };
+        return `#${f(0)}${f(8)}${f(4)}`;
+      };
+      const getLuminanceLocal = (hex) => {
+        const r = parseInt(hex.slice(1, 3), 16) / 255;
+        const g = parseInt(hex.slice(3, 5), 16) / 255;
+        const b = parseInt(hex.slice(5, 7), 16) / 255;
+        const a = [r, g, b].map((v) => v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4));
+        return 0.2126 * a[0] + 0.7152 * a[1] + 0.0722 * a[2];
+      };
+      const bg = hslToHexLocal(hue, sat, light);
+      const L2 = getLuminanceLocal(bg);
+      const fg = L2 > 0.5 ? "#000000" : "#ffffff";
+      return { bg, fg };
+    }
+    const teamColorMap = teamColorMapSource;
+    function normalizeName(n) {
+      if (!n) return "";
+      let s = n.normalize ? n.normalize("NFD").replace(/\p{Diacritic}/gu, "") : n;
+      s = String(s).toLowerCase();
+      s = s.replace(/\b(fc|cf|sl|sc|cd|ac|cp|sad|f c|c f|ac\.|fc\.|sc\.|rcd|ssc|ss|clube|futebol)\b/g, "");
+      s = s.replace(/[\u2018\u2019'`’]/g, "");
+      s = s.replace(/[^a-z0-9\s]/g, "");
+      s = s.replace(/\s+/g, " ").trim();
+      return s;
+    }
+    const _normalizedColorMap = {};
+    try {
+      Object.keys(teamColorMap || {}).forEach((k) => {
+        const nk = normalizeName(k || "");
+        if (nk) _normalizedColorMap[nk] = teamColorMap[k];
+      });
+    } catch (e) {
+    }
+    const sliceTeam = (start) => rosters.slice(start, start + 18).map((name) => {
+      let c;
+      const exact = teamColorMap && teamColorMap[name] ? teamColorMap[name] : null;
+      if (exact) {
+        c = { bg: exact.bgColor || "#2e2e2e", fg: exact.color || "#ffffff" };
+      } else {
+        const nk = normalizeName(name);
+        const m = nk && _normalizedColorMap[nk] ? _normalizedColorMap[nk] : null;
+        if (m) c = { bg: m.bgColor || "#2e2e2e", fg: m.color || "#ffffff" };
+        else c = nameToColor(name);
+      }
+      return { name, color: c.fg, bgColor: c.bg };
+    });
+    const div1 = sliceTeam(0);
+    const div2 = sliceTeam(18);
+    const div3 = sliceTeam(36);
+    const div4 = sliceTeam(54);
+    return [
+      { name: "1\xAA divis\xE3o", teams: div1 },
+      { name: "2\xAA divis\xE3o", teams: div2 },
+      { name: "3\xAA divis\xE3o", teams: div3 },
+      { name: "4\xAA divis\xE3o", teams: div4 }
+    ];
+  }
+  var divisionsData2 = null;
+  var _divisionsResolve = null;
+  var _divisionsReject = null;
+  var divisionsReady = new Promise((resolve, reject) => {
+    _divisionsResolve = resolve;
+    _divisionsReject = reject;
+  });
+  function _tryBuildDivisions() {
+    try {
+      const dd = buildDivisionsFromRostersOrdered();
+      divisionsData2 = dd;
+      try {
+        if (typeof window !== "undefined") window.divisionsData = divisionsData2;
+        if (typeof global !== "undefined") global.divisionsData = divisionsData2;
+      } catch (e) {
+      }
+      try {
+        _divisionsResolve && _divisionsResolve(divisionsData2);
+      } catch (e) {
+      }
+      try {
+        if (typeof document !== "undefined" && typeof document.dispatchEvent === "function") {
+          document.dispatchEvent(new CustomEvent("footlab:rosters-loaded"));
+        }
+      } catch (e) {
+      }
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+  if (!_tryBuildDivisions()) {
+    const start = Date.now();
+    const timeout = 3e3;
+    const iv = setInterval(() => {
+      if (_tryBuildDivisions()) {
+        clearInterval(iv);
+        return;
+      }
+      if (Date.now() - start > timeout) {
+        clearInterval(iv);
+        try {
+          _divisionsReject && _divisionsReject(
+            new Error("Timed out waiting for window.REAL_ROSTERS to become available")
+          );
+        } catch (e) {
+        }
+        try {
+          console && console.error && console.error("Timed out waiting for window.REAL_ROSTERS");
+        } catch (_) {
+        }
+      }
+    }, 80);
+  }
+  function waitForDivisionsData(timeoutMs = 3e3) {
+    if (divisionsData2) return Promise.resolve(divisionsData2);
+    return Promise.race([
+      divisionsReady,
+      new Promise(
+        (_, rej) => setTimeout(() => rej(new Error("waitForDivisionsData timeout")), timeoutMs)
+      )
+    ]);
+  }
+  var TACTICS = [
+    {
+      name: "4-4-2",
+      description: "Cl\xE1ssica - Equilibrada",
+      attack: 3,
+      defense: 3,
+      midfield: 4,
+      requires: { wingers: false, threeAtBack: false }
+    },
+    {
+      name: "4-3-3",
+      description: "Ofensiva - Ataque (com pontas)",
+      attack: 4,
+      defense: 2,
+      midfield: 3,
+      requires: { wingers: true, threeAtBack: false, strikers: 1 }
+    },
+    {
+      name: "3-5-2",
+      description: "Controle - Meio-campo (tr\xEAs centrais)",
+      attack: 3,
+      defense: 3,
+      midfield: 5,
+      requires: { wingers: false, threeAtBack: true }
+    },
+    {
+      name: "5-3-2",
+      description: "Defensiva - Seguran\xE7a (laterais avan\xE7am)",
+      attack: 2,
+      defense: 5,
+      midfield: 3,
+      requires: { wingers: false, threeAtBack: false }
+    },
+    {
+      name: "4-5-1",
+      description: "Conten\xE7\xE3o - Defesa (meio-campo denso)",
+      attack: 2,
+      defense: 4,
+      midfield: 5,
+      requires: { wingers: false, threeAtBack: false }
+    },
+    {
+      name: "3-4-3",
+      description: "Ataque Total - Press\xE3o (tr\xEAs centrais e pontas)",
+      attack: 5,
+      defense: 2,
+      midfield: 4,
+      requires: { wingers: true, threeAtBack: true, strikers: 1 }
+    },
+    {
+      name: "5-4-1",
+      description: "Ultra Defensiva - Resist\xEAncia",
+      attack: 1,
+      defense: 5,
+      midfield: 4,
+      requires: { wingers: false, threeAtBack: false }
+    },
+    {
+      name: "4-2-3-1",
+      description: "Moderna - Controle e Transi\xE7\xE3o",
+      attack: 4,
+      defense: 3,
+      midfield: 5,
+      requires: { wingers: true, threeAtBack: false, strikers: 1 }
+    },
+    {
+      name: "4-1-4-1",
+      description: "Posicional - Trinco e Linha M\xE9dia",
+      attack: 3,
+      defense: 4,
+      midfield: 5,
+      requires: { wingers: true, threeAtBack: false, strikers: 1 }
+    },
+    {
+      name: "4-2-4",
+      description: "Ultra Ofensiva - Risco M\xE1ximo",
+      attack: 5,
+      defense: 3,
+      midfield: 2,
+      requires: { wingers: true, threeAtBack: false, strikers: 2 }
+    }
+  ];
+  try {
+    if (typeof window !== "undefined") {
+      window.TACTICS = TACTICS;
+      window.FootLab = window.FootLab || window.Elifoot || {};
+      window.FootLab.TACTICS = window.FootLab.TACTICS || TACTICS;
+      window.Elifoot = window.Elifoot || window.FootLab;
+    }
+    if (typeof global !== "undefined") global.TACTICS = TACTICS;
+  } catch (e) {
+  }
+  function generateTeam(teamId) {
+    const allTeams = divisionsData2.map((d) => d.teams).flat();
+    const teamMeta = allTeams[teamId - 1] || {
+      name: `Team ${teamId}`,
+      color: "#FFFFFF",
+      bgColor: "#000000"
+    };
+    let players = [];
+    try {
+      if (E && E.REAL_ROSTERS && E.REAL_ROSTERS[teamMeta.name])
+        players = E.REAL_ROSTERS[teamMeta.name];
+    } catch (e) {
+      players = [];
+    }
+    if (!Array.isArray(players) || players.length === 0) {
+      throw new Error(
+        `No roster found for team "${teamMeta.name}" (teamId ${teamId}). The application requires real roster data in window.REAL_ROSTERS.`
+      );
+    }
+    const divIndex = Math.floor((teamId - 1) / 18);
+    let stadiumCapacity = divIndex === 0 ? 3e4 : divIndex === 1 ? 15e3 : divIndex === 2 ? 1e4 : 4e3;
+    let members = divIndex === 0 ? 25e3 : divIndex === 1 ? 15e3 : divIndex === 2 ? 5e3 : 1e3;
+    return {
+      id: teamId,
+      name: teamMeta.name,
+      color: teamMeta.color,
+      bgColor: teamMeta.bgColor,
+      players,
+      tactic: "4-4-2",
+      stadiumCapacity,
+      members,
+      ticketPrice: 20,
+      totalSalaryCost: 0,
+      currentLeaguePosition: 0,
+      leaguePoints: 0
+    };
+  }
+  try {
+    if (typeof window !== "undefined") {
+      window.generateTeam = generateTeam;
+      window.FootLab = window.FootLab || window.Elifoot || {};
+      window.FootLab.generateTeam = window.FootLab.generateTeam || generateTeam;
+      window.Elifoot = window.Elifoot || window.FootLab;
+    }
+    if (typeof global !== "undefined") global.generateTeam = generateTeam;
+  } catch (e) {
+  }
+  function printDivisionAssignments() {
+    if (typeof divisionsData2 === "undefined") return;
+    const logger2 = typeof window !== "undefined" && window.FootLab && window.FootLab.Logger || typeof window !== "undefined" && window.Elifoot && window.Elifoot.Logger || console;
+    divisionsData2.forEach((d, idx) => {
+      logger2.info(`${idx + 1}. ${d.name} \u2014 ${d.teams.length} teams`);
+      d.teams.forEach((t, i) => logger2.info(`   ${i + 1}. ${t.name}`));
+    });
+  }
+  try {
+    if (typeof window !== "undefined") {
+      window.printDivisionAssignments = printDivisionAssignments;
+      window.FootLab = window.FootLab || window.Elifoot || {};
+      window.FootLab.printDivisionAssignments = window.FootLab.printDivisionAssignments || printDivisionAssignments;
+      window.Elifoot = window.Elifoot || window.FootLab;
+    }
+    if (typeof global !== "undefined") global.printDivisionAssignments = printDivisionAssignments;
+  } catch (e) {
+  }
+  function validateRosterConstraints({
+    expectedTeams = 72,
+    minPlayers = 18,
+    maxPlayers = 28,
+    maxGK = 3
+  } = {}) {
+    if (!(E && E.REAL_ROSTERS)) return { ok: true, problems: [] };
+    const keys = Object.keys(E.REAL_ROSTERS);
+    const problems = [];
+    if (keys.length !== expectedTeams)
+      problems.push(`expected ${expectedTeams} teams but found ${keys.length}`);
+    for (let team of keys) {
+      const players = E.REAL_ROSTERS[team] || [];
+      if (!Array.isArray(players)) {
+        problems.push(`${team} roster is not an array`);
+        continue;
+      }
+      if (players.length < minPlayers) problems.push(`${team} has only ${players.length} players`);
+      if (players.length > maxPlayers)
+        problems.push(`${team} has ${players.length} players (over ${maxPlayers})`);
+      const gkCount = players.reduce(
+        (a, p) => a + ((p.position || p.pos || "").toUpperCase() === "GK" ? 1 : 0),
+        0
+      );
+      if (gkCount > maxGK) problems.push(`${team} has ${gkCount} GKs (over ${maxGK})`);
+    }
+    return { ok: problems.length === 0, problems };
+  }
+  try {
+    if (typeof window !== "undefined") {
+      window.waitForDivisionsData = waitForDivisionsData;
+      window.FootLab = window.FootLab || window.Elifoot || {};
+      window.FootLab.waitForDivisionsData = window.FootLab.waitForDivisionsData || waitForDivisionsData;
+      window.Elifoot = window.Elifoot || window.FootLab;
+    }
+    if (typeof global !== "undefined") global.waitForDivisionsData = waitForDivisionsData;
+  } catch (e) {
+  }
+  try {
+    const _startup = validateRosterConstraints({
+      expectedTeams: 72,
+      minPlayers: 18,
+      maxPlayers: 28,
+      maxGK: 3
+    });
+    if (!_startup.ok) {
+      throw new Error("Startup roster validation failed: " + _startup.problems.join("; "));
+    }
+  } catch (e) {
+    if (e && e.message && e.message.indexOf("Startup roster validation failed") === 0) throw e;
+  }
 
   // src/matches.js
   var SIM_CONFIG = {
@@ -2381,7 +1800,7 @@
       suspensionRed: 2
     }
   };
-  function getLogger() {
+  function getLogger2() {
     return typeof window !== "undefined" && window.FootLab && window.FootLab.Logger ? window.FootLab.Logger : typeof window !== "undefined" && window.Elifoot && window.Elifoot.Logger ? window.Elifoot.Logger : console;
   }
   function generateRounds2(clubs) {
@@ -2466,8 +1885,8 @@
       const awayPlayers = match.awayPlayers && Array.isArray(match.awayPlayers) ? match.awayPlayers : match.away && match.away.players;
       if (!homePlayers || !awayPlayers || !Array.isArray(homePlayers) || !Array.isArray(awayPlayers)) {
         try {
-          const L = getLogger();
-          L.error && L.error("Equipa sem jogadores ou formato inv\xE1lido:", match);
+          const L2 = getLogger2();
+          L2.error && L2.error("Equipa sem jogadores ou formato inv\xE1lido:", match);
         } catch (_) {
         }
         continue;
@@ -2482,8 +1901,8 @@
       const homeDraw = Math.random();
       if (window.DEBUG_MATCH_SIM && minute <= 10) {
         try {
-          const L = getLogger();
-          L.debug && L.debug("DBG goal-check home", {
+          const L2 = getLogger2();
+          L2.debug && L2.debug("DBG goal-check home", {
             matchIdx: i,
             minute,
             homePlayers: homePlayers.length,
@@ -2511,8 +1930,8 @@
         const awayDraw = Math.random();
         if (window.DEBUG_MATCH_SIM && minute <= 10) {
           try {
-            const L = getLogger();
-            L.debug && L.debug("DBG goal-check away", {
+            const L2 = getLogger2();
+            L2.debug && L2.debug("DBG goal-check away", {
               matchIdx: i,
               minute,
               awayGoalChance: awayGoalChance.toFixed(6),
@@ -2580,8 +1999,8 @@
         giveCard(awayPlayers, "away");
       } catch (err) {
         try {
-          const L = getLogger();
-          L.error && L.error("Erro ao simular cart\xF5es:", err);
+          const L2 = getLogger2();
+          L2.error && L2.error("Erro ao simular cart\xF5es:", err);
         } catch (_) {
         }
       }
@@ -3081,7 +2500,7 @@
   // src/core/simulation.js
   (function() {
     "use strict";
-    function getLogger6() {
+    function getLogger7() {
       return typeof window !== "undefined" && window.FootLab && window.FootLab.Logger ? window.FootLab.Logger : typeof window !== "undefined" && window.Elifoot && window.Elifoot.Logger ? window.Elifoot.Logger : console;
     }
     const PersistenceAPI = typeof window !== "undefined" && window.FootLab && window.FootLab.Persistence || typeof window !== "undefined" && window.Elifoot && window.Elifoot.Persistence || null;
@@ -3093,21 +2512,50 @@
       overlay.style.cssText = "position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.85);display:flex;align-items:center;justify-content:center;z-index:999999;";
       const box = document.createElement("div");
       box.style.cssText = "background:#1a1a1a;border:1px solid rgba(255,255,255,0.15);border-radius:12px;padding:24px;width:360px;color:#fff;text-align:center;box-shadow:0 12px 40px rgba(0,0,0,0.5);font-family:sans-serif;";
-      const formatMoney3 = typeof window.formatMoney === "function" ? window.formatMoney : (v) => v + " \u20AC";
+      const formatMoney4 = typeof window.formatMoney === "function" ? window.formatMoney : (v) => v + " \u20AC";
       const fee = player.leavingFee || 0;
       const salary = player.minContract || player.salary || 0;
       const clubName = player.previousClubName || "Desconhecido";
+      const myBudget = window.playerClub ? window.playerClub.budget || 0 : 0;
+      const sqSz = window.playerClub && window.playerClub.team && window.playerClub.team.players ? window.playerClub.team.players.length : 0;
+      if (myBudget < fee || sqSz >= 28) {
+        const myDiv = window.playerClub ? window.playerClub.division : 4;
+        const rivals = (window.allDivisions[myDiv - 1] || []).filter((c) => c !== window.playerClub);
+        const rival = rivals.length > 0 ? rivals[Math.floor(Math.random() * rivals.length)] : null;
+        const rSal = Math.floor(salary * (1 + Math.random() * 0.3));
+        box.innerHTML = `
+            <h3 style="margin-top:0;color:#f44336;font-size:1.3rem;border-bottom:1px solid rgba(255,255,255,0.1);padding-bottom:12px;">Proposta Invi\xE1vel</h3>
+            <p style="font-size:1rem;margin-bottom:20px;line-height:1.5;">
+                Sem fundos/espa\xE7o para <strong>${player.name}</strong>. Assinou pelo <strong>${rival ? rival.team.name : "outro clube"}</strong>.
+            </p>
+            <button id="btn-continue-free" style="width:100%;background:#2196F3;color:#fff;border:none;padding:12px;border-radius:6px;font-weight:bold;cursor:pointer;font-size:1rem;">Continuar</button>
+        `;
+        overlay.appendChild(box);
+        document.body.appendChild(overlay);
+        box.querySelector("#btn-continue-free").onclick = () => {
+          document.body.removeChild(overlay);
+          callback(false, 0, rival, rSal);
+        };
+        return;
+      }
       box.innerHTML = `
         <h3 style="margin-top:0;color:#ffeb3b;font-size:1.3rem;border-bottom:1px solid rgba(255,255,255,0.1);padding-bottom:12px;">Jogador Livre</h3>
         <p style="font-size:0.95rem;margin-bottom:20px;opacity:0.9;line-height:1.4;"><strong>${player.name}</strong> terminou o contrato com o <strong>${clubName}</strong> e foi oferecido ao teu clube.</p>
         <div style="background:rgba(255,255,255,0.05);padding:15px;border-radius:8px;margin-bottom:24px;text-align:left;font-size:0.95rem;">
             <div style="display:flex;justify-content:space-between;margin-bottom:8px;"><span>Posi\xE7\xE3o:</span> <strong>${player.position}</strong></div>
             <div style="display:flex;justify-content:space-between;margin-bottom:8px;"><span>Habilidade:</span> <strong><span style="color:#ffeb3b;">${player.skill}</span></strong></div>
-            <div style="display:flex;justify-content:space-between;margin-bottom:8px;"><span>Sal\xE1rio:</span> <strong>${formatMoney3(salary)}/m\xEAs</strong></div>
-            <div style="display:flex;justify-content:space-between;"><span>Pr\xE9mio Assinatura:</span> <strong>${formatMoney3(fee)}</strong></div>
+            <div style="display:flex;justify-content:space-between;margin-bottom:8px;"><span>Sal\xE1rio:</span> <strong>${formatMoney4(salary)}/m\xEAs</strong></div>
+            <div style="display:flex;justify-content:space-between;"><span>Pr\xE9mio Assinatura:</span> <strong>${formatMoney4(fee)}</strong></div>
         </div>
+    <div style="margin-bottom: 20px;">
+        <p style="font-size: 0.85em; color: #ff9800; margin-bottom: 8px;">Outros clubes tamb\xE9m est\xE3o interessados. Melhora a oferta para garantir a contrata\xE7\xE3o.</p>
+        <div style="display:flex; align-items:center; gap: 10px; justify-content:center;">
+            <label>Tua Oferta:</label>
+            <input type="number" id="offer-salary-input" value="${salary}" style="padding: 8px; border-radius: 4px; border: 1px solid #555; background: #222; color: #fff; width: 120px; text-align: center; font-weight: bold;">
+        </div>
+    </div>
         <div style="display:flex;gap:12px;">
-            <button id="btn-accept-free" style="flex:1;background:#4caf50;color:#fff;border:none;padding:12px;border-radius:6px;font-weight:bold;cursor:pointer;font-size:1rem;transition:background 0.2s;">Contratar</button>
+        <button id="btn-accept-free" style="flex:1;background:#4caf50;color:#fff;border:none;padding:12px;border-radius:6px;font-weight:bold;cursor:pointer;font-size:1rem;transition:background 0.2s;">Fazer Oferta</button>
             <button id="btn-reject-free" style="flex:1;background:#f44336;color:#fff;border:none;padding:12px;border-radius:6px;font-weight:bold;cursor:pointer;font-size:1rem;transition:background 0.2s;">Ignorar</button>
         </div>
     `;
@@ -3119,18 +2567,43 @@
       btnAccept.onmouseout = () => btnAccept.style.background = "#4caf50";
       btnReject.onmouseover = () => btnReject.style.background = "#da190b";
       btnReject.onmouseout = () => btnReject.style.background = "#f44336";
-      btnAccept.onclick = () => {
-        document.body.removeChild(overlay);
-        callback(true);
-      };
       btnReject.onclick = () => {
         document.body.removeChild(overlay);
         callback(false);
       };
+      btnAccept.onclick = () => {
+        const offered = parseInt(box.querySelector("#offer-salary-input").value, 10) || salary;
+        let prob = 0.05;
+        if (offered >= salary * 1.5) prob = 1;
+        else if (offered >= salary * 1.2) prob = 0.8;
+        else if (offered >= salary) prob = 0.3;
+        const success = Math.random() < prob;
+        let rival = null, rivalSalary = 0;
+        if (!success) {
+          const myDiv = window.playerClub ? window.playerClub.division : 4;
+          const rivals = (window.allDivisions[myDiv - 1] || []).filter((c) => c !== window.playerClub);
+          if (rivals.length > 0) rival = rivals[Math.floor(Math.random() * rivals.length)];
+          rivalSalary = Math.floor(salary * (1 + Math.random() * 0.3));
+        }
+        box.innerHTML = `
+            <h3 style="margin-top:0;color:${success ? "#4caf50" : "#f44336"};font-size:1.3rem;border-bottom:1px solid rgba(255,255,255,0.1);padding-bottom:12px;">${success ? "Contrata\xE7\xE3o Conclu\xEDda!" : "Proposta Rejeitada"}</h3>
+            <p style="font-size:1rem;margin-bottom:20px;line-height:1.5;">
+                ${success ? `<strong>${player.name}</strong> aceitou a tua proposta e assinou pelo <strong>${window.playerClub ? window.playerClub.team.name : "teu clube"}</strong>.` : `<strong>${player.name}</strong> rejeitou a tua proposta e assinou pelo <strong>${rival ? rival.team.name : "outro clube"}</strong> por um sal\xE1rio de <br><span style="display:inline-block; width:140px; text-align:center; color:#ffeb3b; font-weight:bold; margin-top:8px; padding:6px; background:rgba(0,0,0,0.3); border-radius:4px;">${formatMoney4(rivalSalary)}</span>.`}
+            </p>
+            <button id="btn-continue-free" style="width:100%;background:#2196F3;color:#fff;border:none;padding:12px;border-radius:6px;font-weight:bold;cursor:pointer;font-size:1rem;">Continuar</button>
+        `;
+        box.querySelector("#btn-continue-free").onclick = () => {
+          document.body.removeChild(overlay);
+          callback(success, offered, rival, rivalSalary);
+        };
+      };
     }
     function processManagerMovements(isEndSeason) {
       const allDivisions2 = window.allDivisions || [];
-      const freeCoaches = window.UNEMPLOYED_COACHES || [];
+      if (!Array.isArray(window.UNEMPLOYED_COACHES)) {
+        window.UNEMPLOYED_COACHES = [];
+      }
+      const freeCoaches = window.UNEMPLOYED_COACHES;
       window.PLAYER_JOB_OFFERS = window.PLAYER_JOB_OFFERS || [];
       let clubsNeedingCoaches = [];
       allDivisions2.forEach((division) => {
@@ -3142,7 +2615,11 @@
           if (rank >= total - 3) sackChance = isEndSeason ? 1 : 0.4;
           else if (rank >= total - 6) sackChance = isEndSeason ? 0.3 : 0.1;
           if (Math.random() < sackChance) {
-            freeCoaches.push(club.coach);
+            const coach = club.coach;
+            if (coach) {
+              delete coach.clubId;
+              freeCoaches.push(coach);
+            }
             club.coach = null;
             clubsNeedingCoaches.push(club);
           }
@@ -3187,7 +2664,12 @@
         } else {
           club.coach = { name: chosen.name, reputation: chosen.reputation };
           if (chosen.currentClub) {
+            const poachedCoach = chosen.currentClub.coach;
             chosen.currentClub.coach = null;
+            if (poachedCoach) {
+              delete poachedCoach.clubId;
+              freeCoaches.push(poachedCoach);
+            }
             clubsNeedingCoaches.push(chosen.currentClub);
           } else {
             const idx = freeCoaches.findIndex((fc) => fc.name === chosen.name);
@@ -3228,8 +2710,8 @@
             }
           } catch (e) {
             try {
-              const L = getLogger6();
-              L.warn && L.warn("Erro a calcular receita/assist\xEAncia do jogo:", e);
+              const L2 = getLogger7();
+              L2.warn && L2.warn("Erro a calcular receita/assist\xEAncia do jogo:", e);
             } catch (_) {
             }
           }
@@ -3268,8 +2750,8 @@
           match._counted = true;
         } catch (err) {
           try {
-            const L = getLogger6();
-            L.warn && L.warn("updateClubStatsAfterMatches: failed for match", match, err);
+            const L2 = getLogger7();
+            L2.warn && L2.warn("updateClubStatsAfterMatches: failed for match", match, err);
           } catch (_) {
           }
         }
@@ -3299,8 +2781,8 @@
         }
       } catch (err) {
         try {
-          const L = getLogger6();
-          L.warn && L.warn("Could not persist snapshot after updating club stats", err);
+          const L2 = getLogger7();
+          L2.warn && L2.warn("Could not persist snapshot after updating club stats", err);
         } catch (_) {
         }
       }
@@ -3380,8 +2862,8 @@
               result = Lineups.chooseStarters(homeTeam) || {};
             } catch (e) {
               try {
-                const L = getLogger6();
-                L.warn && L.warn("chooseStarters failed for homeTeam, using fallback", e);
+                const L2 = getLogger7();
+                L2.warn && L2.warn("chooseStarters failed for homeTeam, using fallback", e);
               } catch (_) {
               }
             }
@@ -3401,8 +2883,8 @@
               result = Lineups.chooseStarters(awayTeam) || {};
             } catch (e) {
               try {
-                const L = getLogger6();
-                L.warn && L.warn("chooseStarters failed for awayTeam, using fallback", e);
+                const L2 = getLogger7();
+                L2.warn && L2.warn("chooseStarters failed for awayTeam, using fallback", e);
               } catch (_) {
               }
             }
@@ -3418,8 +2900,8 @@
           }
         } catch (err) {
           try {
-            const L = getLogger6();
-            L.error && L.error("Erro ao atribuir lineups para match", err, match);
+            const L2 = getLogger7();
+            L2.error && L2.error("Erro ao atribuir lineups para match", err, match);
           } catch (_) {
           }
         }
@@ -3430,32 +2912,32 @@
         const win = typeof window !== "undefined" ? window : null;
         const allowed = win && win.__userInitiatedSim || win && win.__allowProgrammaticSim;
         if (!allowed) {
-          const L = getLogger6();
-          L.info && L.info("simulateDay blocked: not user-initiated");
+          const L2 = getLogger7();
+          L2.info && L2.info("simulateDay blocked: not user-initiated");
           return;
         }
       } catch (e) {
       }
       if (isSimulating) {
         try {
-          const L = getLogger6();
-          L.warn && L.warn("simulateDay called but already simulating (Jornada", window.currentJornada, ")");
+          const L2 = getLogger7();
+          L2.warn && L2.warn("simulateDay called but already simulating (Jornada", window.currentJornada, ")");
         } catch (_) {
         }
         return;
       }
       isSimulating = true;
       try {
-        const L = typeof window !== "undefined" && window.Elifoot && window.Elifoot.Logger ? window.Elifoot.Logger : console;
-        L.info && L.info("Iniciando simula\xE7\xE3o (Jornada", window.currentJornada, ")...");
+        const L2 = typeof window !== "undefined" && window.Elifoot && window.Elifoot.Logger ? window.Elifoot.Logger : console;
+        L2.info && L2.info("Iniciando simula\xE7\xE3o (Jornada", window.currentJornada, ")...");
       } catch (_) {
       }
       try {
         assignStartingLineups2(window.currentRoundMatches);
       } catch (e) {
         try {
-          const L = getLogger6();
-          L.error && L.error("Erro ao atribuir lineups antes da simula\xE7\xE3o", e);
+          const L2 = getLogger7();
+          L2.error && L2.error("Erro ao atribuir lineups antes da simula\xE7\xE3o", e);
         } catch (_) {
         }
       }
@@ -3473,8 +2955,8 @@
             renderInitialMatchBoard(window.allDivisions);
         } catch (e) {
           try {
-            const L = getLogger6();
-            L.error && L.error("renderInitialMatchBoard not found", e);
+            const L2 = getLogger7();
+            L2.error && L2.error("renderInitialMatchBoard not found", e);
           } catch (_) {
           }
           isSimulating = false;
@@ -3501,11 +2983,11 @@
           });
         } catch (e) {
           proceedToMatch();
-          const L = getLogger6();
-          L.info && L.info("Scheduling simulation interval in", START_DELAY_MS, "ms, tick=", perMinuteMs);
+          const L2 = getLogger7();
+          L2.info && L2.info("Scheduling simulation interval in", START_DELAY_MS, "ms, tick=", perMinuteMs);
           setTimeout(() => {
-            const L2 = getLogger6();
-            L2.info && L2.info("Starting simulation interval, tick=", perMinuteMs);
+            const L22 = getLogger7();
+            L22.info && L22.info("Starting simulation interval, tick=", perMinuteMs);
             simIntervalId = setInterval(simulationTick, perMinuteMs);
           }, START_DELAY_MS);
         }
@@ -3520,8 +3002,8 @@
         minute++;
         if (minute === 45) {
           try {
-            const L = getLogger6();
-            L.info && L.info(`\u23F1\uFE0F Intervalo da partida (Jornada ${window.currentJornada}).`);
+            const L2 = getLogger7();
+            L2.info && L2.info(`\u23F1\uFE0F Intervalo da partida (Jornada ${window.currentJornada}).`);
           } catch (e) {
           }
         }
@@ -3551,8 +3033,8 @@
             simIntervalId = null;
           }
           try {
-            const L = getLogger6();
-            L.info && L.info(`\u{1F3C1} Fim dos jogos (Jornada ${window.currentJornada}).`);
+            const L2 = getLogger7();
+            L2.info && L2.info(`\u{1F3C1} Fim dos jogos (Jornada ${window.currentJornada}).`);
           } catch (e) {
           }
           endSimulation();
@@ -3575,8 +3057,8 @@
           }
         } else {
           try {
-            const L = getLogger6();
-            L.error && L.error("Fun\xE7\xE3o advanceMatchDay n\xE3o encontrada (matches.js).");
+            const L2 = getLogger7();
+            L2.error && L2.error("Fun\xE7\xE3o advanceMatchDay n\xE3o encontrada (matches.js).");
           } catch (_) {
           }
           if (simIntervalId) {
@@ -3616,8 +3098,8 @@
         if (typeof renderHubContent === "function") renderHubContent("menu-standings");
       } catch (e) {
         try {
-          const L = getLogger6();
-          L.warn && L.warn("endSimulation fallback failed", e);
+          const L2 = getLogger7();
+          L2.warn && L2.warn("endSimulation fallback failed", e);
         } catch (_) {
         }
       }
@@ -3633,8 +3115,8 @@
         }
       } catch (e) {
         try {
-          const L = getLogger6();
-          L.warn && L.warn("finishDayAndReturnToHub: error finalizing matches", e);
+          const L2 = getLogger7();
+          L2.warn && L2.warn("finishDayAndReturnToHub: error finalizing matches", e);
         } catch (_) {
         }
       }
@@ -3729,15 +3211,15 @@ Total recebido: ${fm(totalPrize)}`);
                     });
                   } catch (e) {
                     try {
-                      const L = getLogger6();
-                      L.warn && L.warn("Could not show season summary overlay", e);
+                      const L2 = getLogger7();
+                      L2.warn && L2.warn("Could not show season summary overlay", e);
                     } catch (_) {
                     }
                   }
                 } else {
                   try {
-                    const L = typeof window !== "undefined" && window.Elifoot && window.Elifoot.Logger ? window.Elifoot.Logger : console;
-                    L.info && L.info(
+                    const L2 = typeof window !== "undefined" && window.Elifoot && window.Elifoot.Logger ? window.Elifoot.Logger : console;
+                    L2.info && L2.info(
                       "Season finished \u2014 promotions:",
                       promoResult.promoted,
                       "relegations:",
@@ -3749,8 +3231,8 @@ Total recebido: ${fm(totalPrize)}`);
               }
             } catch (e) {
               try {
-                const L = getLogger6();
-                L.warn && L.warn("applyPromotionRelegation failed", e);
+                const L2 = getLogger7();
+                L2.warn && L2.warn("applyPromotionRelegation failed", e);
               } catch (_) {
               }
             }
@@ -3809,8 +3291,8 @@ Total recebido: ${fm(totalPrize)}`);
               }
             } catch (e) {
               try {
-                const L = getLogger6();
-                L.warn && L.warn("Erro ao evitar repeti\xE7\xE3o de advers\xE1rio na gera\xE7\xE3o de rondas:", e);
+                const L2 = getLogger7();
+                L2.warn && L2.warn("Erro ao evitar repeti\xE7\xE3o de advers\xE1rio na gera\xE7\xE3o de rondas:", e);
               } catch (_) {
               }
             }
@@ -3821,8 +3303,8 @@ Total recebido: ${fm(totalPrize)}`);
             assignStartingLineups2(window.currentRoundMatches);
           } catch (e) {
             try {
-              const L = getLogger6();
-              L.error && L.error("ERRO ao atribuir lineups:", e);
+              const L2 = getLogger7();
+              L2.error && L2.error("ERRO ao atribuir lineups:", e);
             } catch (_) {
             }
           }
@@ -3854,8 +3336,8 @@ Total recebido: ${fm(totalPrize)}`);
         }
       } catch (e) {
         try {
-          const L = getLogger6();
-          L.warn && L.warn("finishDayAndReturnToHub main error", e);
+          const L2 = getLogger7();
+          L2.warn && L2.warn("finishDayAndReturnToHub main error", e);
         } catch (_) {
         }
       }
@@ -3869,8 +3351,8 @@ Total recebido: ${fm(totalPrize)}`);
         }
       } catch (err) {
         try {
-          const L = getLogger6();
-          L.warn && L.warn("selectExpiringPlayersToLeave failed in finishDayAndReturnToHub:", err);
+          const L2 = getLogger7();
+          L2.warn && L2.warn("selectExpiringPlayersToLeave failed in finishDayAndReturnToHub:", err);
         } catch (_) {
         }
       }
@@ -3880,8 +3362,8 @@ Total recebido: ${fm(totalPrize)}`);
         }
       } catch (err) {
         try {
-          const L = getLogger6();
-          L.warn && L.warn("selectPlayersForRelease failed in finishDayAndReturnToHub:", err);
+          const L2 = getLogger7();
+          L2.warn && L2.warn("selectPlayersForRelease failed in finishDayAndReturnToHub:", err);
         } catch (_) {
         }
       }
@@ -3934,8 +3416,8 @@ Total recebido: ${fm(totalPrize)}`);
         }
       } catch (e) {
         try {
-          const L = getLogger6();
-          L.warn && L.warn("ensurePendingReleases filler failed:", e);
+          const L2 = getLogger7();
+          L2.warn && L2.warn("ensurePendingReleases filler failed:", e);
         } catch (_) {
         }
       }
@@ -3960,13 +3442,13 @@ Total recebido: ${fm(totalPrize)}`);
                 return;
               }
               const p = externalReleases[index];
-              showSingleReleasePopup(p, (accepted) => {
+              showSingleReleasePopup(p, (accepted, offerSalary, rivalClub, rivalSalary) => {
                 if (accepted) {
                   const fee = p.leavingFee || 0;
                   if (window.playerClub && (window.playerClub.budget || 0) >= fee) {
                     window.playerClub.budget -= fee;
                     if (!window.playerClub.team.players) window.playerClub.team.players = [];
-                    p.salary = p.minContract || p.salary || 0;
+                    p.salary = offerSalary || p.minContract || p.salary || 0;
                     p.contractYears = 2;
                     window.playerClub.team.players.push(p);
                     if (p.originalClubRef && p.originalClubRef.team && p.originalClubRef.team.players) {
@@ -3980,6 +3462,21 @@ Total recebido: ${fm(totalPrize)}`);
                   } else {
                     alert(`N\xE3o tens or\xE7amento suficiente para pagar o pr\xE9mio de assinatura de ${typeof window.formatMoney === "function" ? window.formatMoney(fee) : fee + " \u20AC"}.`);
                   }
+                } else if (rivalClub && !accepted) {
+                  const fee = p.leavingFee || 0;
+                  rivalClub.budget = Math.max(0, (rivalClub.budget || 0) - fee);
+                  p.salary = rivalSalary || p.minContract || p.salary || 0;
+                  p.contractYears = 2;
+                  if (!rivalClub.team.players) rivalClub.team.players = [];
+                  rivalClub.team.players.push(p);
+                  if (p.originalClubRef && p.originalClubRef.team && p.originalClubRef.team.players) {
+                    const idx = p.originalClubRef.team.players.findIndex((x) => x.id === p.id || x.name === p.name);
+                    if (idx !== -1) p.originalClubRef.team.players.splice(idx, 1);
+                  }
+                  window.TRANSFER_HISTORY = window.TRANSFER_HISTORY || [];
+                  window.TRANSFER_HISTORY.push({ player: p.name, from: p.previousClubName || "Mercado Livre", to: rivalClub.team.name, fee, salary: p.salary, type: "purchase", jornada: window.currentJornada, time: Date.now() });
+                  const pendingIdx = window.PENDING_RELEASES.indexOf(p);
+                  if (pendingIdx !== -1) window.PENDING_RELEASES.splice(pendingIdx, 1);
                 }
                 processNextRelease(index + 1);
               });
@@ -4016,8 +3513,8 @@ Total recebido: ${fm(totalPrize)}`);
         }
       } catch (e) {
         try {
-          const L = getLogger6();
-          L.warn && L.warn("Erro ao decrementar suspens\xF5es:", e);
+          const L2 = getLogger7();
+          L2.warn && L2.warn("Erro ao decrementar suspens\xF5es:", e);
         } catch (_) {
         }
       }
@@ -4202,14 +3699,14 @@ Total recebido: ${fm(totalPrize)}`);
     const prefHex = pref || null;
     try {
       const bgRgb = hexToRgb(hex);
-      const L = luminance(bgRgb);
-      const contrastWhite = (1 + 0.05) / (L + 0.05);
-      const contrastBlack = (L + 0.05) / (0 + 0.05);
+      const L2 = luminance(bgRgb);
+      const contrastWhite = (1 + 0.05) / (L2 + 0.05);
+      const contrastBlack = (L2 + 0.05) / (0 + 0.05);
       if (prefHex) {
         try {
           const prefRgb = hexToRgb(prefHex);
           const Lp = luminance(prefRgb);
-          const contrastPref = (Math.max(L, Lp) + 0.05) / (Math.min(L, Lp) + 0.05);
+          const contrastPref = (Math.max(L2, Lp) + 0.05) / (Math.min(L2, Lp) + 0.05);
           if (contrastPref >= Math.max(contrastWhite, contrastBlack)) return prefHex;
         } catch (e) {
         }
@@ -4328,7 +3825,7 @@ Total recebido: ${fm(totalPrize)}`);
   }
   function renderTeamRoster2(club) {
     try {
-      const formatMoney3 = window.FootLab && window.FootLab.formatMoney || window.formatMoney || ((v) => String(v));
+      const formatMoney4 = window.FootLab && window.FootLab.formatMoney || window.formatMoney || ((v) => String(v));
       const content = document.getElementById("hub-main-content");
       if (!content) return;
       if (!club || !club.team || !club.team.players || club.team.players.length === 0) {
@@ -4387,7 +3884,7 @@ Total recebido: ${fm(totalPrize)}`);
                   <div class="skill-bar"><div class="skill-fill" style="width:${skill}%;background:${barColor};"></div></div>
                   <div style="display:flex;justify-content:space-between;align-items:center;font-size:0.92em;">
                     <div style="font-weight:700;color:rgba(255,255,255,0.9);">${skill}</div>
-                    <div class="player-salary" data-player-id="${p.id}">${formatMoney3(salary)} <span style="color:#ffeb3b;font-weight:bold;">${contractMarker}</span></div>
+                    <div class="player-salary" data-player-id="${p.id}">${formatMoney4(salary)} <span style="color:#ffeb3b;font-weight:bold;">${contractMarker}</span></div>
                   </div>
                 </div>`;
         });
@@ -4435,13 +3932,13 @@ Total recebido: ${fm(totalPrize)}`);
               minDemanded = Math.ceil(minDemanded / 10) * 10;
               const absoluteMin = Math.max(300, Math.round(skillLvl * 5));
               minDemanded = Math.max(minDemanded, absoluteMin);
-              showRenewContractMenu(player, club, minDemanded, formatMoney3, renderTeamRoster2);
+              showRenewContractMenu(player, club, minDemanded, formatMoney4, renderTeamRoster2);
             });
           });
         } catch (e) {
           try {
-            const L = window.FootLab && window.FootLab.Logger || console;
-            L.warn && L.warn("Failed to attach negotiation handlers", e);
+            const L2 = window.FootLab && window.FootLab.Logger || console;
+            L2.warn && L2.warn("Failed to attach negotiation handlers", e);
           } catch (_) {
           }
         }
@@ -4453,8 +3950,8 @@ Total recebido: ${fm(totalPrize)}`);
       }
     } catch (e) {
       try {
-        const L = window.FootLab && window.FootLab.Logger || console;
-        L.warn && L.warn("renderTeamRoster failed", e);
+        const L2 = window.FootLab && window.FootLab.Logger || console;
+        L2.warn && L2.warn("renderTeamRoster failed", e);
       } catch (_) {
       }
     }
@@ -4691,18 +4188,18 @@ Total recebido: ${fm(totalPrize)}`);
           });
         } catch (e) {
           try {
-            const L = window.Elifoot && window.Elifoot.Logger || console;
-            L.warn && L.warn("attach transfer handlers failed", e);
+            const L2 = window.Elifoot && window.Elifoot.Logger || console;
+            L2.warn && L2.warn("attach transfer handlers failed", e);
           } catch (e2) {
-            const L = window.FootLab && window.FootLab.Logger || console;
-            L.warn && L.warn("attach transfer handlers failed", e2);
+            const L2 = window.FootLab && window.FootLab.Logger || console;
+            L2.warn && L2.warn("attach transfer handlers failed", e2);
           }
         }
       }, 10);
     } catch (e) {
       try {
-        const L = window.FootLab && window.FootLab.Logger || console;
-        L.warn && L.warn("renderTransfers failed", e);
+        const L2 = window.FootLab && window.FootLab.Logger || console;
+        L2.warn && L2.warn("renderTransfers failed", e);
       } catch (_) {
       }
     }
@@ -4795,8 +4292,8 @@ Total recebido: ${fm(totalPrize)}`);
       }, 10);
     } catch (e) {
       try {
-        const L = window.FootLab && window.FootLab.Logger || console;
-        L.warn && L.warn("showBuyFreePlayerMenu failed", e);
+        const L2 = window.FootLab && window.FootLab.Logger || console;
+        L2.warn && L2.warn("showBuyFreePlayerMenu failed", e);
       } catch (_) {
       }
     }
@@ -4814,7 +4311,7 @@ Total recebido: ${fm(totalPrize)}`);
   // src/ui/finance.mjs
   function renderFinance(club) {
     try {
-      const FootLab2 = window.FootLab || window.Elifoot || window;
+      const FootLab3 = window.FootLab || window.Elifoot || window;
       const content = document.getElementById("hub-main-content");
       if (!content) return;
       const c = club || window.playerClub;
@@ -4917,9 +4414,9 @@ Total recebido: ${fm(totalPrize)}`);
                 allClubs: window.allClubs,
                 currentRoundMatches: window.currentRoundMatches
               };
-              if (FootLab2 && FootLab2.Persistence && typeof FootLab2.Persistence.saveSnapshot === "function") {
+              if (FootLab3 && FootLab3.Persistence && typeof FootLab3.Persistence.saveSnapshot === "function") {
                 try {
-                  FootLab2.Persistence.saveSnapshot(snap);
+                  FootLab3.Persistence.saveSnapshot(snap);
                 } catch (_) {
                 }
               } else {
@@ -4952,9 +4449,9 @@ Total recebido: ${fm(totalPrize)}`);
                 allClubs: window.allClubs,
                 currentRoundMatches: window.currentRoundMatches
               };
-              if (FootLab2 && FootLab2.Persistence && typeof FootLab2.Persistence.saveSnapshot === "function") {
+              if (FootLab3 && FootLab3.Persistence && typeof FootLab3.Persistence.saveSnapshot === "function") {
                 try {
-                  FootLab2.Persistence.saveSnapshot(snap);
+                  FootLab3.Persistence.saveSnapshot(snap);
                 } catch (_) {
                 }
               } else {
@@ -4977,8 +4474,8 @@ Total recebido: ${fm(totalPrize)}`);
       }, 10);
     } catch (e) {
       try {
-        const L = window.FootLab && window.FootLab.Logger || window.Elifoot && window.Elifoot.Logger || console;
-        L.warn && L.warn("renderFinance failed", e);
+        const L2 = window.FootLab && window.FootLab.Logger || window.Elifoot && window.Elifoot.Logger || console;
+        L2.warn && L2.warn("renderFinance failed", e);
       } catch (_) {
       }
     }
@@ -5070,8 +4567,8 @@ Total recebido: ${fm(totalPrize)}`);
       tacticList.appendChild(tacticItem);
     });
     try {
-      const L = window.FootLab && window.FootLab.Logger ? window.FootLab.Logger : console;
-      L.info && L.info("Painel de t\xE1ticas inicializado");
+      const L2 = window.FootLab && window.FootLab.Logger ? window.FootLab.Logger : console;
+      L2.info && L2.info("Painel de t\xE1ticas inicializado");
     } catch (_) {
     }
   }
@@ -5100,7 +4597,7 @@ Total recebido: ${fm(totalPrize)}`);
     const content = document.getElementById("hub-main-content");
     if (!content) return;
     const history = window.TRANSFER_HISTORY || [];
-    const formatMoney3 = window.formatMoney || ((v) => v + " \u20AC");
+    const formatMoney4 = window.formatMoney || ((v) => v + " \u20AC");
     if (history.length === 0) {
       content.innerHTML = `
       <h2>Hist\xF3rico de Transfer\xEAncias</h2>
@@ -5127,7 +4624,7 @@ Total recebido: ${fm(totalPrize)}`);
     sorted.forEach((t, i) => {
       const isPurchase = t.type === "purchase";
       const feeColor = isPurchase && t.fee > 0 ? "#4CAF50" : "#aaa";
-      const feeStr = t.fee > 0 ? formatMoney3(t.fee) : "Custo Zero";
+      const feeStr = t.fee > 0 ? formatMoney4(t.fee) : "Custo Zero";
       const rowBg = i % 2 === 0 ? "rgba(255,255,255,0.02)" : "transparent";
       html += `<tr style="background: ${rowBg}; border-bottom: 1px solid rgba(255,255,255,0.05); transition: background 0.2s;">
         <td style="padding:12px 16px; color:#ccc;">${t.jornada || "-"}</td>
@@ -5251,7 +4748,7 @@ Total recebido: ${fm(totalPrize)}`);
   }
 
   // src/ui/hub-controller.mjs
-  var FootLab = window.FootLab || window.Elifoot || window;
+  var FootLab2 = window.FootLab || window.Elifoot || window;
   function updateBudgetDisplays(club) {
     try {
       const safeFormatMoney = typeof window.formatMoney === "function" ? window.formatMoney : (v) => !v && v !== 0 ? "0 \u20AC" : Math.floor(v).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".") + " \u20AC";
@@ -5440,9 +4937,9 @@ Total recebido: ${fm(totalPrize)}`);
                   localStorage.setItem(saveKey, JSON.stringify(snap));
                 } catch (_) {
                 }
-                if (FootLab && FootLab.Persistence && typeof FootLab.Persistence.saveSnapshot === "function") {
+                if (FootLab2 && FootLab2.Persistence && typeof FootLab2.Persistence.saveSnapshot === "function") {
                   try {
-                    FootLab.Persistence.saveSnapshot(snap);
+                    FootLab2.Persistence.saveSnapshot(snap);
                   } catch (_) {
                   }
                 } else {
@@ -5470,14 +4967,14 @@ Total recebido: ${fm(totalPrize)}`);
     }
   }
   function initHubUI(playerClub2) {
-    const E = window.FootLab || window.Elifoot || window;
+    const E2 = window.FootLab || window.Elifoot || window;
     try {
-      const L = E && E.Logger || console;
-      L.debug && L.debug("Initializing Hub Controller with playerClub:", playerClub2);
+      const L2 = E2 && E2.Logger || console;
+      L2.debug && L2.debug("Initializing Hub Controller with playerClub:", playerClub2);
     } catch (_) {
     }
-    if (playerClub2 && !E.playerClub) E.playerClub = playerClub2;
-    const club = E.playerClub;
+    if (playerClub2 && !E2.playerClub) E2.playerClub = playerClub2;
+    const club = E2.playerClub;
     try {
       const coachNameDisplay = document.getElementById("coachNameDisplay");
       const playerTeamNameHub = document.getElementById("playerTeamNameHub");
@@ -5553,20 +5050,20 @@ Total recebido: ${fm(totalPrize)}`);
       });
     });
     const simulateBtn = document.getElementById("simulateBtnHub");
-    if (simulateBtn && (E && typeof E.simulateDay === "function" || typeof window.simulateDay === "function")) {
+    if (simulateBtn && (E2 && typeof E2.simulateDay === "function" || typeof window.simulateDay === "function")) {
       simulateBtn.addEventListener("click", (e) => {
         try {
           if (typeof window !== "undefined" && e && e.isTrusted) window.__userInitiatedSim = true;
         } catch (_) {
         }
-        const simFn = E && E.simulateDay || window.simulateDay;
+        const simFn = E2 && E2.simulateDay || window.simulateDay;
         if (!simFn || typeof simFn !== "function") return;
         try {
           simFn();
         } catch (err) {
           try {
-            const L = E && E.Logger || console;
-            L.warn && L.warn("simulateDay failed", err);
+            const L2 = E2 && E2.Logger || console;
+            L2.warn && L2.warn("simulateDay failed", err);
           } catch (_) {
           }
         }
@@ -5610,16 +5107,16 @@ Total recebido: ${fm(totalPrize)}`);
 
   // src/ui/matchBoard.mjs
   function getFinance() {
-    const FootLab2 = window.FootLab || window.Elifoot || {};
-    return FootLab2 && FootLab2.Finance || window.Finance;
+    const FootLab3 = window.FootLab || window.Elifoot || {};
+    return FootLab3 && FootLab3.Finance || window.Finance;
   }
-  function getLogger2() {
-    const FootLab2 = window.FootLab || window.Elifoot || {};
-    return FootLab2 && FootLab2.Logger ? FootLab2.Logger : console;
+  function getLogger3() {
+    const FootLab3 = window.FootLab || window.Elifoot || {};
+    return FootLab3 && FootLab3.Logger ? FootLab3.Logger : console;
   }
   function renderInitialMatchBoard2(allDivisions2) {
-    const FootLab2 = window.FootLab || window.Elifoot || {};
-    const allMatches = FootLab2 && FootLab2.currentRoundMatches || window.currentRoundMatches || [];
+    const FootLab3 = window.FootLab || window.Elifoot || {};
+    const allMatches = FootLab3 && FootLab3.currentRoundMatches || window.currentRoundMatches || [];
     if (!allMatches || !allMatches.length) return;
     const Finance = getFinance();
     try {
@@ -5633,8 +5130,8 @@ Total recebido: ${fm(totalPrize)}`);
         const away = playerMatch.away ? playerMatch.away.name : "Away";
         headerSpan.textContent = `${home} \xD7 ${away}`;
       }
-      if ((FootLab2 && FootLab2.GAME_NAME || window.GAME_NAME) && typeof document !== "undefined") {
-        const gameName = FootLab2 && FootLab2.GAME_NAME || window.GAME_NAME;
+      if ((FootLab3 && FootLab3.GAME_NAME || window.GAME_NAME) && typeof document !== "undefined") {
+        const gameName = FootLab3 && FootLab3.GAME_NAME || window.GAME_NAME;
         document.title = `${gameName} \u2014 ${player && player.team ? player.team.name : ""}`;
       }
     } catch (err) {
@@ -5711,12 +5208,12 @@ Total recebido: ${fm(totalPrize)}`);
     }
   }
   function updateMatchBoardLine2(matchIndex, matchResult) {
-    const FootLab2 = window.FootLab || window.Elifoot || {};
-    const DEBUG_MATCH_SIM = FootLab2 && FootLab2.DEBUG_MATCH_SIM || window.DEBUG_MATCH_SIM;
+    const FootLab3 = window.FootLab || window.Elifoot || {};
+    const DEBUG_MATCH_SIM = FootLab3 && FootLab3.DEBUG_MATCH_SIM || window.DEBUG_MATCH_SIM;
     if (DEBUG_MATCH_SIM) {
       try {
-        const L = FootLab2 && FootLab2.Logger ? FootLab2.Logger : console;
-        L.debug && L.debug("DBG updateMatchBoardLine called", {
+        const L2 = FootLab3 && FootLab3.Logger ? FootLab3.Logger : console;
+        L2.debug && L2.debug("DBG updateMatchBoardLine called", {
           matchIndex,
           hasGoals: Array.isArray(matchResult.goals) ? matchResult.goals.length : 0
         });
@@ -5727,8 +5224,8 @@ Total recebido: ${fm(totalPrize)}`);
     if (!lineElement) {
       if (window.DEBUG_MATCH_SIM)
         try {
-          const L = getLogger2();
-          L.warn && L.warn("DBG updateMatchBoardLine: element not found for index", matchIndex);
+          const L2 = getLogger3();
+          L2.warn && L2.warn("DBG updateMatchBoardLine: element not found for index", matchIndex);
         } catch (e) {
         }
       return;
@@ -5819,7 +5316,7 @@ Total recebido: ${fm(totalPrize)}`);
     setIntroColors: () => setIntroColors,
     showIntroOverlay: () => showIntroOverlay2
   });
-  function getLogger3() {
+  function getLogger4() {
     return window.FootLab && window.FootLab.Logger || console;
   }
   function setIntroColors(club) {
@@ -5842,13 +5339,13 @@ Total recebido: ${fm(totalPrize)}`);
   }
   function showIntroOverlay2(club, cb) {
     try {
-      const E = window.FootLab || window;
+      const E2 = window.FootLab || window;
       const overlay = document.getElementById("intro-overlay");
       if (!overlay) {
         if (typeof cb === "function") cb();
         return;
       }
-      const playerMatch = (E.currentRoundMatches || window.currentRoundMatches || []).find(
+      const playerMatch = (E2.currentRoundMatches || window.currentRoundMatches || []).find(
         (m) => m.homeClub === club || m.awayClub === club
       );
       const isHome = playerMatch && playerMatch.homeClub === club;
@@ -5890,8 +5387,8 @@ Total recebido: ${fm(totalPrize)}`);
       }, 2200);
     } catch (e) {
       try {
-        const L = getLogger3();
-        L.warn && L.warn("showIntroOverlay failed", e);
+        const L2 = getLogger4();
+        L2.warn && L2.warn("showIntroOverlay failed", e);
       } catch (_) {
       }
       if (typeof cb === "function") cb();
@@ -5910,7 +5407,7 @@ Total recebido: ${fm(totalPrize)}`);
   __export(halftime_exports, {
     showHalfTimeSubsOverlay: () => showHalfTimeSubsOverlay2
   });
-  function getLogger4() {
+  function getLogger5() {
     return window.FootLab && window.FootLab.Logger || console;
   }
   function showHalfTimeSubsOverlay2(club, match, cb) {
@@ -6100,8 +5597,8 @@ Total recebido: ${fm(totalPrize)}`);
               });
             } catch (e) {
               try {
-                const L = getLogger4();
-                L.warn && L.warn("Error auto-applying substitutions on close", e);
+                const L2 = getLogger5();
+                L2.warn && L2.warn("Error auto-applying substitutions on close", e);
               } catch (_) {
               }
             }
@@ -6262,8 +5759,8 @@ Total recebido: ${fm(totalPrize)}`);
                 }
               } catch (err) {
                 try {
-                  const L = getLogger4();
-                  L.warn && L.warn("Error applying substitution on confirm", err);
+                  const L2 = getLogger5();
+                  L2.warn && L2.warn("Error applying substitution on confirm", err);
                 } catch (_) {
                 }
               } finally {
@@ -6317,8 +5814,8 @@ Total recebido: ${fm(totalPrize)}`);
       renderPairs();
     } catch (e) {
       try {
-        const L = getLogger4();
-        L.warn && L.warn("showHalfTimeSubsOverlay failed", e);
+        const L2 = getLogger5();
+        L2.warn && L2.warn("showHalfTimeSubsOverlay failed", e);
       } catch (_) {
       }
       if (typeof cb === "function") cb();
@@ -6399,10 +5896,12 @@ Total recebido: ${fm(totalPrize)}`);
     ...halftime_exports,
     ...seasonSummary_exports
   };
-  window.FootLab = window.FootLab || {};
-  window.FootLab.Overlays = window.FootLab.Overlays || {};
-  Object.assign(window.FootLab.Overlays, Overlays);
-  window.Elifoot = window.Elifoot || window.FootLab;
+  if (typeof window !== "undefined") {
+    window.FootLab = window.FootLab || {};
+    window.FootLab.Overlays = window.FootLab.Overlays || {};
+    Object.assign(window.FootLab.Overlays, Overlays);
+    window.Elifoot = window.Elifoot || window.FootLab;
+  }
 
   // src/ui/dev_sandbox.js
   (function() {
@@ -6476,8 +5975,418 @@ Total recebido: ${fm(totalPrize)}`);
     }
   })();
 
+  // src/logic/transfers.js
+  function clubNeedsPosition(club, category) {
+    const Lineups = window.FootLab && window.FootLab.Lineups;
+    if (!Lineups) return true;
+    const tacticName = club.team.tactic || "4-4-2";
+    const formation = typeof Lineups.parseFormation === "function" ? Lineups.parseFormation(tacticName) : [4, 4, 2];
+    const requirements = {
+      GK: 1,
+      DEF: formation[0] || 4,
+      MID: formation[1] || 4,
+      ATT: formation[2] || 2
+    };
+    const currentCount = (club.team.players || []).filter((p) => Lineups.getPositionCategory(p.position) === category).length;
+    const saturationLimit = Math.max(category === "GK" ? 2 : 4, requirements[category] * 2);
+    return currentCount < saturationLimit;
+  }
+  function findPotentialBuyer(player, fee) {
+    const sellerClub = player.originalClubRef;
+    const Lineups = window.FootLab && window.FootLab.Lineups;
+    const category = Lineups ? Lineups.getPositionCategory(player.position) : "MID";
+    const allClubs2 = window.ALL_CLUBS || [];
+    const potentialBuyers = allClubs2.filter((club) => {
+      if (club === sellerClub) return false;
+      if (club.budget < fee) return false;
+      if (!clubNeedsPosition(club, category)) return false;
+      return true;
+    });
+    return potentialBuyers.length > 0 ? potentialBuyers[Math.floor(Math.random() * potentialBuyers.length)] : null;
+  }
+  function executeTransfer(player, sellerClub, buyerClub, fee, salary) {
+    sellerClub.budget = (sellerClub.budget || 0) + fee;
+    buyerClub.budget = (buyerClub.budget || 0) - fee;
+    const pIdx = sellerClub.team.players.findIndex((p) => p.id === player.id);
+    if (pIdx > -1) {
+      const [transferredPlayer] = sellerClub.team.players.splice(pIdx, 1);
+      transferredPlayer.salary = salary;
+      transferredPlayer.contractYears = 1;
+      transferredPlayer.contractYearsLeft = 1;
+      buyerClub.team.players.push(transferredPlayer);
+      window.TRANSFER_HISTORY = window.TRANSFER_HISTORY || [];
+      window.TRANSFER_HISTORY.push({
+        player: transferredPlayer.name,
+        from: sellerClub.team ? sellerClub.team.name : sellerClub.name,
+        to: buyerClub.team ? buyerClub.team.name : buyerClub.name,
+        fee,
+        salary,
+        type: "purchase",
+        jornada: typeof window.currentJornada !== "undefined" ? window.currentJornada : null,
+        time: Date.now()
+      });
+      return true;
+    }
+    return false;
+  }
+
+  // src/ui/offers.mjs
+  var L = typeof window !== "undefined" && window.FootLab && window.FootLab.Logger || console;
+  var formatMoney2 = function(value) {
+    if (!value && value !== 0) return "0 \u20AC";
+    return Math.floor(value).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".") + " \u20AC";
+  };
+  function handleOfferAccept(player, playerIndex, onClose) {
+    const sellerClub = player.originalClubRef;
+    const fee = player.leavingFee || 0;
+    const buyerClub = findPotentialBuyer(player, fee);
+    if (!buyerClub) {
+      alert("Nenhum clube tem or\xE7amento ou necessidade para contratar este jogador no momento.");
+      return;
+    }
+    if (buyerClub.budget < fee) {
+      alert(
+        `${buyerClub.team.name} cannot afford the transfer fee of ${formatMoney2(fee)}.`
+      );
+      return;
+    }
+    const offerSalaryStr = prompt(
+      `Propor sal\xE1rio para ${player.name} (m\xEDnimo: ${formatMoney2(
+        player.minContract || 0
+      )})`,
+      player.minContract || 500
+    );
+    const offerSalary = parseInt(offerSalaryStr, 10);
+    if (isNaN(offerSalary) || offerSalary < (player.minContract || 0)) {
+      alert("Sal\xE1rio inv\xE1lido ou abaixo do m\xEDnimo.");
+      return;
+    }
+    const confirmed = confirm(
+      `Confirmar transfer\xEAncia de ${player.name} para ${buyerClub.team.name} por ${formatMoney2(fee)} com sal\xE1rio de ${formatMoney2(offerSalary)}?`
+    );
+    if (confirmed) {
+      executeTransfer(player, sellerClub, buyerClub, fee, offerSalary);
+      window.PENDING_RELEASES.splice(playerIndex, 1);
+      const overlay = document.getElementById("offers-overlay");
+      if (overlay) document.body.removeChild(overlay);
+      showPendingReleasesPopup(onClose);
+    }
+  }
+  function showPendingReleasesPopup(onClose) {
+    const pending = window.PENDING_RELEASES || [];
+    if (!pending.length) {
+      if (typeof onClose === "function") onClose();
+      return;
+    }
+    const overlay = document.createElement("div");
+    overlay.id = "offers-overlay";
+    Object.assign(overlay.style, {
+      position: "fixed",
+      left: "0",
+      top: "0",
+      right: "0",
+      bottom: "0",
+      background: "rgba(0,0,0,0.75)",
+      zIndex: 1e4,
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      color: "#fff"
+    });
+    let html = `<div class="subs-panel" style="padding: 24px; background: #2e2e2e; color: #fff; border-radius: 10px; max-width: 600px; box-shadow: 0 10px 40px rgba(0,0,0,0.8); border: 1px solid rgba(255,255,255,0.1);">`;
+    html += `<h3 style="margin-top:0; color:#ffeb3b; font-size:1.3em; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:10px;">Propostas Recebidas</h3>`;
+    html += `<p style="font-size:0.95em; color:#ccc;">Os seguintes jogadores da sua equipa t\xEAm ofertas de outros clubes:</p>`;
+    pending.forEach((p, idx) => {
+      const fee = p.leavingFee || 0;
+      html += `<div style="display:flex;justify-content:space-between;align-items:center;padding:12px;background:rgba(0,0,0,0.2);margin-bottom:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.05);">
+                  <div>
+                      <strong style="font-size:1.1em;">${p.name}</strong> <span style="color:#aaa;">(${p.position})</span><br/>
+                      <span style="color:#8BC34A; font-weight:bold; font-size:0.9em;">Oferta: ${formatMoney2(fee)}</span>
+                  </div>
+                  <button id="offersDoProposeBtn" class="offer-propose-btn" data-player-idx="${idx}" style="padding:10px 16px;border:none;border-radius:6px;background:#2196F3;color:white;cursor:pointer;font-weight:bold;">Vender</button>
+              </div>`;
+    });
+    html += `<div style="text-align:right;margin-top:20px;"><button id="close-offers-popup" style="padding:10px 16px;border-radius:6px;border:none;background:#555;color:#fff;cursor:pointer;font-weight:bold;">Fechar</button></div>`;
+    html += `</div>`;
+    overlay.innerHTML = html;
+    document.body.appendChild(overlay);
+    document.getElementById("close-offers-popup").addEventListener("click", () => {
+      document.body.removeChild(overlay);
+      if (typeof onClose === "function") onClose();
+    });
+    overlay.querySelectorAll(".offer-propose-btn").forEach((btn) => {
+      btn.addEventListener("click", (e) => {
+        const playerIndex = parseInt(e.target.getAttribute("data-player-idx"), 10);
+        const player = pending[playerIndex];
+        handleOfferAccept(player, playerIndex, onClose);
+      });
+    });
+  }
+  function showJobOffersPopup(onClose) {
+    const offers = window.PLAYER_JOB_OFFERS || [];
+    if (!offers.length) {
+      if (typeof onClose === "function") onClose();
+      return;
+    }
+    const club = offers.shift();
+    const overlay = document.createElement("div");
+    overlay.id = "job-offers-overlay";
+    Object.assign(overlay.style, {
+      position: "fixed",
+      left: "0",
+      top: "0",
+      right: "0",
+      bottom: "0",
+      background: "rgba(0,0,0,0.85)",
+      zIndex: 10005,
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      color: "#fff"
+    });
+    const currentCoachName = document.getElementById("coachNameDisplay") ? document.getElementById("coachNameDisplay").innerText : "Treinador";
+    let html = `<div class="subs-panel" style="padding: 30px; border-radius: 12px; width: 90%; max-width: 550px; text-align: center; border: 1px solid rgba(255,255,255,0.1); background: #2e2e2e; box-shadow: 0 15px 40px rgba(0,0,0,0.8);">`;
+    html += `<h2 style="color: #4CAF50; margin-top: 0; font-size: 1.6em;">Proposta de Trabalho</h2>`;
+    html += `<div style="width: 64px; height: 64px; margin: 20px auto; border-radius: 12px; background: ${club.team.bgColor}; border: 3px solid ${club.team.color}; box-shadow: 0 4px 10px rgba(0,0,0,0.3);"></div>`;
+    html += `<p style="font-size: 1.1em; line-height: 1.5; color: #ddd;">A dire\xE7\xE3o do <strong>${club.team.name}</strong> (${club.division}\xAA Divis\xE3o) despediu o seu treinador.<br><br>Eles acompanharam o seu trabalho e oferecem-lhe o comando t\xE9cnico. Aceita o desafio?</p>`;
+    html += `<div style="margin-top: 30px; display: flex; justify-content: center; gap: 15px;">`;
+    html += `<button id="rejectJobBtn" style="padding: 12px 24px; border-radius: 8px; border: none; background: #555; color: white; cursor: pointer; font-weight: bold; transition: background 0.2s;">Rejeitar Proposta</button>`;
+    html += `<button id="acceptJobBtn" style="padding: 12px 24px; border-radius: 8px; border: none; background: #4CAF50; color: white; cursor: pointer; font-weight: bold; transition: background 0.2s;">Assinar Contrato</button>`;
+    html += `</div></div>`;
+    overlay.innerHTML = html;
+    document.body.appendChild(overlay);
+    document.getElementById("rejectJobBtn").addEventListener("click", () => {
+      document.body.removeChild(overlay);
+      showJobOffersPopup(onClose);
+    });
+    document.getElementById("acceptJobBtn").addEventListener("click", () => {
+      window.playerClub.coach = { name: "Treinador Interino", reputation: 50 };
+      window.playerClub = club;
+      club.coach = { name: currentCoachName, reputation: 80 };
+      window.PLAYER_JOB_OFFERS = [];
+      document.body.removeChild(overlay);
+      alert(`Parab\xE9ns! Assinou contrato com o ${club.team.name}!`);
+      const playerTeamNameHub = document.getElementById("playerTeamNameHub");
+      const playerTeamNameFooter = document.getElementById("playerTeamNameFooter");
+      if (playerTeamNameHub) playerTeamNameHub.textContent = club.team.name;
+      if (playerTeamNameFooter) playerTeamNameFooter.textContent = club.team.name;
+      showJobOffersPopup(onClose);
+    });
+  }
+  function showTransferNewsPopup(transfers, onClose) {
+    if (!transfers || transfers.length === 0) {
+      if (typeof onClose === "function") onClose();
+      return;
+    }
+    const overlay = document.createElement("div");
+    overlay.id = "transfer-news-overlay";
+    Object.assign(overlay.style, {
+      position: "fixed",
+      left: "0",
+      top: "0",
+      right: "0",
+      bottom: "0",
+      background: "rgba(0,0,0,0.85)",
+      zIndex: 10005,
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      color: "#fff"
+    });
+    const fm = typeof window.formatMoney === "function" ? window.formatMoney : (v) => v + " \u20AC";
+    let html = `<div class="subs-panel" style="padding: 24px; background: #2e2e2e; color: #fff; border-radius: 12px; width: 90%; max-width: 600px; box-shadow: 0 10px 40px rgba(0,0,0,0.8); border: 1px solid rgba(255,255,255,0.1);">`;
+    html += `<h3 style="margin-top:0; color:#4CAF50; font-size:1.4em; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:12px;">\u{1F4B8} Mercado de Transfer\xEAncias</h3>`;
+    html += `<p style="font-size:1em; color:#ccc; margin-bottom: 20px;">Resumo das principais transfer\xEAncias realizadas nesta jornada:</p>`;
+    html += `<div style="max-height: 400px; overflow-y: auto; padding-right: 10px; display:flex; flex-direction:column; gap:10px;">`;
+    transfers.forEach((t) => {
+      html += `<div style="background: rgba(0,0,0,0.2); padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05); display: flex; flex-direction: column; gap: 6px;">
+                 <div style="font-weight:bold; font-size:1.1em; color:#fff;">${t.player}</div>
+                 <div style="display:flex; justify-content:space-between; font-size:0.95em;">
+                   <span style="color:#aaa;">De: ${t.from} \u2794 Para: ${t.to}</span>
+                   <strong style="color:#ffeb3b;">${fm(t.fee)}</strong>
+                 </div>
+               </div>`;
+    });
+    html += `</div>`;
+    html += `<div style="text-align:right; margin-top:24px;"><button id="close-transfer-news-btn" style="padding:10px 20px; border-radius:6px; border:none; background:#2196F3; color:white; font-weight:bold; cursor:pointer;">Continuar</button></div>`;
+    html += `</div>`;
+    overlay.innerHTML = html;
+    document.body.appendChild(overlay);
+    document.getElementById("close-transfer-news-btn").addEventListener("click", () => {
+      document.body.removeChild(overlay);
+      if (typeof onClose === "function") onClose();
+    });
+  }
+  function showManagerMovementsPopup(movements, onClose) {
+    if (!movements || movements.length === 0) {
+      if (typeof onClose === "function") onClose();
+      return;
+    }
+    const overlay = document.createElement("div");
+    overlay.id = "manager-movements-overlay";
+    Object.assign(overlay.style, {
+      position: "fixed",
+      left: "0",
+      top: "0",
+      right: "0",
+      bottom: "0",
+      background: "rgba(0,0,0,0.85)",
+      zIndex: 10005,
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      color: "#fff"
+    });
+    let html = `<div class="subs-panel" style="padding: 24px; background: #2e2e2e; color: #fff; border-radius: 12px; width: 90%; max-width: 600px; box-shadow: 0 10px 40px rgba(0,0,0,0.8); border: 1px solid rgba(255,255,255,0.1);">`;
+    html += `<h3 style="margin-top:0; color:#ffeb3b; font-size:1.4em; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:12px;">\u{1F4F0} Chicotadas Psicol\xF3gicas</h3>`;
+    html += `<p style="font-size:1em; color:#ccc; margin-bottom: 20px;">Resumo das recentes movimenta\xE7\xF5es de treinadores no futebol mundial:</p>`;
+    html += `<div style="max-height: 400px; overflow-y: auto; padding-right: 10px; display:flex; flex-direction:column; gap:10px;">`;
+    movements.forEach((m) => {
+      html += `<div style="background: rgba(0,0,0,0.2); padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05); display: flex; flex-direction: column; gap: 6px;">
+                 <div style="font-weight:bold; font-size:1.1em; color:#fff;">${m.clubName}</div>
+                 <div style="display:flex; justify-content:space-between; font-size:0.95em;">
+                   <span style="color:#F44336;">\u274C Sai: ${m.out}</span>
+                   <span style="color:#4CAF50;">\u2705 Entra: ${m.in}</span>
+                 </div>
+               </div>`;
+    });
+    html += `</div>`;
+    html += `<div style="text-align:right; margin-top:24px;"><button id="close-movements-btn" style="padding:10px 20px; border-radius:6px; border:none; background:#2196F3; color:white; font-weight:bold; cursor:pointer;">Continuar</button></div>`;
+    html += `</div>`;
+    overlay.innerHTML = html;
+    document.body.appendChild(overlay);
+    document.getElementById("close-movements-btn").addEventListener("click", () => {
+      document.body.removeChild(overlay);
+      if (typeof onClose === "function") onClose();
+    });
+  }
+  function showEndSeasonAwardsPopup(data, onClose) {
+    if (!data) {
+      if (typeof onClose === "function") onClose();
+      return;
+    }
+    const overlay = document.createElement("div");
+    overlay.id = "end-season-awards-overlay";
+    Object.assign(overlay.style, {
+      position: "fixed",
+      left: "0",
+      top: "0",
+      right: "0",
+      bottom: "0",
+      background: "rgba(0,0,0,0.85)",
+      zIndex: 10005,
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      color: "#fff"
+    });
+    const fm = typeof window.formatMoney === "function" ? window.formatMoney : (v) => v + " \u20AC";
+    let html = `<div class="subs-panel" style="padding: 30px; background: #2e2e2e; color: #fff; border-radius: 12px; width: 90%; max-width: 650px; box-shadow: 0 15px 40px rgba(0,0,0,0.8); border: 1px solid rgba(255,255,255,0.1);">`;
+    html += `<h2 style="margin-top:0; color:#ffeb3b; font-size:1.8em; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:12px; text-align:center;">\u{1F3C6} Fim de \xC9poca - Pr\xE9mios</h2>`;
+    html += `<div style="display:grid; grid-template-columns: 1fr 1fr; gap:16px; margin-top:20px;">`;
+    const renderAward = (title, icon, name, sub) => `
+      <div style="background: rgba(0,0,0,0.2); padding: 16px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05); text-align:center;">
+        <div style="font-size:2em; margin-bottom:8px;">${icon}</div>
+        <div style="color:#aaa; font-size:0.9em; text-transform:uppercase; letter-spacing:1px; margin-bottom:4px; font-weight:bold;">${title}</div>
+        <strong style="font-size:1.2em; color:#fff;">${name}</strong>
+        <div style="color:#4CAF50; font-size:0.9em; margin-top:4px; font-weight:bold;">${sub}</div>
+      </div>
+    `;
+    if (data.championD1 && data.championD1.team) html += renderAward("Campe\xE3o 1\xAA Divis\xE3o", "\u{1F947}", data.championD1.team.name, `${data.championD1.points} Pts`);
+    if (data.topScorer && data.topScorer.p) html += renderAward("Melhor Marcador", "\u{1F45F}", data.topScorer.p.name, `${data.topScorer.p.goals} Golos (${data.topScorer.club.team.name})`);
+    if (data.bestAttack && data.bestAttack.team) html += renderAward("Melhor Ataque", "\u2694\uFE0F", data.bestAttack.team.name, `${data.bestAttack.goalsFor} Golos Marcados`);
+    if (data.bestDefense && data.bestDefense.team) html += renderAward("Melhor Defesa", "\u{1F6E1}\uFE0F", data.bestDefense.team.name, `${data.bestDefense.goalsAgainst} Golos Sofridos`);
+    html += `</div>`;
+    if (data.totalPrize > 0) {
+      html += `<div style="margin-top:20px; background:rgba(76, 175, 80, 0.15); border:1px solid rgba(76, 175, 80, 0.3); padding:16px; border-radius:8px; text-align:center;">
+                  <div style="color:#4CAF50; font-weight:bold; font-size:1.1em; margin-bottom:8px;">\u{1F4B0} Pr\xE9mios Recebidos pela Sua Equipa:</div>
+                  <div style="font-size:0.95em; color:#ddd; line-height:1.5;">${data.prizeMsg}</div>
+                  <div style="margin-top:8px; font-size:1.2em; font-weight:900; color:#ffeb3b;">Total: ${fm(data.totalPrize)}</div>
+                </div>`;
+    }
+    html += `<div style="text-align:center; margin-top:24px;"><button id="close-awards-btn" style="padding:12px 30px; border-radius:8px; border:none; background:#2196F3; color:white; font-weight:bold; cursor:pointer; font-size:1.1em; transition:transform 0.2s;">Continuar</button></div>`;
+    html += `</div>`;
+    overlay.innerHTML = html;
+    document.body.appendChild(overlay);
+    document.getElementById("close-awards-btn").addEventListener("click", () => {
+      document.body.removeChild(overlay);
+      if (typeof onClose === "function") onClose();
+    });
+  }
+  function showPromotionsPopup(data, onClose) {
+    if (!data || !data.promoted || !data.relegated) {
+      if (typeof onClose === "function") onClose();
+      return;
+    }
+    const overlay = document.createElement("div");
+    overlay.id = "promotions-overlay";
+    Object.assign(overlay.style, {
+      position: "fixed",
+      left: "0",
+      top: "0",
+      right: "0",
+      bottom: "0",
+      background: "rgba(0,0,0,0.85)",
+      zIndex: 10005,
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      color: "#fff"
+    });
+    let html = `<div class="subs-panel" style="padding: 30px; background: #2e2e2e; color: #fff; border-radius: 12px; width: 90%; max-width: 850px; box-shadow: 0 15px 40px rgba(0,0,0,0.8); border: 1px solid rgba(255,255,255,0.1); max-height:95vh; overflow-y:auto;">`;
+    html += `<h2 style="margin-top:0; color:#4CAF50; font-size:1.8em; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:12px; text-align:center;">\u{1F4C8} Subidas e Descidas</h2>`;
+    const renderDivisionBlock = (divisionName, promoList, promoTitle, relegList, relegTitle) => {
+      let block = `<div style="display:flex; flex-direction:column; gap:12px;">`;
+      block += `<h3 style="margin:0; text-align:center; color:#FF9800; font-size:1.2em; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:8px;">${divisionName}</h3>`;
+      if (promoList && promoList.length > 0) {
+        block += `<div style="display:flex; flex-direction:column; gap:6px;">`;
+        block += `<h4 style="margin:0; color:#4CAF50; font-size:1em; text-align:center;">${promoTitle}</h4>`;
+        promoList.forEach((c) => {
+          block += `<div style="background:rgba(0,0,0,0.3); padding:6px 10px; border-radius:4px; font-weight:bold; font-size:0.95em; display:flex; justify-content:space-between; align-items:center;">
+                      <span style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="${c.team.name}">${c.team.name}</span><span style="flex-shrink:0;">\u{1F53A}</span>
+                    </div>`;
+        });
+        block += `</div>`;
+      }
+      if (relegList && relegList.length > 0) {
+        block += `<div style="display:flex; flex-direction:column; gap:6px;">`;
+        block += `<h4 style="margin:0; color:#F44336; font-size:1em; text-align:center;">${relegTitle}</h4>`;
+        relegList.forEach((c) => {
+          block += `<div style="background:rgba(0,0,0,0.3); padding:6px 10px; border-radius:4px; font-weight:bold; font-size:0.95em; display:flex; justify-content:space-between; align-items:center;">
+                      <span style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="${c.team.name}">${c.team.name}</span><span style="flex-shrink:0;">\u{1F53B}</span>
+                    </div>`;
+        });
+        block += `</div>`;
+      }
+      block += `</div>`;
+      return block;
+    };
+    html += `<div class="promotions-grid" style="margin-top: 20px;">`;
+    html += renderDivisionBlock("1\xAA Divis\xE3o", data.promoted[1], "Promovidos \xE0 1\xAA Div.", data.relegated[0], "Despromovidos \xE0 2\xAA Div.");
+    html += renderDivisionBlock("2\xAA Divis\xE3o", data.promoted[2], "Promovidos \xE0 2\xAA Div.", data.relegated[1], "Despromovidos \xE0 3\xAA Div.");
+    html += renderDivisionBlock("3\xAA Divis\xE3o", data.promoted[3], "Promovidos \xE0 3\xAA Div.", data.relegated[2], "Despromovidos \xE0 4\xAA Div.");
+    html += renderDivisionBlock("4\xAA Divis\xE3o", data.promoted[3], "Promovidos \xE0 3\xAA Div.", null, "");
+    html += `</div>`;
+    html += `<div style="text-align:center; margin-top:30px;"><button id="close-promos-btn" style="padding:12px 30px; border-radius:8px; border:none; background:#2196F3; color:white; font-weight:bold; cursor:pointer; font-size:1.1em; transition:transform 0.2s;">Concluir \xC9poca</button></div>`;
+    html += `</div>`;
+    overlay.innerHTML = html;
+    document.body.appendChild(overlay);
+    document.getElementById("close-promos-btn").addEventListener("click", () => {
+      document.body.removeChild(overlay);
+      if (typeof onClose === "function") onClose();
+    });
+  }
+  var Offers = {
+    showPendingReleasesPopup,
+    showJobOffersPopup,
+    showTransferNewsPopup,
+    showManagerMovementsPopup,
+    showEndSeasonAwardsPopup,
+    showPromotionsPopup
+  };
+  if (typeof window !== "undefined") window.Offers = Offers;
+
   // src/main.js
-  var import_offers = __toESM(require_offers());
   var allDivisions = [];
   var playerClub = null;
   var allClubs = [];
@@ -6489,7 +6398,7 @@ Total recebido: ${fm(totalPrize)}`);
     }
   }
   var MainLogger = typeof window !== "undefined" && window.FootLab && window.FootLab.Logger ? window.FootLab.Logger : console;
-  function getLogger5() {
+  function getLogger6() {
     return typeof window !== "undefined" && window.FootLab && window.FootLab.Logger || typeof window !== "undefined" && window.Elifoot && window.Elifoot.Logger || MainLogger || console;
   }
   function setupInitialUiHandlers() {
@@ -6541,15 +6450,15 @@ Total recebido: ${fm(totalPrize)}`);
       setupInitialUiHandlers();
     } catch (e) {
       try {
-        const L = getLogger5();
-        L.warn && L.warn("setupInitialUiHandlers failed", e);
+        const L2 = getLogger6();
+        L2.warn && L2.warn("setupInitialUiHandlers failed", e);
       } catch (_) {
       }
     }
   }
   async function validateGameData() {
-    const L = getLogger5();
-    L.info("Waiting for divisions data...");
+    const L2 = getLogger6();
+    L2.info("Waiting for divisions data...");
     const waitFn = window && window.waitForDivisionsData || window && window.FootLab && window.FootLab.waitForDivisionsData;
     if (typeof waitFn === "function") {
       await waitFn(3e3);
@@ -6569,8 +6478,8 @@ Total recebido: ${fm(totalPrize)}`);
     return true;
   }
   function initializeGameSession() {
-    const L = getLogger5();
-    L.info("Generating all clubs...");
+    const L2 = getLogger6();
+    L2.info("Generating all clubs...");
     allClubs = generateAllClubs();
     allDivisions = [[], [], [], []];
     allClubs.forEach((club) => {
@@ -6644,17 +6553,17 @@ Total recebido: ${fm(totalPrize)}`);
       alert("Erro ao ler o ficheiro de grava\xE7\xE3o: " + e.message);
     }
   };
-  function formatMoney2(value) {
+  function formatMoney3(value) {
     if (!value && value !== 0) return "0 \u20AC";
     return Math.floor(value).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".") + " \u20AC";
   }
-  window.formatMoney = formatMoney2;
+  window.formatMoney = formatMoney3;
   document.addEventListener("DOMContentLoaded", () => {
     const _startBtn = document.getElementById("startBtn");
     if (!_startBtn) {
       try {
-        const L = getLogger5();
-        L.error && L.error("startBtn not found in DOM; cannot start game.");
+        const L2 = getLogger6();
+        L2.error && L2.error("startBtn not found in DOM; cannot start game.");
       } catch (_) {
       }
       return;
@@ -6667,7 +6576,7 @@ Total recebido: ${fm(totalPrize)}`);
         const picked = initializeGameSession();
         if (typeof startGame === "function") startGame(picked);
       } catch (err) {
-        getLogger5().error("Falha ao iniciar jogo:", err);
+        getLogger6().error("Falha ao iniciar jogo:", err);
         alert("Erro cr\xEDtico: " + err.message);
       }
     });

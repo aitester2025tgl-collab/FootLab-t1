@@ -206,14 +206,6 @@ function _tryBuildDivisions() {
   try {
     const dd = buildDivisionsFromRostersOrdered();
     divisionsData = dd;
-    // Development diagnostic: print resolved team color map for verification
-    try {
-      if (typeof console !== 'undefined' && console.log) {
-        // color mapping diagnostic removed
-      }
-    } catch (e) {
-      /* ignore */
-    }
     try {
       if (typeof window !== 'undefined') window.divisionsData = divisionsData;
       if (typeof global !== 'undefined') global.divisionsData = divisionsData;
@@ -488,29 +480,6 @@ function validateRosterConstraints({
   return { ok: problems.length === 0, problems };
 }
 
-try {
-  if (typeof window !== 'undefined') window.validateRosterConstraints = validateRosterConstraints;
-  if (typeof global !== 'undefined') global.validateRosterConstraints = validateRosterConstraints;
-} catch (e) {
-  /* ignore */
-}
-
-// Ensure these diagnostics are exported when required as a module
-if (typeof module !== 'undefined' && module.exports) {
-  module.exports.printDivisionAssignments = printDivisionAssignments;
-  module.exports.validateRosterConstraints = validateRosterConstraints;
-}
-
-if (typeof module !== 'undefined' && module.exports) {
-  module.exports = {
-    divisionsData,
-    waitForDivisionsData,
-    generateTeam,
-    TACTICS,
-    printDivisionAssignments,
-    validateRosterConstraints,
-  };
-}
 
 // Expose wait helper to browser globals for startup scripts
 try {
@@ -544,3 +513,12 @@ try {
   // returns ok=true; otherwise we rethrow to make startup fail fast.
   if (e && e.message && e.message.indexOf('Startup roster validation failed') === 0) throw e;
 }
+
+export {
+  divisionsData,
+  waitForDivisionsData,
+  generateTeam,
+  TACTICS,
+  printDivisionAssignments,
+  validateRosterConstraints,
+};

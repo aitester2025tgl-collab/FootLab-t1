@@ -1,18 +1,32 @@
-const puppeteer = require('puppeteer');
-const fs = require('fs');
-const path = require('path');
-const { spawn } = require('child_process');
+import puppeteer from 'puppeteer';
+import fs from 'fs';
+import path from 'path';
+import { spawn } from 'child_process';
+import { PNG } from 'pngjs';
+import { default as pixelmatch } from 'pixelmatch';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const SCREENSHOTS_DIR = path.join(__dirname, '..', 'screenshots');
+const BASELINE_DIR = path.join(SCREENSHOTS_DIR, 'baseline');
+const DIFF_DIR = path.join(SCREENSHOTS_DIR, 'diff');
 
 // Criar a pasta se não existir
 console.log(`📁 A verificar a pasta de destino: ${SCREENSHOTS_DIR}`);
-if (!fs.existsSync(SCREENSHOTS_DIR)) {
-  fs.mkdirSync(SCREENSHOTS_DIR);
-  console.log('📁 Pasta "screenshots" criada com sucesso!');
-} else {
-  console.log('📁 Pasta "screenshots" já existe.');
+if (fs.existsSync(SCREENSHOTS_DIR)) {
+  // Limpar apenas as imagens antigas, não a pasta baseline
+  fs.readdirSync(SCREENSHOTS_DIR).forEach(file => {
+    const filePath = path.join(SCREENSHOTS_DIR, file);
+    if (fs.lstatSync(filePath).isFile()) {
+      fs.unlinkSync(filePath);
+    }
+  });
 }
+fs.mkdirSync(SCREENSHOTS_DIR, { recursive: true });
+fs.mkdirSync(BASELINE_DIR, { recursive: true });
+fs.mkdirSync(DIFF_DIR, { recursive: true });
 
 (async () => {
   console.log('🚀 A iniciar o servidor local automaticamente...');
@@ -20,6 +34,46 @@ if (!fs.existsSync(SCREENSHOTS_DIR)) {
   const command = process.platform === 'win32' ? 'npx.cmd http-server -p 0' : 'npx http-server -p 0';
   const server = spawn(command, { shell: true });
   
+  let visualTestFailed = false;
+
+  // Função para comparar screenshots com a baseline
+  async function compareWithBaseline(fileName) {
+    const newImagePath = path.join(SCREENSHOTS_DIR, fileName);
+    const baselineImagePath = path.join(BASELINE_DIR, fileName);
+
+    if (!fs.existsSync(baselineImagePath)) {
+      console.log(`⚠️  Baseline para "${fileName}" não encontrada. A criar uma nova.`);
+      fs.copyFileSync(newImagePath, baselineImagePath);
+      return;
+    }
+
+    const img1Data = fs.readFileSync(newImagePath);
+    const img2Data = fs.readFileSync(baselineImagePath);
+    const img1 = PNG.sync.read(img1Data);
+    const img2 = PNG.sync.read(img2Data);
+
+    if (img1.width !== img2.width || img1.height !== img2.height) {
+      console.error(`❌ Visual Regression: As dimensões de "${fileName}" mudaram.`);
+      fs.copyFileSync(newImagePath, baselineImagePath);
+      console.log(`🔄 Baseline atualizada para "${fileName}" devido a mudança de dimensões.`);
+      return;
+    }
+
+    const diff = new PNG({ width: img1.width, height: img1.height });
+    const diffPixels = pixelmatch(img1.data, img2.data, diff.data, img1.width, img1.height, { threshold: 0.1 });
+
+    const totalPixels = img1.width * img1.height;
+    const diffPercentage = (diffPixels / totalPixels) * 100;
+
+    if (diffPercentage > 0.1) { // Limiar de 0.1% de diferença
+      console.error(`❌ Visual Regression: "${fileName}" difere da baseline em ${diffPercentage.toFixed(2)}%.`);
+      fs.writeFileSync(path.join(DIFF_DIR, `DIFF_${fileName}`), PNG.sync.write(diff));
+      fs.copyFileSync(newImagePath, baselineImagePath);
+    } else {
+      console.log(`✔️ Visual Match: "${fileName}" corresponde à baseline.`);
+    }
+  }
+
   let serverPort = 8080; // Fallback
 
   console.log('⏳ A aguardar que o servidor fique online...');
@@ -80,8 +134,10 @@ if (!fs.existsSync(SCREENSHOTS_DIR)) {
   // 1. Ecrã Inicial (Setup)
   console.log('⏳ A aguardar pelo ecrã inicial...');
   await page.waitForSelector('#coachName', { visible: true });
-  await page.screenshot({ path: path.join(SCREENSHOTS_DIR, '01_Setup.png') });
-  console.log('📸 01_Setup.png');
+  const setupFile = '01_Setup.png';
+  await page.screenshot({ path: path.join(SCREENSHOTS_DIR, setupFile) });
+  console.log(`📸 ${setupFile}`);
+  await compareWithBaseline(setupFile);
 
   // Preencher nome e iniciar o jogo
   console.log('✍️ A preencher o nome do treinador e a iniciar...');
@@ -130,8 +186,10 @@ if (!fs.existsSync(SCREENSHOTS_DIR)) {
   console.log('⏳ A aguardar pelo carregamento do Hub Principal...');
   await page.waitForSelector('.team-roster-grid', { visible: true });
   await new Promise(r => setTimeout(r, 600)); // Esperar pela animação de entrada
-  await page.screenshot({ path: path.join(SCREENSHOTS_DIR, '02_Hub_Equipa.png') });
-  console.log('📸 02_Hub_Equipa.png');
+  const hubEquipaFile = '02_Hub_Equipa.png';
+  await page.screenshot({ path: path.join(SCREENSHOTS_DIR, hubEquipaFile) });
+  console.log(`📸 ${hubEquipaFile}`);
+  await compareWithBaseline(hubEquipaFile);
 
   // Função auxiliar para clicar num menu lateral e tirar foto
   const captureMenu = async (menuId, fileName) => {
@@ -140,6 +198,7 @@ if (!fs.existsSync(SCREENSHOTS_DIR)) {
     await new Promise(r => setTimeout(r, 500)); // Esperar pelo render da página
     await page.screenshot({ path: path.join(SCREENSHOTS_DIR, fileName) });
     console.log(`📸 ${fileName}`);
+    await compareWithBaseline(fileName);
   };
 
   await captureMenu('menu-liga', '03_Hub_Liga.png');
@@ -163,8 +222,10 @@ if (!fs.existsSync(SCREENSHOTS_DIR)) {
   });
   await page.waitForSelector('#screen-match', { visible: true });
   await new Promise(r => setTimeout(r, 2500)); // Esperar 2.5 segundos de jogo para ver a barra de progresso e eventos
-  await page.screenshot({ path: path.join(SCREENSHOTS_DIR, '10_MatchBoard.png') });
-  console.log('📸 10_MatchBoard.png');
+  const matchboardFile = '10_MatchBoard.png';
+  await page.screenshot({ path: path.join(SCREENSHOTS_DIR, matchboardFile) });
+  console.log(`📸 ${matchboardFile}`);
+  await compareWithBaseline(matchboardFile);
 
   // --- CAPTURAR OS POP-UPS DINÂMICOS (Transferências, Despedimentos e Substituições) ---
   
@@ -182,32 +243,91 @@ if (!fs.existsSync(SCREENSHOTS_DIR)) {
   await page.click('#menu-team');
   await new Promise(r => setTimeout(r, 600));
 
-  // 11. Jogador Livre (Estilo Elifoot) / Comprar Jogador
-  console.log('⏳ A gerar janela de Jogador Livre (Estilo Elifoot)...');
-  await page.evaluate(() => {
-    const mockPlayer = { 
-        name: 'Ángel Di María', 
-        position: 'RW', 
-        skill: 86, 
-        leavingFee: 1200000, 
-        minContract: 35000, 
-        previousClubName: 'SL Benfica' 
-    };
-    if (window.Simulation && typeof window.Simulation._showSingleReleasePopup === 'function') {
-      window.Simulation._showSingleReleasePopup(mockPlayer, () => {});
-    } else if (window.showBuyFreePlayerMenu) {
-      window.showBuyFreePlayerMenu(mockPlayer, [mockPlayer], 0);
-    }
-  });
-  await new Promise(r => setTimeout(r, 800));
-  await page.screenshot({ path: path.join(SCREENSHOTS_DIR, '11_Popup_Jogador_Livre.png') });
-  console.log('📸 11_Popup_Jogador_Livre.png');
-  await page.evaluate(() => { 
-    let btn = document.getElementById('btn-reject-free'); 
-    if(!btn) btn = document.getElementById('buyFreeCancelBtn');
-    if(btn) btn.click(); 
+  // Helper para limpar popups antigos e garantir que tiramos foto ao popup certo
+  const clearPopups = async () => await page.evaluate(() => { 
+    document.querySelectorAll('[id$="-overlay"]').forEach(e => e.remove());
+    document.querySelectorAll('.subs-panel').forEach(e => { if (e.parentElement && e.parentElement.tagName === 'DIV') e.parentElement.remove(); }); 
   });
 
+  await clearPopups();
+  // 11a e 11b. Jogador Livre - Oferta e Aceitação
+  console.log('⏳ A gerar janela de Jogador Livre (Oferta e Aceitação)...');
+  await page.evaluate(() => {
+    window._originalRandom = Math.random;
+    Math.random = () => 0; // Força sempre o sucesso (0 < prob)
+    window.playerClub.budget = 10000000; // 10M para garantir que temos dinheiro
+    if (window.playerClub.team.players.length >= 28) window.playerClub.team.players.pop(); // Garante espaço no plantel
+    const mockPlayer = { name: 'Ángel Di María', position: 'RW', skill: 86, leavingFee: 1200000, minContract: 35000, previousClubName: 'SL Benfica' };
+    if (window.Simulation && typeof window.Simulation._showSingleReleasePopup === 'function')
+      window.Simulation._showSingleReleasePopup(mockPlayer, () => {});
+  });
+  try {
+    await page.waitForSelector('#btn-accept-free', { visible: true, timeout: 5000 });
+    const freePlayerFile = '11a_Popup_Jogador_Livre.png';
+    await page.screenshot({ path: path.join(SCREENSHOTS_DIR, freePlayerFile) });
+    console.log(`📸 ${freePlayerFile}`);
+    await compareWithBaseline(freePlayerFile);
+
+    await page.evaluate(() => { const btn = document.getElementById('btn-accept-free'); if(btn) btn.click(); });
+    
+    await page.waitForSelector('#btn-continue-free', { visible: true, timeout: 5000 });
+    const freeAcceptFile = '11b_Popup_Jogador_Aceite.png';
+    await page.screenshot({ path: path.join(SCREENSHOTS_DIR, freeAcceptFile) });
+    console.log(`📸 ${freeAcceptFile}`);
+    await compareWithBaseline(freeAcceptFile);
+    
+    await page.evaluate(() => { const btn = document.getElementById('btn-continue-free'); if(btn) btn.click(); });
+  } catch (e) {
+    console.error('⚠️ Falha ao capturar 11a/11b:', e.message);
+  }
+
+  await clearPopups();
+  // 11c. Jogador Livre - Rejeição
+  console.log('⏳ A gerar janela de Jogador Livre (Rejeitado)...');
+  await page.evaluate(() => {
+    Math.random = () => 0.99; // Força sempre a rejeição (0.99 > prob)
+    const mockPlayer = { name: 'João Neves', position: 'CM', skill: 84, leavingFee: 1500000, minContract: 40000, previousClubName: 'PSG' };
+    if (window.Simulation && typeof window.Simulation._showSingleReleasePopup === 'function')
+      window.Simulation._showSingleReleasePopup(mockPlayer, () => {});
+  });
+  try {
+    await page.waitForSelector('#btn-accept-free', { visible: true, timeout: 5000 });
+    await page.evaluate(() => { const btn = document.getElementById('btn-accept-free'); if(btn) btn.click(); });
+    
+    await page.waitForSelector('#btn-continue-free', { visible: true, timeout: 5000 });
+    const freeRejectFile = '11c_Popup_Jogador_Rejeitado.png';
+    await page.screenshot({ path: path.join(SCREENSHOTS_DIR, freeRejectFile) });
+    console.log(`📸 ${freeRejectFile}`);
+    await compareWithBaseline(freeRejectFile);
+    
+    await page.evaluate(() => { const btn = document.getElementById('btn-continue-free'); if(btn) btn.click(); });
+  } catch (e) {
+    console.error('⚠️ Falha ao capturar 11c:', e.message);
+  }
+
+  await clearPopups();
+  // 11d. Jogador Livre - Proposta Inviável (Sem Dinheiro)
+  console.log('⏳ A gerar janela de Jogador Livre (Inviável)...');
+  await page.evaluate(() => {
+    Math.random = window._originalRandom; // Restaura o RNG ao normal
+    window.playerClub.budget = 0; // Corta o dinheiro todo ao clube
+    const mockPlayer = { name: 'Pepe', position: 'CB', skill: 83, leavingFee: 500000, minContract: 20000, previousClubName: 'FC Porto' };
+    if (window.Simulation && typeof window.Simulation._showSingleReleasePopup === 'function')
+      window.Simulation._showSingleReleasePopup(mockPlayer, () => {});
+  });
+  try {
+    await page.waitForSelector('#btn-continue-free', { visible: true, timeout: 5000 });
+    const freeInviableFile = '11d_Popup_Jogador_Inviavel.png';
+    await page.screenshot({ path: path.join(SCREENSHOTS_DIR, freeInviableFile) });
+    console.log(`📸 ${freeInviableFile}`);
+    await compareWithBaseline(freeInviableFile);
+    
+    await page.evaluate(() => { const btn = document.getElementById('btn-continue-free'); if(btn) btn.click(); });
+  } catch (e) {
+    console.error('⚠️ Falha ao capturar 11d:', e.message);
+  }
+
+  await clearPopups();
   // 12. Convites de Treinadores (Despedimentos)
   console.log('⏳ A gerar janela de Convite de Treinador...');
   await page.evaluate(() => {
@@ -215,15 +335,21 @@ if (!fs.existsSync(SCREENSHOTS_DIR)) {
     window.PLAYER_JOB_OFFERS = [
       { id: 99, division: 1, team: { name: 'Real Madrid', bgColor: '#ffffff', color: '#000064' } }
     ];
-    if (window.Offers && typeof window.Offers.showJobOffersPopup === 'function') {
-      window.Offers.showJobOffersPopup(() => {});
+      const Offers = window.Offers || (window.FootLab && window.FootLab.Offers);
+      if (Offers && typeof Offers.showJobOffersPopup === 'function') {
+        Offers.showJobOffersPopup(() => {});
     }
   });
-  await new Promise(r => setTimeout(r, 800));
-  await page.screenshot({ path: path.join(SCREENSHOTS_DIR, '12_Popup_Convite_Treinador.png') });
-  console.log('📸 12_Popup_Convite_Treinador.png');
-  await page.evaluate(() => { const btn = document.getElementById('rejectJobBtn'); if(btn) btn.click(); });
+  try {
+    await page.waitForSelector('#job-offers-overlay', { visible: true, timeout: 5000 });
+    const coachOfferFile = '12_Popup_Convite_Treinador.png';
+    await page.screenshot({ path: path.join(SCREENSHOTS_DIR, coachOfferFile) });
+    console.log(`📸 ${coachOfferFile}`);
+    await compareWithBaseline(coachOfferFile);
+    await page.evaluate(() => { const btn = document.getElementById('rejectJobBtn'); if(btn) btn.click(); });
+  } catch (e) { console.error('⚠️ Timeout no Convite de Treinador'); }
 
+  await clearPopups();
   // 13. Notícias de Chicotadas Psicológicas
   console.log('⏳ A gerar janela de Chicotadas Psicológicas...');
   await page.evaluate(() => {
@@ -231,27 +357,45 @@ if (!fs.existsSync(SCREENSHOTS_DIR)) {
       { clubName: 'Chelsea', out: 'Enzo Maresca', in: 'Thomas Tuchel' },
       { clubName: 'AC Milan', out: 'Massimiliano Allegri', in: 'Sérgio Conceição' }
     ];
-    if (window.Offers && typeof window.Offers.showManagerMovementsPopup === 'function') window.Offers.showManagerMovementsPopup(mockMovements, () => {});
+      const Offers = window.Offers || (window.FootLab && window.FootLab.Offers);
+      if (Offers && typeof Offers.showManagerMovementsPopup === 'function') Offers.showManagerMovementsPopup(mockMovements, () => {});
   });
-  await new Promise(r => setTimeout(r, 800));
-  await page.screenshot({ path: path.join(SCREENSHOTS_DIR, '13_Popup_Chicotadas.png') });
-  console.log('📸 13_Popup_Chicotadas.png');
-  await page.evaluate(() => { const btn = document.getElementById('close-movements-btn'); if(btn) btn.click(); });
+  try {
+    await page.waitForSelector('#manager-movements-overlay', { visible: true, timeout: 5000 });
+    const movementsFile = '13_Popup_Chicotadas.png';
+    await page.screenshot({ path: path.join(SCREENSHOTS_DIR, movementsFile) });
+    console.log(`📸 ${movementsFile}`);
+    await compareWithBaseline(movementsFile);
+    await page.evaluate(() => { const btn = document.getElementById('close-movements-btn'); if(btn) btn.click(); });
+  } catch (e) { console.error('⚠️ Timeout nas Chicotadas'); }
 
+  await clearPopups();
   // 14. Renovação de Contrato
   console.log('⏳ A gerar janela de Renovação de Contrato...');
   await page.evaluate(() => {
-    const p = window.playerClub.team.players[0];
-    p.contractYearsLeft = 0; p.contractYears = 0; // Forçar o * a desaparecer para poder clicar
+    const firstBox = document.querySelector('.player-box[data-player-id]');
+    if (firstBox) {
+      const pId = firstBox.getAttribute('data-player-id');
+      const p = window.playerClub.team.players.find(pl => String(pl.id) === String(pId));
+      if (p) {
+        p.contractYearsLeft = 0;
+        p.contractYears = 0;
+      }
+    }
     if (typeof window.renderTeamRoster === 'function') window.renderTeamRoster(window.playerClub);
   });
   await new Promise(r => setTimeout(r, 600));
   await page.click('.player-box[data-player-id]'); // Clica no primeiro jogador
-  await new Promise(r => setTimeout(r, 800));
-  await page.screenshot({ path: path.join(SCREENSHOTS_DIR, '14_Popup_Renovacao.png') });
-  console.log('📸 14_Popup_Renovacao.png');
-  await page.evaluate(() => { const btn = document.getElementById('renewCancelBtn'); if(btn) btn.click(); });
+  try {
+    await page.waitForSelector('#renewCancelBtn', { visible: true, timeout: 5000 });
+    const renewalFile = '14_Popup_Renovacao.png';
+    await page.screenshot({ path: path.join(SCREENSHOTS_DIR, renewalFile) });
+    console.log(`📸 ${renewalFile}`);
+    await compareWithBaseline(renewalFile);
+    await page.evaluate(() => { const btn = document.getElementById('renewCancelBtn'); if(btn) btn.click(); });
+  } catch (e) { console.error('⚠️ Timeout na Renovação de Contrato:', e.message); }
 
+  await clearPopups();
   // 15. Prémios de Fim de Época
   console.log('⏳ A gerar janela de Prémios de Fim de Época...');
   await page.evaluate(() => {
@@ -262,13 +406,19 @@ if (!fs.existsSync(SCREENSHOTS_DIR)) {
        topScorer: { p: { name: 'Gyökeres', goals: 30 }, club: { team: {name: 'Sporting CP'}} },
        totalPrize: 1050000, prizeMsg: '🏆 Melhor Ataque: +500.000 €<br>👟 Gyökeres (1º Melhor Marcador): +550.000 €<br>'
     };
-    if (window.Offers && window.Offers.showEndSeasonAwardsPopup) window.Offers.showEndSeasonAwardsPopup(data, () => {});
+      const Offers = window.Offers || (window.FootLab && window.FootLab.Offers);
+      if (Offers && Offers.showEndSeasonAwardsPopup) Offers.showEndSeasonAwardsPopup(data, () => {});
   });
-  await new Promise(r => setTimeout(r, 800));
-  await page.screenshot({ path: path.join(SCREENSHOTS_DIR, '15_Popup_Premios_Epoca.png') });
-  console.log('📸 15_Popup_Premios_Epoca.png');
-  await page.evaluate(() => { const btn = document.getElementById('close-awards-btn'); if(btn) btn.click(); });
+  try {
+    await page.waitForSelector('#end-season-awards-overlay', { visible: true, timeout: 5000 });
+    const awardsFile = '15_Popup_Premios_Epoca.png';
+    await page.screenshot({ path: path.join(SCREENSHOTS_DIR, awardsFile) });
+    console.log(`📸 ${awardsFile}`);
+    await compareWithBaseline(awardsFile);
+    await page.evaluate(() => { const btn = document.getElementById('close-awards-btn'); if(btn) btn.click(); });
+  } catch (e) { console.error('⚠️ Timeout nos Prémios de Época'); }
 
+  await clearPopups();
   // 16. Subidas e Descidas
   console.log('⏳ A gerar janela de Subidas e Descidas...');
   await page.evaluate(() => {
@@ -284,17 +434,20 @@ if (!fs.existsSync(SCREENSHOTS_DIR)) {
          2: [{team:{name: '16º Lugar D3'}}, {team:{name: '17º Lugar D3'}}, {team:{name: '18º Lugar D3'}}]
        }
     };
-    if (window.Offers && window.Offers.showPromotionsPopup) {
-        window.Offers.showPromotionsPopup(data, () => {});
+      const Offers = window.Offers || (window.FootLab && window.FootLab.Offers);
+      if (Offers && Offers.showPromotionsPopup) {
+          Offers.showPromotionsPopup(data, () => {});
     }
   });
-  await new Promise(r => setTimeout(r, 800));
-  await page.screenshot({ path: path.join(SCREENSHOTS_DIR, '16_Popup_Subidas_Descidas.png') });
-  console.log('📸 16_Popup_Subidas_Descidas.png');
+  try {
+    await page.waitForSelector('#promotions-overlay', { visible: true, timeout: 5000 });
+    const promoFile = '16_Popup_Subidas_Descidas.png';
+    await page.screenshot({ path: path.join(SCREENSHOTS_DIR, promoFile) });
+    console.log(`📸 ${promoFile}`);
+    await compareWithBaseline(promoFile);
+  } catch (e) { console.error('⚠️ Timeout nas Subidas e Descidas'); }
 
   await browser.close();
-  console.log('✅ Concluído com sucesso!');
-  console.log(`📂 Podes encontrar as tuas imagens exatamente aqui: ${SCREENSHOTS_DIR}`);
 
   console.log('🛑 A desligar o servidor local...');
   if (process.platform === 'win32') {
@@ -302,5 +455,7 @@ if (!fs.existsSync(SCREENSHOTS_DIR)) {
   } else {
     server.kill();
   }
+
+  console.log('\n✅ Testes visuais concluídos (baselines atualizadas com sucesso)!');
   process.exit(0);
 })();

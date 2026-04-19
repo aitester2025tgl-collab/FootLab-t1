@@ -1,7 +1,12 @@
-const { app, BrowserWindow, ipcMain } = require('electron');
-const path = require('path');
-const fs = require('fs');
-const logger = require('./core/logger');
+import { app, BrowserWindow, ipcMain } from 'electron';
+import path from 'path';
+import fs from 'fs';
+import os from 'os';
+import logger from './core/logger.js';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // Note: previous implementation created a separate native modal window for
 // substitutions. That approach was removed in favor of an in-page overlay.
@@ -165,7 +170,6 @@ app.whenReady().then(() => {
   // Ensure Electron uses a writable userData path inside the project to avoid
   // cache creation permission errors on some systems.
   try {
-    const os = require('os');
     // Use a temp dir for userData to avoid permission issues on some machines
     const userDataPath = path.join(os.tmpdir(), 'elifoot-electron-userdata');
     app.setPath('userData', userDataPath);

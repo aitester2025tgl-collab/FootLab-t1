@@ -1,9 +1,9 @@
 /* eslint-disable no-console, no-unused-vars */
 // tests/lineups_test.js
 // Testa a lógica de escolha do Onze Inicial e Suplentes (chooseStarters)
-const assert = require('assert');
-const { JSDOM } = require('jsdom');
-const logger = require('./testLogger').getLogger();
+import assert from 'assert';
+import { JSDOM } from 'jsdom';
+import { getLogger } from './testLogger.js';
 
 // Mock do ambiente de browser
 const dom = new JSDOM('<!DOCTYPE html><html><body></body></html>', {
@@ -15,7 +15,8 @@ global.window = dom.window;
 global.document = dom.window.document;
 
 // Carregar o ficheiro de lineups
-require('../src/logic/lineups.js');
+await import('../src/logic/lineups.js');
+const logger = getLogger();
 
 try {
   logger.info('A iniciar teste de Lineups (chooseStarters)...');

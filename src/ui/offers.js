@@ -379,6 +379,7 @@ import { findPotentialBuyer, executeTransfer } from '../logic/transfers.js';
   const Offers = {
     showPendingReleasesPopup,
     showJobOffersPopup,
+    showTransferNewsPopup,
     showManagerMovementsPopup,
     showEndSeasonAwardsPopup,
     showPromotionsPopup
@@ -388,8 +389,12 @@ import { findPotentialBuyer, executeTransfer } from '../logic/transfers.js';
     window.Offers = Offers;
   }
 
-  // For testing purposes
-  if (typeof module !== 'undefined') {
-    module.exports = Offers;
-  }
-})();
+  // Export for modern ES module consumption
+  export {
+    showPendingReleasesPopup,
+    showJobOffersPopup,
+    showTransferNewsPopup,
+    showManagerMovementsPopup,
+    showEndSeasonAwardsPopup,
+    showPromotionsPopup,
+  };

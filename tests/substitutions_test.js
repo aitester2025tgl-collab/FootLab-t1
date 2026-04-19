@@ -1,20 +1,37 @@
 /* eslint-disable no-console, no-unused-vars */
 // tests/substitutions_test.js
 // Unit test for substitution flow using jsdom
-const assert = require('assert');
-const { JSDOM } = require('jsdom');
+import assert from 'assert';
+import { JSDOM } from 'jsdom';
+import { getLogger } from './testLogger.js';
 
-// prepare a minimal DOM with subs-overlay container
+// JSDOM Setup: Simulate browser environment for Node.js before importing UI code
 const dom = new JSDOM(
   `<!doctype html><html><head></head><body><div id="subs-overlay"></div></body></html>`,
-  { runScripts: 'dangerously', resources: 'usable' }
+  {
+    runScripts: 'dangerously',
+    resources: 'usable',
+    url: 'http://localhost',
+  }
 );
+global.window = dom.window;
+global.document = dom.window.document;
+
+// Usar defineProperty para propriedades protegidas
+Object.defineProperty(global, 'navigator', {
+  value: dom.window.navigator,
+  writable: true,
+  configurable: true,
+});
+
+// Now that the environment is set up, import project files
+import Overlays from '../src/ui/overlays/index.mjs';
+
+// prepare a minimal DOM with subs-overlay container
 const window = dom.window;
-global.window = window;
-global.document = window.document;
 
 // provide a lightweight test logger
-const logger = require('./testLogger').getLogger();
+const logger = getLogger();
 logger.info('Starting substitutions_test');
 
 // Provide minimal GameConfig
@@ -22,9 +39,6 @@ window.FootLab = window.FootLab || window.Elifoot || {};
 window.FootLab.GameConfig = window.FootLab.GameConfig || {
   rules: { maxSubs: 5, enforceGkOnlySwap: true },
 };
-
-// Load the new overlays module
-const Overlays = require('../src/ui/overlays/index.mjs');
 
 // Build a sample club and match for home side
 const club = { team: { name: 'Test Club', bgColor: '#123456', color: '#fff' } };
@@ -45,7 +59,7 @@ const match = {
 };
 
 // Call the overlay to render, accessing the default export
-Overlays.default.showHalfTimeSubsOverlay(club, match, () => {});
+Overlays.showHalfTimeSubsOverlay(club, match, () => {});
 
 // Wait for the overlay to be rendered (handlers are attached synchronously, but use a tiny timeout)
 setTimeout(() => {

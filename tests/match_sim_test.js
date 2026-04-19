@@ -1,8 +1,8 @@
 
 // tests/match_sim_test.js
 
-const assert = require('assert');
-const { JSDOM } = require('jsdom');
+import assert from 'assert';
+import { JSDOM } from 'jsdom';
 
 // Mock the browser environment
 const dom = new JSDOM('<!DOCTYPE html><html><body></body></html>', {
@@ -12,10 +12,15 @@ const dom = new JSDOM('<!DOCTYPE html><html><body></body></html>', {
 });
 global.window = dom.window;
 global.document = dom.window.document;
+Object.defineProperty(global, 'navigator', {
+  value: dom.window.navigator,
+  writable: true,
+  configurable: true,
+});
 
 // Load the game's core files
-require('../src/matches.js');
-require('../src/config/gameConfig.js');
+await import('../src/matches.js');
+await import('../src/config/gameConfig.js');
 
 // Mock Logger to suppress verbose output during simulation
 window.FootLab = window.FootLab || {};

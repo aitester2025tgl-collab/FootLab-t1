@@ -52,7 +52,9 @@ function getLogger() {
 
   // Try to load core logger (Node tests can require it)
   try {
-    const coreLogger = require('../src/core/logger');
+    // Note: Dynamic import is used here to avoid breaking if the file doesn't exist
+    // or if it's not a module. This is a fallback mechanism.
+    const coreLogger = import('../src/core/logger.js');
     if (coreLogger && (coreLogger.info || coreLogger.log)) return coreLogger;
   } catch (e) {
     /* ignore */
@@ -62,4 +64,4 @@ function getLogger() {
   return makeConsoleWrapper();
 }
 
-module.exports = { getLogger };
+export { getLogger };

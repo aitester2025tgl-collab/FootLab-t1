@@ -641,6 +641,18 @@ html {
   overflow: hidden;
 }
 
+/* Caixas dos Marcadores de Golos / Eventos da Partida */
+.goal-scorer,
+.match-goal,
+.scorer-box {
+  width: 150px;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin: 0 10px;
+}
+
 /* Barra de Progresso (simulação) */
 #progress-container {
   width: 95%;
@@ -958,35 +970,36 @@ html {
 .subs-list {
   list-style: none;
   margin: 0;
-  padding: 6px;
-  display: block;
-  overflow-y: auto;
+  padding: 4px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  overflow: hidden;
 }
 .starters-list {
-  max-height: 70vh;
+  max-height: none;
 }
 .subs-list {
-  max-height: 70vh;
+  max-height: none;
 }
 
 .starters-list li,
 .subs-list li {
-  padding: 8px 8px !important;
-  margin-bottom: 4px !important;
+  padding: 4px 6px !important;
+  margin-bottom: 0 !important;
   border-radius: 4px !important;
   display: flex !important;
   align-items: center !important;
-  gap: 12px !important;
-  justify-content: space-between !important;
+  gap: 6px !important;
+  justify-content: flex-start !important;
   cursor: pointer !important;
   transition: all 0.12s ease !important;
   background: rgba(0, 0, 0, 0.4) !important;
   border: 1px solid rgba(255, 255, 255, 0.1) !important;
   color: var(--subs-fg, #fff) !important;
-  font-size: 0.9rem !important;
-}
-.subs-list li {
-  font-size: 0.85rem !important;
+  font-size: 0.8rem !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
 }
 .starters-list li:hover,
 .subs-list li:hover {
@@ -1025,22 +1038,22 @@ html {
 
 .player-pos-badge {
   display: inline-block;
-  min-width: 32px;
+  min-width: 28px;
   text-align: center;
   font-weight: 800;
   border-radius: 4px;
-  padding: 4px 6px;
-  font-size: 0.85rem;
+  padding: 2px 4px;
+  font-size: 0.75rem;
   background: rgba(255, 255, 255, 0.2) !important;
   color: #fff !important;
 }
 
 .player-skill {
-  margin-left: 12px;
+  margin-left: auto;
   opacity: 1;
   color: #ffeb3b; /* Amarelo suave para saltar à vista */
-  font-size: 0.85rem;
-  font-weight: 400;
+  font-size: 0.8rem;
+  font-weight: 700;
 }
 
 .subs-actions {
@@ -1108,9 +1121,8 @@ html {
 /* ------------------------------- */
 .promotions-grid {
   display: grid !important;
-  grid-template-columns: repeat(2, 1fr) !important;
-  grid-template-rows: repeat(2, auto) !important;
-  gap: 15px !important;
+  grid-template-columns: 1fr 1fr !important;
+  gap: 20px;
 }
 .promotions-grid > div {
   background: rgba(0, 0, 0, 0.2);

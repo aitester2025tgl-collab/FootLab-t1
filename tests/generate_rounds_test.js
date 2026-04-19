@@ -2,13 +2,15 @@
 // tests/generate_rounds_test.js
 // Simple Node test that asserts generateRounds(18 clubs) returns 34 rounds
 
+import { getLogger } from './testLogger.js';
+
 // Ensure a minimal global.window exists because matches.js attaches to window
 global.window = global.window || {};
 
 // require the file (it will attach generateRounds to window)
-require('../src/matches.js');
+await import('../src/matches.js');
 
-const logger = require('./testLogger').getLogger();
+const logger = getLogger();
 
 if (typeof window.generateRounds !== 'function') {
   logger.error('generateRounds not available on window');

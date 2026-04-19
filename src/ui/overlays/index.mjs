@@ -8,10 +8,12 @@ const Overlays = {
   ...seasonSummary,
 };
 
-window.FootLab = window.FootLab || {};
-window.FootLab.Overlays = window.FootLab.Overlays || {};
-Object.assign(window.FootLab.Overlays, Overlays);
-// Backwards compatibility: keep old global available
-window.Elifoot = window.Elifoot || window.FootLab;
+if (typeof window !== 'undefined') {
+  window.FootLab = window.FootLab || {};
+  window.FootLab.Overlays = window.FootLab.Overlays || {};
+  Object.assign(window.FootLab.Overlays, Overlays);
+  // Backwards compatibility: keep old global available
+  window.Elifoot = window.Elifoot || window.FootLab;
+}
 
 export default Overlays;

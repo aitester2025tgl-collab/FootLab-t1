@@ -1,17 +1,28 @@
 /* eslint-disable no-console, no-unused-vars */
 // tests/offers_test.js
 // Verify Offers.showPendingReleasesPopup doesn't throw and handles a simple pending release
-const { JSDOM } = require('jsdom');
-const assert = require('assert');
-const logger = require('./testLogger').getLogger();
+import { JSDOM } from 'jsdom';
+import assert from 'assert';
+import { getLogger } from './testLogger.js';
+import { showPendingReleasesPopup } from '../src/ui/offers.mjs';
 
+const logger = getLogger();
+
+// JSDOM Setup: Simulate browser environment for Node.js before importing UI code
 const dom = new JSDOM(`<!doctype html><html><head></head><body></body></html>`, {
   runScripts: 'dangerously',
   resources: 'usable',
+  url: 'http://localhost',
 });
-const window = dom.window;
-global.window = window;
-global.document = window.document;
+global.window = dom.window;
+global.document = dom.window.document;
+
+// Usar defineProperty para propriedades protegidas
+Object.defineProperty(global, 'navigator', {
+  value: dom.window.navigator,
+  writable: true,
+  configurable: true,
+});
 
 // minimal polyfills for alert/confirm/prompt used by the offers code
 window.alert = (...args) => {
@@ -44,12 +55,12 @@ window.formatMoney = function (v) {
 };
 global.formatMoney = window.formatMoney;
 
-// Mock the Offers object, since the UI is not running
-window.Offers = {
-  showPendingReleasesPopup: (cb) => {
-    if (cb) cb();
-  },
-};
+// No longer need to mock the Offers object
+// window.Offers = {
+//   showPendingReleasesPopup: (cb) => {
+//     if (cb) cb();
+//   },
+// };
 
 // minimal clubs and player
 const seller = {
@@ -70,12 +81,9 @@ window.PENDING_RELEASES = [
   }),
 ];
 
-// No longer need to load the legacy hub module
-// require('../src/players.js');
-
 try {
   // call the popup; confirm returns false so it will not proceed with transfer, but should not throw
-  window.Offers.showPendingReleasesPopup(() => {
+  showPendingReleasesPopup(() => {
     logger.info('offers popup callback executed');
     process.exit(0);
   });

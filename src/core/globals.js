@@ -71,12 +71,4 @@
       /* ignore */
     }
   });
-
-  // Export for Node tests that require this file
-  try {
-    if (typeof module !== 'undefined' && module.exports)
-      module.exports = window.FootLab || window.Elifoot;
-  } catch (e) {
-    /* ignore */
-  }
 })();

@@ -1,7 +1,8 @@
 /* eslint-disable no-console, no-unused-vars */
-const Persistence = require('../src/core/persistence');
+import Persistence from '../src/core/persistence.js';
+import { getLogger } from './testLogger.js';
 
-const logger = require('./testLogger').getLogger();
+const logger = getLogger();
 
 function assert(cond, msg) {
   if (!cond) {
@@ -22,7 +23,7 @@ logger.info('saveSnapshot(small) =>', savedSmall);
 assert(savedSmall === true, 'Expected small snapshot to be saved');
 
 // large snapshot should be rejected due to size guard
-const hugeStr = 'x'.repeat(700 * 1024);
+const hugeStr = 'x'.repeat(1100 * 1024); // > 1MB
 const big = { big: hugeStr };
 const savedBig = Persistence.saveSnapshot(big);
 logger.info('saveSnapshot(big) =>', savedBig);

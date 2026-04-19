@@ -38,6 +38,26 @@
     const fee = player.leavingFee || 0;
     const salary = player.minContract || player.salary || 0;
     const clubName = player.previousClubName || 'Desconhecido';
+
+    const myBudget = window.playerClub ? (window.playerClub.budget || 0) : 0;
+    const sqSz = window.playerClub && window.playerClub.team && window.playerClub.team.players ? window.playerClub.team.players.length : 0;
+    if (myBudget < fee || sqSz >= 28) {
+        const myDiv = window.playerClub ? window.playerClub.division : 4;
+        const rivals = (window.allDivisions[myDiv - 1] || []).filter(c => c !== window.playerClub);
+        const rival = rivals.length > 0 ? rivals[Math.floor(Math.random() * rivals.length)] : null;
+        const rSal = Math.floor(salary * (1.0 + Math.random() * 0.3));
+        box.innerHTML = `
+            <h3 style="margin-top:0;color:#f44336;font-size:1.3rem;border-bottom:1px solid rgba(255,255,255,0.1);padding-bottom:12px;">Proposta Inviável</h3>
+            <p style="font-size:1rem;margin-bottom:20px;line-height:1.5;">
+                Sem fundos/espaço para <strong>${player.name}</strong>. Assinou pelo <strong>${rival ? rival.team.name : 'outro clube'}</strong>.
+            </p>
+            <button id="btn-continue-free" style="width:100%;background:#2196F3;color:#fff;border:none;padding:12px;border-radius:6px;font-weight:bold;cursor:pointer;font-size:1rem;">Continuar</button>
+        `;
+        overlay.appendChild(box);
+        document.body.appendChild(overlay);
+        box.querySelector('#btn-continue-free').onclick = () => { document.body.removeChild(overlay); callback(false, 0, rival, rSal); };
+        return;
+    }
     
     box.innerHTML = `
         <h3 style="margin-top:0;color:#ffeb3b;font-size:1.3rem;border-bottom:1px solid rgba(255,255,255,0.1);padding-bottom:12px;">Jogador Livre</h3>
@@ -48,8 +68,15 @@
             <div style="display:flex;justify-content:space-between;margin-bottom:8px;"><span>Salário:</span> <strong>${formatMoney(salary)}/mês</strong></div>
             <div style="display:flex;justify-content:space-between;"><span>Prémio Assinatura:</span> <strong>${formatMoney(fee)}</strong></div>
         </div>
+    <div style="margin-bottom: 20px;">
+        <p style="font-size: 0.85em; color: #ff9800; margin-bottom: 8px;">Outros clubes também estão interessados. Melhora a oferta para garantir a contratação.</p>
+        <div style="display:flex; align-items:center; gap: 10px; justify-content:center;">
+            <label>Tua Oferta:</label>
+            <input type="number" id="offer-salary-input" value="${salary}" style="padding: 8px; border-radius: 4px; border: 1px solid #555; background: #222; color: #fff; width: 120px; text-align: center; font-weight: bold;">
+        </div>
+    </div>
         <div style="display:flex;gap:12px;">
-            <button id="btn-accept-free" style="flex:1;background:#4caf50;color:#fff;border:none;padding:12px;border-radius:6px;font-weight:bold;cursor:pointer;font-size:1rem;transition:background 0.2s;">Contratar</button>
+        <button id="btn-accept-free" style="flex:1;background:#4caf50;color:#fff;border:none;padding:12px;border-radius:6px;font-weight:bold;cursor:pointer;font-size:1rem;transition:background 0.2s;">Fazer Oferta</button>
             <button id="btn-reject-free" style="flex:1;background:#f44336;color:#fff;border:none;padding:12px;border-radius:6px;font-weight:bold;cursor:pointer;font-size:1rem;transition:background 0.2s;">Ignorar</button>
         </div>
     `;
@@ -65,14 +92,50 @@
     btnReject.onmouseover = () => btnReject.style.background = '#da190b';
     btnReject.onmouseout = () => btnReject.style.background = '#f44336';
     
-    btnAccept.onclick = () => { document.body.removeChild(overlay); callback(true); };
     btnReject.onclick = () => { document.body.removeChild(overlay); callback(false); };
+
+    btnAccept.onclick = () => {
+        const offered = parseInt(box.querySelector('#offer-salary-input').value, 10) || salary;
+        let prob = 0.05;
+        if (offered >= salary * 1.5) prob = 1.0;
+        else if (offered >= salary * 1.2) prob = 0.8;
+        else if (offered >= salary) prob = 0.3;
+
+        const success = Math.random() < prob;
+        let rival = null, rivalSalary = 0;
+
+        if (!success) {
+            const myDiv = window.playerClub ? window.playerClub.division : 4;
+            const rivals = (window.allDivisions[myDiv - 1] || []).filter(c => c !== window.playerClub);
+            if (rivals.length > 0) rival = rivals[Math.floor(Math.random() * rivals.length)];
+            rivalSalary = Math.floor(salary * (1.0 + Math.random() * 0.3));
+        }
+
+        box.innerHTML = `
+            <h3 style="margin-top:0;color:${success ? '#4caf50' : '#f44336'};font-size:1.3rem;border-bottom:1px solid rgba(255,255,255,0.1);padding-bottom:12px;">${success ? 'Contratação Concluída!' : 'Proposta Rejeitada'}</h3>
+            <p style="font-size:1rem;margin-bottom:20px;line-height:1.5;">
+                ${success ? `<strong>${player.name}</strong> aceitou a tua proposta e assinou pelo <strong>${window.playerClub ? window.playerClub.team.name : 'teu clube'}</strong>.` : `<strong>${player.name}</strong> rejeitou a tua proposta e assinou pelo <strong>${rival ? rival.team.name : 'outro clube'}</strong> por um salário de <br><span style="display:inline-block; width:140px; text-align:center; color:#ffeb3b; font-weight:bold; margin-top:8px; padding:6px; background:rgba(0,0,0,0.3); border-radius:4px;">${formatMoney(rivalSalary)}</span>.`}
+            </p>
+            <button id="btn-continue-free" style="width:100%;background:#2196F3;color:#fff;border:none;padding:12px;border-radius:6px;font-weight:bold;cursor:pointer;font-size:1rem;">Continuar</button>
+        `;
+        box.querySelector('#btn-continue-free').onclick = () => {
+            document.body.removeChild(overlay);
+            callback(success, offered, rival, rivalSalary);
+        };
+    };
   }
 
   // --- LÓGICA DO MERCADO DE TREINADORES ---
   function processManagerMovements(isEndSeason) {
     const allDivisions = window.allDivisions || [];
-    const freeCoaches = window.UNEMPLOYED_COACHES || [];
+
+    // Garantir que UNEMPLOYED_COACHES é um array e obter uma referência a ele.
+    // Isto corrige um bug onde a variável local `freeCoaches` podia ficar dessincronizada.
+    if (!Array.isArray(window.UNEMPLOYED_COACHES)) {
+      window.UNEMPLOYED_COACHES = [];
+    }
+    const freeCoaches = window.UNEMPLOYED_COACHES;
+
     window.PLAYER_JOB_OFFERS = window.PLAYER_JOB_OFFERS || [];
     let clubsNeedingCoaches = [];
 
@@ -88,7 +151,12 @@
         else if (rank >= total - 6) sackChance = isEndSeason ? 0.3 : 0.1; // Risco de despromoção
 
         if (Math.random() < sackChance) {
-          freeCoaches.push(club.coach);
+          const coach = club.coach;
+          if (coach) {
+            // Remove club association and add the original coach object to the unemployed list.
+            delete coach.clubId;
+            freeCoaches.push(coach);
+          }
           club.coach = null;
           clubsNeedingCoaches.push(club);
         }
@@ -141,8 +209,18 @@
       } else {
         club.coach = { name: chosen.name, reputation: chosen.reputation };
         if (chosen.currentClub) {
+          // Lógica de "carrossel": o treinador do clube que foi 'roubado' fica agora desempregado.
+          const poachedCoach = chosen.currentClub.coach;
           chosen.currentClub.coach = null;
-          clubsNeedingCoaches.push(chosen.currentClub); // Antigo clube entra na roda viva
+
+          // Adicionar o treinador que foi substituído à lista de desempregados.
+          if (poachedCoach) {
+            delete poachedCoach.clubId;
+            freeCoaches.push(poachedCoach);
+          }
+
+          // O clube que ficou sem treinador entra na lista para contratar um substituto.
+          clubsNeedingCoaches.push(chosen.currentClub);
         } else {
           const idx = freeCoaches.findIndex(fc => fc.name === chosen.name);
           if (idx > -1) freeCoaches.splice(idx, 1);
@@ -1103,14 +1181,14 @@
             }
 
             const p = externalReleases[index];
-            showSingleReleasePopup(p, (accepted) => {
+            showSingleReleasePopup(p, (accepted, offerSalary, rivalClub, rivalSalary) => {
               if (accepted) {
                 const fee = p.leavingFee || 0;
                 if (window.playerClub && (window.playerClub.budget || 0) >= fee) {
                   window.playerClub.budget -= fee;
                   if (!window.playerClub.team.players) window.playerClub.team.players = [];
                   
-                  p.salary = p.minContract || p.salary || 0;
+                  p.salary = offerSalary || p.minContract || p.salary || 0;
                   p.contractYears = 2; // Assina por 2 anos
                   window.playerClub.team.players.push(p);
 
@@ -1127,6 +1205,21 @@
                 } else {
                   alert(`Não tens orçamento suficiente para pagar o prémio de assinatura de ${typeof window.formatMoney === 'function' ? window.formatMoney(fee) : fee + ' €'}.`);
                 }
+              } else if (rivalClub && !accepted) {
+                const fee = p.leavingFee || 0;
+                rivalClub.budget = Math.max(0, (rivalClub.budget || 0) - fee);
+                p.salary = rivalSalary || p.minContract || p.salary || 0;
+                p.contractYears = 2;
+                if (!rivalClub.team.players) rivalClub.team.players = [];
+                rivalClub.team.players.push(p);
+                if (p.originalClubRef && p.originalClubRef.team && p.originalClubRef.team.players) {
+                  const idx = p.originalClubRef.team.players.findIndex((x) => x.id === p.id || x.name === p.name);
+                  if (idx !== -1) p.originalClubRef.team.players.splice(idx, 1);
+                }
+                window.TRANSFER_HISTORY = window.TRANSFER_HISTORY || [];
+                window.TRANSFER_HISTORY.push({ player: p.name, from: p.previousClubName || 'Mercado Livre', to: rivalClub.team.name, fee: fee, salary: p.salary, type: 'purchase', jornada: window.currentJornada, time: Date.now() });
+                const pendingIdx = window.PENDING_RELEASES.indexOf(p);
+                if (pendingIdx !== -1) window.PENDING_RELEASES.splice(pendingIdx, 1);
               }
               processNextRelease(index + 1);
             });

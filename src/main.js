@@ -1,7 +1,7 @@
 /* global divisionsData, applySkillCaps, generateRounds, renderInitialMatchBoard, initHubUI, renderHubContent, seasonalSkillDrift, selectExpiringPlayersToLeave, selectPlayersForRelease, simulateDay, startGame, assignRandomShortContracts, markSomeContractsExpiring */
 import { generateAllClubs } from './clubs.js';
 import './ui/dev_sandbox.js';
-import './ui/offers.js';
+import './ui/offers.mjs';
 /* exported isSimulating, populateTeamSelection, formatNumber, proceedToMatch, endSimulation */
 /* eslint-disable no-empty */
 // main.js - VERSÃO COMPLETA SEM toLocaleString

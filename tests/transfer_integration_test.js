@@ -3,7 +3,8 @@
 
 // Simple Node-based integration test to simulate a pending release and execute a purchase.
 // Places everything on `global.window` like the browser environment used by the app.
-const assert = require('assert');
+import assert from 'assert';
+import { getLogger } from './testLogger.js';
 
 global.window = global.window || {};
 
@@ -34,7 +35,7 @@ window.PENDING_RELEASES = [Object.assign({}, sellerPlayer, { originalClubRef: se
 window.playerClub = buyer;
 window.TRANSFER_HISTORY = [];
 
-const logger = require('./testLogger').getLogger();
+const logger = getLogger();
 logger.info('--- BEFORE TRANSFER ---');
 logger.info('Seller budget:', seller.budget);
 logger.info('Buyer budget: ', buyer.budget);

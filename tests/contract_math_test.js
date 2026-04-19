@@ -1,6 +1,8 @@
 /* eslint-disable no-console */
-const assert = require('assert');
-const logger = require('./testLogger').getLogger();
+import assert from 'assert';
+import { getLogger } from './testLogger.js';
+
+const logger = getLogger();
 
 // Replicar a função exata de cálculo percentual que inserimos na UI (roster.mjs)
 function calcularExigenciaRenovacao(salarioAtual, skill) {

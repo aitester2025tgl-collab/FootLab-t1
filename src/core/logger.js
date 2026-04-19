@@ -1,17 +1,15 @@
 /* eslint-disable no-console */
 // core/logger.js
 // Minimal logger with configurable level. Attach to window.Elifoot.Logger for centralized logging.
-(function () {
-  'use strict';
 
-  const LEVELS = { DEBUG: 10, INFO: 20, WARN: 30, ERROR: 40 };
-  const FootLab = (typeof window !== 'undefined' && (window.FootLab || window.Elifoot)) || {};
-  let currentLevel =
-    FootLab && FootLab.Config && FootLab.Config.LOG_LEVEL
-      ? FootLab.Config.LOG_LEVEL
-      : FootLab && FootLab.Config && FootLab.Config.DEBUG
-        ? LEVELS.DEBUG
-        : LEVELS.INFO;
+const LEVELS = { DEBUG: 10, INFO: 20, WARN: 30, ERROR: 40 };
+const FootLab = (typeof window !== 'undefined' && (window.FootLab || window.Elifoot)) || {};
+let currentLevel =
+  (FootLab && FootLab.Config && FootLab.Config.LOG_LEVEL)
+    ? FootLab.Config.LOG_LEVEL
+    : (FootLab && FootLab.Config && FootLab.Config.DEBUG)
+      ? LEVELS.DEBUG
+      : LEVELS.INFO;
 
   function shouldLog(level) {
     return level >= currentLevel;
@@ -65,5 +63,4 @@
     window.Elifoot = window.Elifoot || window.FootLab;
   }
 
-  if (typeof module !== 'undefined' && module.exports) module.exports = logger;
-})();
+export default logger;

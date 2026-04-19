@@ -1,22 +1,25 @@
 /* eslint-disable no-console, no-unused-vars */
-const { JSDOM } = require('jsdom');
-const fs = require('fs');
-const path = require('path');
+import { JSDOM } from 'jsdom';
 
-// Mock the browser environment
-const dom = new JSDOM('<!DOCTYPE html><html><body></body></html>', {
+// JSDOM Setup: Mock the browser environment BEFORE any ES module imports are processed.
+// This ensures 'window' and 'document' are available when modules that rely on them are imported.
+const dom = new JSDOM(`<!doctype html><html><head></head><body></body></html>`, {
   url: 'http://localhost',
   runScripts: 'dangerously',
   resources: 'usable',
 });
 global.window = dom.window;
 global.document = dom.window.document;
-
-// Load the game's core files
-require('../src/players.js');
-require('../src/config/gameConfig.js');
-
+Object.defineProperty(global, 'navigator', {
+  value: dom.window.navigator,
+  writable: true,
+  configurable: true,
+});
 (async () => {
+  // Load the game's core files dynamically AFTER JSDOM is set up.
+  await import('../src/players.js');
+  await import('../src/config/gameConfig.js');
+
   try {
     // Ensure processPendingReleases is available
     const processPendingReleases =

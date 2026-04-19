@@ -1,7 +1,7 @@
 /* eslint-disable no-console, no-unused-vars */
-const { JSDOM } = require('jsdom');
-const fs = require('fs');
-const path = require('path');
+import { JSDOM } from 'jsdom';
+import fs from 'fs';
+import path from 'path';
 
 // Mock the browser environment
 const dom = new JSDOM('<!DOCTYPE html><html><body></body></html>', {
@@ -13,18 +13,13 @@ global.window = dom.window;
 global.document = dom.window.document;
 
 // Load the game's core files
-require('../src/data/real_rosters_2025_26.js');
-require('../src/teams.js');
-require('../src/players.js');
-require('../src/config/gameConfig.js');
-require('../src/core/simulation.js');
-require('../src/clubs.js');
-require('../src/matches.js');
-
-// Manually initialize team data, which is normally done by the UI
-if (typeof window.initializeTeams === 'function') {
-  window.initializeTeams();
-}
+await import('../src/data/real_rosters_2025_26.js');
+await import('../src/teams.js');
+await import('../src/players.js');
+await import('../src/config/gameConfig.js');
+await import('../src/core/simulation.js');
+await import('../src/clubs.js');
+await import('../src/matches.js');
 
 (async () => {
   try {
